@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Pass environment variables during build
+        VITE_DECRYPT_SECRET_KEY: ${VITE_DECRYPT_SECRET_KEY}
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_API_TOKEN: ${VITE_API_TOKEN}
+    image: hafidh2001/project-name:latest
+    container_name: project-name
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Development service
+  dev:
+    image: node:20-alpine
+    container_name: project-name-dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host
+    networks:
+      - app-network
+    profiles:
+      - dev
+
+networks:
+  app-network:
+    driver: bridge

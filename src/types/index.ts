@@ -1,0 +1,1 @@
+// Global enums used across modules
