@@ -15,6 +15,13 @@ import {
   FileArchive,
   UserRoundX,
   Lock,
+  LayoutDashboard,
+  UserX,
+  Users,
+  Grid2X2,
+  FileText,
+  FileStack,
+  ChevronDown,
 } from "lucide-react";
 
 export const icons = {
@@ -34,4 +41,11 @@ export const icons = {
   FileArchive,
   UserRoundX,
   Lock,
+  LayoutDashboard,
+  UserX,
+  Users,
+  Grid2X2,
+  FileText,
+  FileStack,
+  ChevronDown,
 };
