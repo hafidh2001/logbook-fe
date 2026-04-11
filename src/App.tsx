@@ -62,6 +62,16 @@ function App() {
           }
         />
         <Route
+          path={ROUTES.ppdsCreate}
+          element={
+            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <PlaceholderPage title="Create PPDS" />
+              </AdminLayout>
+            </RoleGuard>
+          }
+        />
+        <Route
           path={ROUTES.ppdsDetail(":idUser")}
           element={
             <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
@@ -156,6 +166,16 @@ function App() {
           }
         />
         <Route
+          path={ROUTES.staffCreate}
+          element={
+            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <PlaceholderPage title="Create Staff" />
+              </AdminLayout>
+            </RoleGuard>
+          }
+        />
+        <Route
           path={ROUTES.staffDetail(":idUser")}
           element={
             <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
@@ -203,6 +223,16 @@ function App() {
             <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Stase List" />
+              </AdminLayout>
+            </RoleGuard>
+          }
+        />
+        <Route
+          path={ROUTES.staseCreate}
+          element={
+            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <PlaceholderPage title="Create Stase" />
               </AdminLayout>
             </RoleGuard>
           }
@@ -354,6 +384,14 @@ function App() {
           element={
             <AdminLayout>
               <PlaceholderPage title="Profile" />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path={ROUTES.profileEdit}
+          element={
+            <AdminLayout>
+              <PlaceholderPage title="Edit Profile" />
             </AdminLayout>
           }
         />

@@ -39,6 +39,10 @@ export class ROUTES {
     return `/admin/ppds` as const;
   }
 
+  static get ppdsCreate() {
+    return `${this.ppds}/create` as const;
+  }
+
   static ppdsDetail(idUser: string) {
     return `${this.ppds}/${idUser}` as const;
   }
@@ -77,6 +81,10 @@ export class ROUTES {
     return `/admin/staff` as const;
   }
 
+  static get staffCreate() {
+    return `${this.staff}/create` as const;
+  }
+
   static staffDetail(idUser: string) {
     return `${this.staff}/${idUser}` as const;
   }
@@ -96,6 +104,10 @@ export class ROUTES {
   // Stase Routes
   static get stase() {
     return `/admin/stase` as const;
+  }
+
+  static get staseCreate() {
+    return `${this.stase}/create` as const;
   }
 
   static staseDetail(idUser: string) {
@@ -155,5 +167,9 @@ export class ROUTES {
   // Profile Routes
   static get profile() {
     return `/profile` as const;
+  }
+
+  static get profileEdit() {
+    return `${this.profile}/edit` as const;
   }
 }
