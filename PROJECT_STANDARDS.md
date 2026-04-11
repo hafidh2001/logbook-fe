@@ -135,6 +135,29 @@ src/
 8. **Is it a constant value?** → `/constants`
 9. **Is it a reusable UI component?** → `/components`
 
+#### `/src/assets/images`
+- Menyimpan file SVG atau image yang perlu dikonversi menjadi komponen JSX
+- **Icon.tsx**: File untuk membungkus icon dari library pihak ketiga agar konsisten dengan style proyek
+- Ikuti pola deklarasi JSX seperti pada `Logo.tsx` (`/src/assets/images/Logo.tsx`)
+
+### Contoh Deklarasi JSX untuk Images:
+```tsx
+import { SVGProps } from "react";
+
+export const IconAmount = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    width="..."
+    height="..."
+    viewBox="0 0 ..."
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    {/* SVG content */}
+  </svg>
+);
+```
+
 ## 2. Import Standards
 
 ### Order of Imports
