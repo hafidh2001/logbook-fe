@@ -14,6 +14,7 @@ import {
   CircleUserRound,
   FileArchive,
   UserRoundX,
+  Lock,
 } from "lucide-react";
 
 export const icons = {
@@ -32,4 +33,5 @@ export const icons = {
   CircleUserRound,
   FileArchive,
   UserRoundX,
+  Lock,
 };

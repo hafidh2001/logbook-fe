@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { icons } from "@/assets/images/Icon";
 import { Logo } from "@/assets/images/Logo";
 import { LoginIcon } from "@/assets/images/LoginIcon";
-import { ROUTES } from "@/utils/routes";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username harus diisi"),
@@ -43,11 +43,11 @@ export const LoginPage = () => {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-b from-[#0062A3] to-[#003A6B] flex-col items-center justify-center p-12">
         <div className="flex flex-col items-center justify-center h-full">
           {/* Logo */}
-          <div className="mb-8">
+          <div className="mb-6">
             <Logo className="w-48 h-auto" />
           </div>
           {/* Login Icon */}
-          <div className="mt-8">
+          <div className="mt-4">
             <LoginIcon className="w-64 h-auto" />
           </div>
         </div>
@@ -57,8 +57,8 @@ export const LoginPage = () => {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md">
           {/* Mobile Logo (visible only on mobile) */}
-          <div className="lg:hidden flex justify-center mb-8">
-            <Logo className="w-40 h-auto" />
+          <div className="lg:hidden flex flex-col items-center mb-8">
+            <Logo className="w-40 h-auto mb-4" />
           </div>
 
           {/* Header */}
@@ -81,15 +81,20 @@ export const LoginPage = () => {
               >
                 Username
               </label>
-              <input
-                type="text"
-                id="username"
-                {...register("username")}
-                placeholder="Masukkan username"
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent transition-all text-sm sm:text-base ${
-                  errors.username ? "border-red-500" : "border-gray-300"
-                }`}
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <icons.User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="username"
+                  {...register("username")}
+                  placeholder="Masukkan username"
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent transition-all text-sm sm:text-base ${
+                    errors.username ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+              </div>
               {errors.username && (
                 <p className="mt-1 text-sm text-red-500">
                   {errors.username.message}
@@ -105,15 +110,20 @@ export const LoginPage = () => {
               >
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                {...register("password")}
-                placeholder="Masukkan password"
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent transition-all text-sm sm:text-base ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                }`}
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <icons.Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  id="password"
+                  {...register("password")}
+                  placeholder="Masukkan password"
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent transition-all text-sm sm:text-base ${
+                    errors.password ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+              </div>
               {errors.password && (
                 <p className="mt-1 text-sm text-red-500">
                   {errors.password.message}
@@ -151,7 +161,8 @@ export const LoginPage = () => {
 
           {/* Footer Text */}
           <p className="text-center text-xs sm:text-sm text-gray-400 mt-8">
-            &copy; {new Date().getFullYear()} Logbook PPDS. Hak cipta dilindungi.
+            &copy; {new Date().getFullYear()} Logbook PPDS. Hak cipta
+            dilindungi.
           </p>
         </div>
       </div>

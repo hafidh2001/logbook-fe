@@ -166,8 +166,49 @@ import ExamplePage from '@/pages/example/example/ExamplePage';
 
 #### `/src/assets/images`
 - Menyimpan file SVG atau image yang perlu dikonversi menjadi komponen JSX
-- **Icon.tsx**: File untuk membungkus icon dari library pihak ketiga agar konsisten dengan style proyek
-- Ikuti pola deklarasi JSX seperti pada `Logo.tsx` (`/src/assets/images/Logo.tsx`)
+- **Logo.tsx**: File untuk logo proyek, ikuti pola deklarasi JSX
+- **Icon.tsx**: File terpusat untuk membungkus icon dari library pihak ketiga (e.g., lucide-react, feather-icons)
+
+### Icon Management Pattern
+Semua icon dari library pihak ketiga HARUS didaftarkan di `/src/assets/images/Icon.tsx` terlebih dahulu sebelum digunakan. Pattern ini memastikan:
+- Konsistensi penggunaan icon di seluruh proyek
+- Mudah dalam manajemen perubahan icon (change management)
+
+```tsx
+// /src/assets/images/Icon.tsx
+import {
+  PieChart,
+  User,
+  Lock,
+  // ... icon lain dari library
+} from "lucide-react";
+
+export const icons = {
+  PieChart,
+  User,
+  Lock,
+  // ... export semua icon yang sudah didaftarkan
+};
+```
+
+### Cara Menggunakan Icon
+```tsx
+// ✅ Good - import dari Icon.tsx
+import { icons } from "@/assets/images/Icon";
+
+const MyComponent = () => (
+  <icons.User className="h-5 w-5" />
+);
+
+// ❌ Bad - import langsung dari library
+import { User } from "lucide-react";
+
+const MyComponent = () => (
+  <User className="h-5 w-5" />
+);
+```
+
+**Note:** Untuk custom SVG yang dibuat sendiri, tetap gunakan pola `Logo.tsx` dengan mendeklarasikan langsung sebagai komponen React.
 
 ### Contoh Deklarasi JSX untuk Images:
 ```tsx
