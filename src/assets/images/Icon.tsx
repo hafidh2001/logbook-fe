@@ -22,6 +22,8 @@ import {
   FileText,
   FileStack,
   ChevronDown,
+  Menu,
+  X,
 } from "lucide-react";
 
 export const icons = {
@@ -48,4 +50,6 @@ export const icons = {
   FileText,
   FileStack,
   ChevronDown,
+  Menu,
+  X,
 };

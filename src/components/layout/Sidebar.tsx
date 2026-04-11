@@ -9,6 +9,7 @@ import { LogoutModal } from "@/components/ui/LogoutModal";
 
 export const Sidebar = () => {
   const [openMenus, setOpenMenus] = useState<string[]>(["Rekap"]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuthStore();
@@ -22,12 +23,33 @@ export const Sidebar = () => {
   const handleLogout = async () => {
     await logout();
     setShowLogoutModal(false);
+    setIsMobileMenuOpen(false);
     navigate(ROUTES.login);
+  };
+
+  const handleNavClick = () => {
+    setIsMobileMenuOpen(false);
   };
 
   return (
     <>
-      <aside className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col px-4 py-6 gap-1">
+      {/* Mobile Header - Always visible on mobile */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-40">
+        <Logo className="h-8 w-auto" />
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          {isMobileMenuOpen ? (
+            <icons.X className="w-6 h-6 text-gray-600" />
+          ) : (
+            <icons.Menu className="w-6 h-6 text-gray-600" />
+          )}
+        </button>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex lg:w-64 lg:h-screen lg:bg-white lg:border-r lg:border-gray-100 lg:flex-col lg:px-4 lg:py-6 lg:gap-1">
         {/* Logo */}
         <div className="flex items-center justify-center px-2 mb-7">
           <Logo className="w-40 h-auto" />
@@ -76,7 +98,6 @@ export const Sidebar = () => {
               );
             }
 
-            // Special handling for Logout
             if (item.label === "Logout") {
               return (
                 <button
@@ -109,6 +130,96 @@ export const Sidebar = () => {
           })}
         </nav>
       </aside>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 mt-16">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          {/* Menu */}
+          <aside className="relative w-72 h-[calc(100vh-4rem)] bg-white overflow-y-auto">
+            <nav className="flex flex-col gap-1 p-4">
+              {navItems.map((item) => {
+                const isOpen = openMenus.includes(item.label);
+
+                if (item.children) {
+                  return (
+                    <div key={item.label}>
+                      <button
+                        onClick={() => toggleMenu(item.label)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-100 transition-colors"
+                      >
+                        {item.icon}
+                        <span>{item.label}</span>
+                        <icons.ChevronDown
+                          size={16}
+                          className={`ml-auto transition-transform ${isOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+
+                      {isOpen && (
+                        <div className="flex flex-col gap-0.5 pl-9 mt-1">
+                          {item.children.map((child) => (
+                            <NavLink
+                              key={child.to}
+                              to={child.to}
+                              onClick={handleNavClick}
+                              className={({ isActive }) =>
+                                `px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                  isActive
+                                    ? "bg-blue-600 text-white"
+                                    : "text-gray-800 hover:bg-gray-100"
+                                }`
+                              }
+                            >
+                              {child.label}
+                            </NavLink>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                if (item.label === "Logout") {
+                  return (
+                    <button
+                      key={item.to}
+                      onClick={() => setShowLogoutModal(true)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-100 transition-colors"
+                    >
+                      {item.icon}
+                      {item.label}
+                    </button>
+                  );
+                }
+
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to!}
+                    onClick={handleNavClick}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-blue-600 text-white"
+                          : "text-gray-800 hover:bg-gray-100"
+                      }`
+                    }
+                  >
+                    {item.icon}
+                    {item.label}
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </aside>
+        </div>
+      )}
 
       {/* Logout Modal */}
       <LogoutModal
