@@ -37,8 +37,9 @@ CP-Antrean-Truck is a mobile-first React application for warehouse staff to mana
 9. [Data Flow and localStorage Management](#9-data-flow-and-localstorage-management)
 10. [Authentication & Encryption](#10-authentication--encryption)
 11. [API Integration Standards](#11-api-integration-and-loading-state-standards)
-12. [Environment Configuration](#12-environment-configuration)
-13. [Common Pitfalls to Avoid](#13-common-pitfalls-to-avoid)
+12. [Form Standards (React Hook Form + Zod)](#12-form-standards)
+13. [Environment Configuration](#13-environment-configuration)
+14. [Common Pitfalls to Avoid](#14-common-pitfalls-to-avoid)
 
 ## 1. Project Structure
 
@@ -52,7 +53,8 @@ src/
 ├── utils/              # Pure utility functions
 ├── hooks/              # Custom React hooks
 ├── constants/          # App constants
-└── components/         # Reusable UI components
+├── components/         # Reusable UI components
+└── assets/             # Static assets (images, icons, fonts)
 ```
 
 ### Key Principles:
@@ -144,7 +146,7 @@ src/
 ```tsx
 import { SVGProps } from "react";
 
-export const IconAmount = (props: SVGProps<SVGSVGElement>) => (
+export const Logo = (props: SVGProps<SVGSVGElement>) => (
   <svg
     width="..."
     height="..."
@@ -483,7 +485,110 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
   })
 }));
 
-## 12. Environment Configuration
+## 12. Form Standards (React Hook Form + Zod)
+
+### Overview
+All forms in the project must use **React Hook Form** for form state management and **Zod** for validation schema. This ensures type-safe, consistent form handling across the application.
+
+### Required Packages
+```bash
+bun add react-hook-form zod @hookform/resolvers
+```
+
+### Schema Definition
+Define validation schemas using Zod at the top of the form component file:
+
+```typescript
+import { z } from "zod";
+
+const loginSchema = z.object({
+  username: z.string().min(1, "Username harus diisi"),
+  password: z.string().min(1, "Password harus diisi").min(6, "Password minimal 6 karakter"),
+  rememberMe: z.boolean().optional(),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+```
+
+### Form Component Pattern
+
+```typescript
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const formSchema = z.object({
+  field1: z.string().min(1, "Field 1 harus diisi"),
+  field2: z.string().min(1, "Field 2 harus diisi"),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export const MyFormPage = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      field1: "",
+      field2: "",
+    },
+  });
+
+  const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
+    // TODO: Implement submit logic
+    console.log("Form submitted:", data);
+    setIsLoading(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Form fields */}
+      <div>
+        <input {...register("field1")} />
+        {errors.field1 && (
+          <p className="mt-1 text-sm text-red-500">{errors.field1.message}</p>
+        )}
+      </div>
+
+      {/* Submit button */}
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? "Memuat..." : "Submit"}
+      </button>
+    </form>
+  );
+};
+```
+
+### Best Practices
+1. **Define schema at module level**: Place Zod schema outside the component for reusability
+2. **Use type inference**: Use `z.infer<typeof schema>` to derive TypeScript types
+3. **Provide default values**: Initialize form with appropriate default values
+4. **Display validation errors**: Show error messages below each field
+5. **Handle loading state**: Disable submit button and show loading indicator during submission
+6. **Use descriptive error messages**: Write error messages in Indonesian for consistency
+
+### Validation Rules
+- String fields: Use `.min(1, "Pesan error")` for required fields
+- Email fields: Use `.email()` for email validation
+- Optional fields: Use `.optional()` and handle accordingly
+- Custom validation: Chain `.refine()` for complex validation logic
+
+### Error Styling
+```typescript
+// Apply error border color
+className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent ${
+  errors.fieldName ? "border-red-500" : "border-gray-300"
+}`}
+```
+
+## 13. Environment Configuration
 
 ### Required Environment Variables
 All environment variables must be prefixed with `VITE_` to be accessible in the frontend:
@@ -519,7 +624,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 const apiToken = import.meta.env.VITE_API_TOKEN;
 ```
 
-## 13. Common Pitfalls to Avoid
+## 14. Common Pitfalls to Avoid
 
 ### ❌ DON'T: Hardcode sensitive data
 ```typescript
