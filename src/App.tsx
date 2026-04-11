@@ -1,19 +1,41 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { ROUTES } from "@/utils/routes";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { GuestRoute } from "@/components/auth/GuestRoute";
 import { PlaceholderPage } from "@/components/ui/PlaceholderPage";
 import { RoleEnum } from "@/types";
+import { useAuthStore } from "@/store/authStore";
 import { LoginPage, ExamplePage, ExampleDetailPage, ExampleItemPage, ExampleSubItemPage } from "@/pages";
 
 function App() {
+  const { init, isInitialized } = useAuthStore();
+
+  useEffect(() => {
+    init();
+  }, [init]);
+
+  if (!isInitialized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Memuat...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter
       future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
       <Routes>
+        {/* Redirect root to dashboard */}
+        <Route path="/" element={<Navigate to={ROUTES.dashboard} replace />} />
+
         {/* Example Routes - without AdminLayout */}
-        <Route path={ROUTES.base} element={<ExamplePage />} />
         <Route path={ROUTES.example} element={<ExamplePage />} />
         <Route
           path={ROUTES.exampleDetail()}
@@ -28,25 +50,29 @@ function App() {
           element={<ExampleSubItemPage />}
         />
 
-        {/* Auth Routes - without AdminLayout */}
+        {/* Auth Routes - Guest only (redirect if already logged in) */}
         <Route
           path={ROUTES.login}
-          element={<LoginPage />}
+          element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          }
         />
         <Route
           path={ROUTES.logout}
           element={<PlaceholderPage title="Logout" />}
         />
 
-        {/* Authenticated Routes - with AdminLayout */}
+        {/* Protected Admin Routes */}
         <Route
           path={ROUTES.dashboard}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Dashboard" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
 
@@ -54,61 +80,61 @@ function App() {
         <Route
           path={ROUTES.ppds}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="PPDS List" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.ppdsCreate}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Create PPDS" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.ppdsDetail(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="PPDS Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.ppdsChangePassword(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="PPDS Change Password" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.ppdsLogbook(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="PPDS Logbook" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.ppdsLogbookDetail(":idUser", ":idLogbook")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="PPDS Logbook Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
 
@@ -116,41 +142,41 @@ function App() {
         <Route
           path={ROUTES.ppdsInactive}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="PPDS Inactive List" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.ppdsInactiveDetail(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="PPDS Inactive Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.ppdsInactiveLogbook(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="PPDS Inactive Logbook" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.ppdsInactiveLogbookDetail(":idUser", ":idLogbook")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="PPDS Inactive Logbook Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
 
@@ -158,61 +184,61 @@ function App() {
         <Route
           path={ROUTES.staff}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Staff List" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.staffCreate}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Create Staff" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.staffDetail(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Staff Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.staffChangePassword(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Staff Change Password" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.staffLogbook(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Staff Logbook" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.staffLogbookDetail(":idUser", ":idLogbook")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Staff Logbook Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
 
@@ -220,31 +246,31 @@ function App() {
         <Route
           path={ROUTES.stase}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Stase List" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.staseCreate}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Create Stase" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.staseDetail(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Stase Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
 
@@ -252,31 +278,31 @@ function App() {
         <Route
           path={ROUTES.penilaianLogbook}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Penilaian Logbook" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.penilaianLogbookDetail(":idLogbookCategory")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Penilaian Logbook Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.penilaianLogbookScoredLogbook(":idLogbookCategory")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Scored Logbook" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
@@ -285,21 +311,21 @@ function App() {
             ":idLogbook"
           )}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Scored Logbook Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.penilaianLogbookUnscoredLogbook(":idLogbookCategory")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Unscored Logbook" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
@@ -308,11 +334,11 @@ function App() {
             ":idLogbook"
           )}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Unscored Logbook Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
 
@@ -320,79 +346,83 @@ function App() {
         <Route
           path={ROUTES.rekapReport}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Rekap Report" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.rekapReportDetail(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Rekap Report Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.rekapPenilaian}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Rekap Penilaian" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.rekapPenilaianDetail(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Rekap Penilaian Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.rekapLogbook}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Rekap Logbook" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.rekapLogbookDetail(":idUser")}
           element={
-            <RoleGuard allowedRoles={[RoleEnum.INSTITUTION]}>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <PlaceholderPage title="Rekap Logbook Detail" />
               </AdminLayout>
-            </RoleGuard>
+            </ProtectedRoute>
           }
         />
 
-        {/* Profile Route - with AdminLayout */}
+        {/* Profile Route */}
         <Route
           path={ROUTES.profile}
           element={
-            <AdminLayout>
-              <PlaceholderPage title="Profile" />
-            </AdminLayout>
+            <ProtectedRoute>
+              <AdminLayout>
+                <PlaceholderPage title="Profile" />
+              </AdminLayout>
+            </ProtectedRoute>
           }
         />
         <Route
           path={ROUTES.profileEdit}
           element={
-            <AdminLayout>
-              <PlaceholderPage title="Edit Profile" />
-            </AdminLayout>
+            <ProtectedRoute>
+              <AdminLayout>
+                <PlaceholderPage title="Edit Profile" />
+              </AdminLayout>
+            </ProtectedRoute>
           }
         />
 

@@ -1,10 +1,12 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
 import { Logo } from "@/assets/images/Logo";
 import { LoginIcon } from "@/assets/images/LoginIcon";
+import { useAuthStore } from "@/store/authStore";
+import { ROUTES } from "@/utils/routes";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username harus diisi"),
@@ -15,7 +17,8 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login, isLoading, error } = useAuthStore();
 
   const {
     register,
@@ -31,10 +34,11 @@ export const LoginPage = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true);
-    // TODO: Implement login logic
-    console.log("Login attempt:", data);
-    setIsLoading(false);
+    const success = await login(data.username, data.password);
+
+    if (success) {
+      navigate(ROUTES.dashboard);
+    }
   };
 
   return (
@@ -70,6 +74,13 @@ export const LoginPage = () => {
               Silakan masukkan kredensial Anda untuk mengakses akun
             </p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
 
           {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -161,8 +172,7 @@ export const LoginPage = () => {
 
           {/* Footer Text */}
           <p className="text-center text-xs sm:text-sm text-gray-400 mt-8">
-            &copy; {new Date().getFullYear()} Logbook PPDS. Hak cipta
-            dilindungi.
+            &copy; {new Date().getFullYear()} Logbook PPDS. Hak cipta dilindungi.
           </p>
         </div>
       </div>

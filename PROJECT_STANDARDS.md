@@ -398,51 +398,133 @@ production-code-entry-{nopol}-{id}  # Entry data for specific production code
 
 ## 9. Authentication & Session Management
 
-### Encrypted Token Handling
-All authenticated pages receive an encrypted token via URL query parameter:
+### JWT + Cookie Authentication Flow
+This project uses JWT tokens stored in cookies for authentication.
+
+### Token Structure
+- **access_token**: JWT token with 15 minutes expiry
+- **refresh_token**: JWT token with 7 days expiry for refreshing access token
+
+### File Structure
 ```
-/page-name?key={encrypted_token}
+/functions/jwt.ts          # JWT utility functions
+/store/authStore.ts         # Auth state management
+/components/auth/ProtectedRoute.tsx  # Route guard for protected pages
+/components/auth/GuestRoute.tsx      # Route guard for guest pages (login)
+/components/ui/LogoutModal.tsx      # Logout confirmation modal
+/data/auth.ts               # Mock user data for development
 ```
 
-### Frontend Implementation
+### JWT Utility Functions (jwt.ts)
 ```typescript
-// Decrypt token from URL
-import { decryptAES } from '@/functions/decrypt';
-import { sessionService } from '@/services/sessionService';
+// Generate JWT tokens
+jwtService.generateTokens(payload: JWTPayload): Promise<{ accessToken, refreshToken }>
 
-const encryptedData = searchParams.get('key');
-if (!encryptedData) {
-  navigate(ROUTES.base);
-  return;
+// Set tokens in cookies
+jwtService.setTokens(accessToken: string, refreshToken: string): void
+
+// Get tokens from cookies
+jwtService.getTokens(): { accessToken?: string, refreshToken?: string }
+
+// Verify and decode JWT token
+jwtService.verifyToken(token: string): Promise<JWTPayload | null>
+
+// Get current user from valid token
+jwtService.getCurrentUser(): Promise<JWTPayload | null>
+
+// Clear all auth cookies
+jwtService.clearTokens(): void
+
+// Refresh access token using refresh token
+jwtService.refreshAccessToken(): Promise<boolean>
+```
+
+### Auth Store (authStore.ts)
+```typescript
+// State
+interface AuthState {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  isInitialized: boolean;
+  error: string | null;
 }
 
-// Decrypt and store in session
-const decrypted = await decryptAES(encryptedData);
-await sessionService.setSession({
-  user_token: decrypted.user_token,
-  warehouse_id: decrypted.warehouse_id
-});
+// Actions
+interface AuthActions {
+  init: () => Promise<void>;      // Initialize auth state from cookies
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  reset: () => void;
+}
 ```
 
-### Session Management Pattern
+### Authentication Flow
+
+#### 1. App Initialization
 ```typescript
-// Store encrypted token for navigation
-sessionStorage.setItem('encrypted_token', encryptedData);
+// App.tsx
+const { init } = useAuthStore();
 
-// Retrieve for page navigation
-const token = sessionStorage.getItem('encrypted_token');
-navigate(`${ROUTES.nextPage}?key=${encodeURIComponent(token)}`);
-
-// Clear on logout
-sessionStorage.clear();
+useEffect(() => {
+  init(); // Check cookies and restore session on app load
+}, [init]);
 ```
+
+#### 2. Login Flow
+```typescript
+// LoginPage calls authStore.login()
+const login = async (username: string, password: string) => {
+  // 1. Validate against mock data or API
+  // 2. Generate JWT tokens
+  // 3. Store in cookies
+  // 4. Update store state
+  // 5. Redirect to dashboard
+};
+```
+
+#### 3. Route Protection
+```typescript
+// ProtectedRoute - for pages requiring authentication
+<ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
+  <AdminLayout>
+    <PageContent />
+  </AdminLayout>
+</ProtectedRoute>
+
+// GuestRoute - for pages requiring no authentication (login page)
+<GuestRoute>
+  <LoginPage />
+</GuestRoute>
+```
+
+#### 4. Logout Flow
+```typescript
+// Click logout in sidebar → Show LogoutModal
+// Confirm logout → Clear cookies → Navigate to login
+const handleLogout = async () => {
+  await logout();
+  navigate(ROUTES.login);
+};
+```
+
+### Routing Rules
+1. `/` → Redirects to `/admin/dashboard`
+2. Unauthenticated user accessing protected route → Redirect to `/auth/login`
+3. Authenticated user accessing login page → Redirect to `/admin/dashboard`
+4. All `/admin/*` routes require `INSTITUTION` role
 
 ### Security Best Practices
-- Never store decrypted tokens in localStorage or cookies
-- Use sessionStorage for temporary session data
+- JWT tokens are HttpOnly equivalent (set via document.cookie)
 - Always validate token presence before API calls
-- Clear session data on logout or page unload
-- URL encode tokens when passing in navigation
+- Clear tokens on logout
+- Use role-based access control for protected routes
+- Never store sensitive data in localStorage for auth tokens
+
+### Environment Variables
+```bash
+VITE_JWT_SECRET=your_jwt_secret_key_here
+```
 
 ## 10. API Integration and Loading State Standards
 
