@@ -72,6 +72,33 @@ src/
 - Each page should have its own folder
 - Page-specific components go in `_components` subfolder
 - Example: `WarehouseDetailPage.tsx`, `HomePage.tsx`
+- **All pages must be exported from `/pages/index.ts` using lazy loading pattern**
+
+### Page Export Pattern (Lazy Loading)
+All pages must be exported from `/pages/index.ts` using the `lazyLoad` utility for code splitting:
+
+```typescript
+// /pages/index.ts
+import { lazyLoad } from '@/components/LazyLoad';
+
+export const ExamplePage = lazyLoad(() => import('./example/example/ExamplePage'));
+export const ExampleDetailPage = lazyLoad(() => import('./example/exampleDetail/ExampleDetailPage'));
+```
+
+### Page Import Pattern
+Pages should be imported from `@/pages` in App.tsx, NOT from the direct file path:
+
+```typescript
+// ✅ Good - import from @/pages
+import { ExamplePage } from '@/pages';
+
+// ❌ Bad - direct import from file path
+import ExamplePage from '@/pages/example/example/ExamplePage';
+```
+
+### Important Notes
+- **DO NOT delete the `/pages/example/` directory** - These are reference implementations that serve as a template for creating new pages
+- When adding new pages, always follow the same pattern as the example pages
 
 #### `/store`
 - Zustand state management stores

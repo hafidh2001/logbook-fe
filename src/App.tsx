@@ -4,10 +4,7 @@ import { AppWrapper } from "@/components/layout/AppWrapper";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { PlaceholderPage } from "@/components/ui/PlaceholderPage";
 import { RoleEnum } from "@/types";
-import ExamplePage from "@/pages/example/example/ExamplePage";
-import ExampleDetailPage from "@/pages/example/exampleDetail/ExampleDetailPage";
-import ExampleSubItemPage from "@/pages/example/exampleSubItem/ExampleSubItemPage";
-import ExampleItemPage from "@/pages/example/exampleItem/ExampleItemPage";
+import { LoginPage, ExamplePage, ExampleDetailPage, ExampleItemPage, ExampleSubItemPage } from "@/pages";
 
 function App() {
   return (
@@ -35,7 +32,7 @@ function App() {
           {/* Auth Routes */}
           <Route
             path={ROUTES.login}
-            element={<PlaceholderPage title="Login" />}
+            element={<LoginPage />}
           />
           <Route
             path={ROUTES.logout}
