@@ -1,10 +1,10 @@
-export type Breadcrumb = {
+export type TBreadcrumb = {
   label: string;
   to?: string;
 };
 
-export interface TopbarProps {
-  breadcrumbs: Breadcrumb[];
+export interface ITopbarProps {
+  breadcrumbs: TBreadcrumb[];
   onSearch?: (query: string) => void;
   onCreate?: () => void;
   onExport?: () => void;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { icons } from "@/assets/images/Icon";
-import type { TopbarProps } from "@/types/topbar";
+import type { ITopbarProps } from "@/types/topbar";
 import { Input } from "@/components/ui/input";
 
 export const Topbar = ({
@@ -11,7 +11,7 @@ export const Topbar = ({
   onSave,
   onDelete,
   searchPlaceholder = "Search...",
-}: TopbarProps) => {
+}: ITopbarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {

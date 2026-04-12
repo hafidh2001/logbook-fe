@@ -1,8 +1,8 @@
 import { icons } from "@/assets/images/Icon";
 import { ROUTES } from "@/utils/routes";
-import type { NavItem } from "@/types/sidebar";
+import type { TNavItem } from "@/types/sidebar";
 
-export const navItems: NavItem[] = [
+export const navItems: TNavItem[] = [
   { label: "Dashboard", icon: <icons.LayoutDashboard size={18} />, to: ROUTES.dashboard },
   { label: "PPDS", icon: <icons.User size={18} />, to: ROUTES.ppds },
   { label: "PPDS Inactive", icon: <icons.UserX size={18} />, to: ROUTES.ppdsInactive },

@@ -1,0 +1,43 @@
+import type { TPpds } from "@/types/ppds";
+
+export const mockPpdsList: TPpds[] = [
+  {
+    no: 1,
+    displayName: "Ujang",
+    username: "ujangzhafran",
+    email: "ujang@email.c",
+    phone: "088",
+    address: "Blora",
+    dateOfBirth: "2005-02-09",
+    nim: "7777",
+    role: "ppds",
+    stage: "Stase Rekon I",
+    logbook: 28,
+  },
+  {
+    no: 2,
+    displayName: "Yudhistira",
+    username: "yudhisppds",
+    email: "yudhis@email.",
+    phone: "082",
+    address: "Karah",
+    dateOfBirth: "2001-10-10",
+    nim: "0101",
+    role: "ppds",
+    stage: "Radiologi",
+    logbook: 12,
+  },
+  {
+    no: 3,
+    displayName: "Test PPDS",
+    username: "ppds_test",
+    email: "yyyy@dum.dur",
+    phone: "08124567899",
+    address: "Nillassss",
+    dateOfBirth: "2000-01-04",
+    nim: "kw999w9990",
+    role: "ppds",
+    stage: null,
+    logbook: 0,
+  },
+];
