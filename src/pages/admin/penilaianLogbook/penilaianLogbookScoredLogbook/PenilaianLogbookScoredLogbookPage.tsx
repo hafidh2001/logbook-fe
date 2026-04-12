@@ -21,7 +21,7 @@ export default function PenilaianLogbookScoredLogbookPage() {
             to: ROUTES.penilaianLogbookScoredLogbook(":idLogbookCategory"),
           },
         ]}
-        variant={4}
+        
         searchPlaceholder="Cari logbook..."
         onSearch={handleSearch}
       />

@@ -10,7 +10,7 @@ export default function RekapPenilaianDetailPage() {
           { label: "Penilaian", to: ROUTES.rekapPenilaian },
           { label: "Detail", to: ROUTES.rekapPenilaianDetail(":idUser") },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

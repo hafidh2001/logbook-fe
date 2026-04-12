@@ -23,7 +23,7 @@ export default function StaffListPage() {
     <div className="min-h-screen bg-gray-50">
       <Topbar
         breadcrumbs={[{ label: "Staff", to: ROUTES.staff }]}
-        variant={1}
+        
         searchPlaceholder="Cari staff..."
         onCreate={handleCreate}
         onExport={handleExport}

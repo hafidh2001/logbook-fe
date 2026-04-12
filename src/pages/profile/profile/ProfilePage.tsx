@@ -6,7 +6,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50">
       <Topbar
         breadcrumbs={[{ label: "Profil", to: ROUTES.profile }]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

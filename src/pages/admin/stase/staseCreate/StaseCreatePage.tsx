@@ -17,7 +17,7 @@ export default function StaseCreatePage() {
           { label: "Stase", to: ROUTES.stase },
           { label: "Tambah Stase" },
         ]}
-        variant={2}
+        
         onSave={handleSave}
         onDelete={handleDelete}
       />

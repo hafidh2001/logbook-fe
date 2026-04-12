@@ -8,4 +8,4 @@ export enum RoleEnum {
 }
 
 // Re-export Topbar types
-export type { Breadcrumb, TopbarVariant, TopbarProps } from "./topbar";
+export type { Breadcrumb, TopbarProps } from "./topbar";

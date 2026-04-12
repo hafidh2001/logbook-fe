@@ -9,7 +9,7 @@ export default function PpdsInactiveDetailPage() {
           { label: "PPDS Inaktif", to: ROUTES.ppdsInactive },
           { label: "Detail", to: ROUTES.ppdsInactiveDetail(":idUser") },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

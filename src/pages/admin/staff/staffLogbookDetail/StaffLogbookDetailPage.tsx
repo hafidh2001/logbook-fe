@@ -14,7 +14,7 @@ export default function StaffLogbookDetailPage() {
             to: ROUTES.staffLogbookDetail(":idUser", ":idLogbook"),
           },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

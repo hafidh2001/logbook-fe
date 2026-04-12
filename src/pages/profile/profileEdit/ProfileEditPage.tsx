@@ -17,7 +17,7 @@ export default function ProfileEditPage() {
           { label: "Profil", to: ROUTES.profile },
           { label: "Edit Profil", to: ROUTES.profileEdit },
         ]}
-        variant={2}
+        
         onSave={handleSave}
         onDelete={handleDelete}
       />

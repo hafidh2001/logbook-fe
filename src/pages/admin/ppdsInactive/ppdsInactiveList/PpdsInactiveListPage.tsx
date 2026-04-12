@@ -7,12 +7,17 @@ export default function PpdsInactiveListPage() {
     console.log("Search:", query);
   };
 
+  const handleExport = () => {
+    // TODO: Implement export
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Topbar
         breadcrumbs={[{ label: "PPDS Inaktif", to: ROUTES.ppdsInactive }]}
-        variant={4}
+        
         searchPlaceholder="Cari PPDS inaktif..."
+        onExport={handleExport}
         onSearch={handleSearch}
       />
       <div className="p-6">

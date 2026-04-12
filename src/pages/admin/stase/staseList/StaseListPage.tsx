@@ -23,7 +23,7 @@ export default function StaseListPage() {
     <div className="min-h-screen bg-gray-50">
       <Topbar
         breadcrumbs={[{ label: "Stase", to: ROUTES.stase }]}
-        variant={1}
+        
         searchPlaceholder="Cari stase..."
         onCreate={handleCreate}
         onExport={handleExport}

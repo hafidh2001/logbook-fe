@@ -19,7 +19,7 @@ export default function StaffLogbookPage() {
           { label: "Detail", to: ROUTES.staffDetail(":idUser") },
           { label: "Logbook", to: ROUTES.staffLogbook(":idUser") },
         ]}
-        variant={3}
+        
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
         onSearch={handleSearch}

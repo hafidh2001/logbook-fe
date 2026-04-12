@@ -10,7 +10,7 @@ export default function RekapLogbookDetailPage() {
           { label: "Logbook", to: ROUTES.rekapLogbook },
           { label: "Detail", to: ROUTES.rekapLogbookDetail(":idUser") },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

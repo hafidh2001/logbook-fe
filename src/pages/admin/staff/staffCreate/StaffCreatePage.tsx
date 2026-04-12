@@ -17,7 +17,7 @@ export default function StaffCreatePage() {
           { label: "Staff", to: ROUTES.staff },
           { label: "Tambah Staff" },
         ]}
-        variant={2}
+        
         onSave={handleSave}
         onDelete={handleDelete}
       />

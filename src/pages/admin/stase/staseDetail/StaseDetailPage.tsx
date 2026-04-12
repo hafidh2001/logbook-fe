@@ -9,7 +9,7 @@ export default function StaseDetailPage() {
           { label: "Stase", to: ROUTES.stase },
           { label: "Detail", to: ROUTES.staseDetail(":idUser") },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

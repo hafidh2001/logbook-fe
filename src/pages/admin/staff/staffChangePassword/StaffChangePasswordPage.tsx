@@ -18,7 +18,7 @@ export default function StaffChangePasswordPage() {
           { label: "Detail", to: ROUTES.staffDetail(":idUser") },
           { label: "Ubah Password", to: ROUTES.staffChangePassword(":idUser") },
         ]}
-        variant={2}
+        
         onSave={handleSave}
         onDelete={handleDelete}
       />

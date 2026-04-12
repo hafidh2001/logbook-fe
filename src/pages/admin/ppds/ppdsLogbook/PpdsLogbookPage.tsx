@@ -19,7 +19,7 @@ export default function PpdsLogbookPage() {
           { label: "Detail", to: ROUTES.ppdsDetail(":idUser") },
           { label: "Logbook", to: ROUTES.ppdsLogbook(":idUser") },
         ]}
-        variant={3}
+        
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
         onSearch={handleSearch}

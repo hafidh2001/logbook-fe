@@ -18,7 +18,7 @@ export default function PpdsChangePasswordPage() {
           { label: "Detail", to: ROUTES.ppdsDetail(":idUser") },
           { label: "Ubah Password", to: ROUTES.ppdsChangePassword(":idUser") },
         ]}
-        variant={2}
+        
         onSave={handleSave}
         onDelete={handleDelete}
       />

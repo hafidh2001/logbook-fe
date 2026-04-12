@@ -9,7 +9,7 @@ export default function PpdsDetailPage() {
           { label: "PPDS", to: ROUTES.ppds },
           { label: "Detail", to: ROUTES.ppdsDetail(":idUser") },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

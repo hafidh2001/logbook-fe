@@ -10,7 +10,7 @@ export default function RekapReportDetailPage() {
           { label: "Report", to: ROUTES.rekapReport },
           { label: "Detail", to: ROUTES.rekapReportDetail(":idUser") },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

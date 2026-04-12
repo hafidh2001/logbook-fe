@@ -13,7 +13,7 @@ export default function PenilaianLogbookListPage() {
         breadcrumbs={[
           { label: "Penilaian Logbook", to: ROUTES.penilaianLogbook },
         ]}
-        variant={4}
+        
         searchPlaceholder="Cari kategori..."
         onSearch={handleSearch}
       />

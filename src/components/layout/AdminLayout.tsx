@@ -9,7 +9,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 bg-gray-50 overflow-auto">
+      <main className="flex-1 bg-gray-50 overflow-auto mt-16 lg:mt-0">
         {children}
       </main>
     </div>

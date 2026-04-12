@@ -18,7 +18,7 @@ export default function RekapLogbookPage() {
           { label: "Rekap" },
           { label: "Logbook", to: ROUTES.rekapLogbook },
         ]}
-        variant={3}
+        
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
         onSearch={handleSearch}

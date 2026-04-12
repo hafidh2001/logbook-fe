@@ -23,7 +23,7 @@ export default function PpdsListPage() {
     <div className="min-h-screen bg-gray-50">
       <Topbar
         breadcrumbs={[{ label: "PPDS", to: ROUTES.ppds }]}
-        variant={1}
+        
         searchPlaceholder="Cari PPDS..."
         onCreate={handleCreate}
         onExport={handleExport}

@@ -14,7 +14,7 @@ export default function PpdsInactiveLogbookDetailPage() {
             to: ROUTES.ppdsInactiveLogbookDetail(":idUser", ":idLogbook"),
           },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

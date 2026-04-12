@@ -9,7 +9,7 @@ export default function StaffDetailPage() {
           { label: "Staff", to: ROUTES.staff },
           { label: "Detail", to: ROUTES.staffDetail(":idUser") },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

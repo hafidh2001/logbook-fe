@@ -18,7 +18,7 @@ export default function RekapPenilaianPage() {
           { label: "Rekap" },
           { label: "Penilaian", to: ROUTES.rekapPenilaian },
         ]}
-        variant={3}
+        
         searchPlaceholder="Cari penilaian..."
         onExport={handleExport}
         onSearch={handleSearch}

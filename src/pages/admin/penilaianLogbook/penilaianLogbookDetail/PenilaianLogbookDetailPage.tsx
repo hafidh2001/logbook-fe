@@ -12,7 +12,7 @@ export default function PenilaianLogbookDetailPage() {
             to: ROUTES.penilaianLogbookDetail(":idLogbookCategory"),
           },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

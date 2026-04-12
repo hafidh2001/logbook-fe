@@ -18,7 +18,7 @@ export default function RekapReportPage() {
           { label: "Rekap" },
           { label: "Report", to: ROUTES.rekapReport },
         ]}
-        variant={3}
+        
         searchPlaceholder="Cari report..."
         onExport={handleExport}
         onSearch={handleSearch}

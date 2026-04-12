@@ -23,7 +23,7 @@ export default function PenilaianLogbookUnscoredLogbookDetailPage() {
             ),
           },
         ]}
-        variant={5}
+        
       />
       <div className="p-6">
         <div className="text-center py-20">

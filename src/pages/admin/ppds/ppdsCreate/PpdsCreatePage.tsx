@@ -17,7 +17,7 @@ export default function PpdsCreatePage() {
           { label: "PPDS", to: ROUTES.ppds },
           { label: "Tambah PPDS" },
         ]}
-        variant={2}
+        
         onSave={handleSave}
         onDelete={handleDelete}
       />
