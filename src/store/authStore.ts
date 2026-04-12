@@ -18,9 +18,14 @@ type AuthState = {
   error: string | null;
 };
 
+type LoginCredentials = {
+  username: string;
+  password: string;
+};
+
 type AuthActions = {
   init: () => Promise<void>;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (credentials: LoginCredentials) => Promise<boolean>;
   logout: () => Promise<void>;
   reset: () => void;
 };
@@ -67,13 +72,13 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
     }
   },
 
-  login: async (username: string, password: string) => {
+  login: async (credentials: LoginCredentials) => {
     set({ isLoading: true, error: null });
 
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const mockUser = findMockUser(username, password);
+    const mockUser = findMockUser(credentials.username, credentials.password);
 
     if (!mockUser) {
       set({ isLoading: false, error: "Username atau password salah" });

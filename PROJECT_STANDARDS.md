@@ -635,15 +635,34 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
   })
 }));
 
-## 12. Form Standards (React Hook Form + Zod)
+## 12. Form Standards (React Hook Form + Zod + Shadcn UI)
 
 ### Overview
-All forms in the project must use **React Hook Form** for form state management and **Zod** for validation schema. This ensures type-safe, consistent form handling across the application.
+All forms in the project must use:
+- **React Hook Form** for form state management
+- **Zod** for validation schema
+- **Shadcn UI components** for form UI (Input, Button, Checkbox, etc.)
+
+This ensures type-safe, consistent form handling and unified UI across the application.
 
 ### Required Packages
 ```bash
 bun add react-hook-form zod @hookform/resolvers
+bun add @radix-ui/react-checkbox @radix-ui/react-label
 ```
+
+### Available Shadcn Form Components
+All form UI components are located in `/src/components/ui/`:
+
+| Component | File | Usage |
+|-----------|------|-------|
+| Input | `input.tsx` | Text input fields |
+| Button | `button.tsx` | Submit/action buttons |
+| Checkbox | `checkbox.tsx` | Checkbox fields |
+| FormField | `form.tsx` | Wraps label, input, and error |
+| FormLabel | `form.tsx` | Label for form fields |
+| FormControl | `form.tsx` | Control wrapper |
+| FormMessage | `form.tsx` | Error message display |
 
 ### Schema Definition
 Define validation schemas using Zod at the top of the form component file:
@@ -660,13 +679,21 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 ```
 
-### Form Component Pattern
+### Form Component Pattern (Shadcn)
 
 ```typescript
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  FormField,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   field1: z.string().min(1, "Field 1 harus diisi"),
@@ -676,12 +703,10 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export const MyFormPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isLoading },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -691,38 +716,80 @@ export const MyFormPage = () => {
   });
 
   const onSubmit = async (data: FormData) => {
-    setIsLoading(true);
     // TODO: Implement submit logic
     console.log("Form submitted:", data);
-    setIsLoading(false);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* Form fields */}
-      <div>
-        <input {...register("field1")} />
-        {errors.field1 && (
-          <p className="mt-1 text-sm text-red-500">{errors.field1.message}</p>
-        )}
-      </div>
+      {/* Form field with Shadcn */}
+      <FormField error={errors.field1?.message}>
+        <FormLabel htmlFor="field1">Field 1</FormLabel>
+        <FormControl>
+          <Input id="field1" placeholder="Enter value" {...register("field1")} />
+        </FormControl>
+        <FormMessage />
+      </FormField>
+
+      {/* Checkbox field */}
+      <FormField className="flex items-center gap-2">
+        <Checkbox id="rememberMe" {...register("rememberMe")} />
+        <FormLabel htmlFor="rememberMe" className="font-normal">
+          Remember me
+        </FormLabel>
+      </FormField>
 
       {/* Submit button */}
-      <button type="submit" disabled={isLoading}>
+      <Button type="submit" disabled={isLoading}>
         {isLoading ? "Memuat..." : "Submit"}
-      </button>
+      </Button>
     </form>
   );
 };
 ```
 
 ### Best Practices
-1. **Define schema at module level**: Place Zod schema outside the component for reusability
-2. **Use type inference**: Use `z.infer<typeof schema>` to derive TypeScript types
-3. **Provide default values**: Initialize form with appropriate default values
-4. **Display validation errors**: Show error messages below each field
-5. **Handle loading state**: Disable submit button and show loading indicator during submission
-6. **Use descriptive error messages**: Write error messages in Indonesian for consistency
+1. **Use Shadcn components**: Always use `Input`, `Button`, `Checkbox` from shadcn instead of native HTML elements
+2. **Use Form components**: Wrap fields with `FormField`, `FormLabel`, `FormControl`, `FormMessage`
+3. **Define schema at module level**: Place Zod schema outside the component for reusability
+4. **Use type inference**: Use `z.infer<typeof schema>` to derive TypeScript types
+5. **Provide default values**: Initialize form with appropriate default values
+6. **Display validation errors**: Use `<FormMessage />` to show error messages
+7. **Handle loading state**: Disable submit button and show loading indicator via `isLoading`
+8. **Use descriptive error messages**: Write error messages in Indonesian for consistency
+9. **Pass form data as object**: Function parameters should accept the entire form data object, not individual fields
+
+### Clean Architecture - Function Parameters
+Functions that receive form data should accept the **entire form object**, not individual fields. This ensures:
+- **Type safety**: TypeScript knows exactly what fields are expected
+- **Scalability**: Adding new fields doesn't require changing function signatures
+- **Readability**: Clean, maintainable code
+
+```typescript
+// ✅ Good - Accept object, type-safe via inference
+const onSubmit = async (data: LoginFormData) => {
+  await login(data); // data is already typed by Zod inference
+};
+
+// ❌ Bad - Individual parameters, not scalable
+const onSubmit = async (data: LoginFormData) => {
+  await login(data.username, data.password); // Requires transform if API needs object
+};
+```
+
+### When Transformation is Needed
+Only transform data when API/service requires different structure:
+
+```typescript
+// ✅ Good - Direct pass when structure matches
+await login(data);
+
+// ✅ Good - Transform only when needed
+await api.createUser({
+  ...data,
+  createdAt: new Date().toISOString(), // Add computed field
+});
+```
 
 ### Validation Rules
 - String fields: Use `.min(1, "Pesan error")` for required fields

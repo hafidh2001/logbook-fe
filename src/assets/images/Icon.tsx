@@ -30,6 +30,8 @@ import {
   FileDown,
   Save,
   Trash,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 export const icons = {
@@ -64,4 +66,6 @@ export const icons = {
   FileDown,
   Save,
   Trash,
+  Eye,
+  EyeOff,
 };

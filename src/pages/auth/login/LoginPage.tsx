@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,6 +8,15 @@ import { Logo } from "@/assets/images/Logo";
 import { LoginIcon } from "@/assets/images/LoginIcon";
 import { useAuthStore } from "@/store/authStore";
 import { ROUTES } from "@/utils/routes";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  FormField,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username harus diisi"),
@@ -19,6 +29,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isLoading, error } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -34,7 +45,7 @@ export const LoginPage = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    const success = await login(data.username, data.password);
+    const success = await login(data);
 
     if (success) {
       navigate(ROUTES.dashboard);
@@ -85,73 +96,70 @@ export const LoginPage = () => {
           {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Username Field */}
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                Username
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <icons.User className="h-5 w-5 text-gray-400" />
+            <FormField error={errors.username?.message}>
+              <FormLabel htmlFor="username">Username</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <icons.User className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Input
+                    type="text"
+                    id="username"
+                    placeholder="Masukkan username"
+                    className="pl-10 pr-4 py-3"
+                    {...register("username")}
+                  />
                 </div>
-                <input
-                  type="text"
-                  id="username"
-                  {...register("username")}
-                  placeholder="Masukkan username"
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent transition-all text-sm sm:text-base ${
-                    errors.username ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-              </div>
-              {errors.username && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.username.message}
-                </p>
-              )}
-            </div>
+              </FormControl>
+              <FormMessage />
+            </FormField>
 
             {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <icons.Lock className="h-5 w-5 text-gray-400" />
+            <FormField error={errors.password?.message}>
+              <FormLabel htmlFor="password">Password</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <icons.Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    placeholder="Masukkan password"
+                    className="pl-10 pr-10 py-3"
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600"
+                  >
+                    {showPassword ? (
+                      <icons.EyeOff className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <icons.Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
                 </div>
-                <input
-                  type="password"
-                  id="password"
-                  {...register("password")}
-                  placeholder="Masukkan password"
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent transition-all text-sm sm:text-base ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
+              </FormControl>
+              <FormMessage />
+            </FormField>
 
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
+              <FormField className="flex items-center gap-2">
+                <Checkbox
+                  id="rememberMe"
                   {...register("rememberMe")}
-                  className="w-4 h-4 text-[#0062A3] border-gray-300 rounded focus:ring-[#0062A3]"
                 />
-                <span className="ml-2 text-sm text-gray-600">Ingat saya</span>
-              </label>
+                <FormLabel
+                  htmlFor="rememberMe"
+                  className="text-sm text-gray-600 font-normal cursor-pointer"
+                >
+                  Ingat saya
+                </FormLabel>
+              </FormField>
               <a
                 href="#"
                 className="text-sm text-[#0062A3] hover:text-[#003A6B] font-medium"
@@ -161,13 +169,9 @@ export const LoginPage = () => {
             </div>
 
             {/* Login Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 px-4 bg-[#0062A3] hover:bg-[#003A6B] text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed text-sm sm:text-base"
-            >
+            <Button type="submit" disabled={isLoading} className="w-full py-3">
               {isLoading ? "Memuat..." : "Masuk"}
-            </button>
+            </Button>
           </form>
 
           {/* Footer Text */}
