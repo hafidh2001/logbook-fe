@@ -6,3 +6,6 @@ export enum RoleEnum {
   INSTITUTION = "institution",
   PATIENTS = "patients",
 }
+
+// Re-export Topbar types
+export type { Breadcrumb, TopbarVariant, TopbarProps } from "./topbar";

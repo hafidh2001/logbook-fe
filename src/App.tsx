@@ -4,10 +4,49 @@ import { ROUTES } from "@/utils/routes";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { GuestRoute } from "@/components/auth/GuestRoute";
-import { PlaceholderPage } from "@/components/ui/PlaceholderPage";
 import { RoleEnum } from "@/types";
 import { useAuthStore } from "@/store/authStore";
-import { LoginPage, ExamplePage, ExampleDetailPage, ExampleItemPage, ExampleSubItemPage } from "@/pages";
+import {
+  LoginPage,
+  ExamplePage,
+  ExampleDetailPage,
+  ExampleItemPage,
+  ExampleSubItemPage,
+  DashboardPage,
+  PpdsListPage,
+  PpdsCreatePage,
+  PpdsDetailPage,
+  PpdsChangePasswordPage,
+  PpdsLogbookPage,
+  PpdsLogbookDetailPage,
+  PpdsInactiveListPage,
+  PpdsInactiveDetailPage,
+  PpdsInactiveLogbookPage,
+  PpdsInactiveLogbookDetailPage,
+  StaffListPage,
+  StaffCreatePage,
+  StaffDetailPage,
+  StaffChangePasswordPage,
+  StaffLogbookPage,
+  StaffLogbookDetailPage,
+  StaseListPage,
+  StaseCreatePage,
+  StaseDetailPage,
+  PenilaianLogbookListPage,
+  PenilaianLogbookDetailPage,
+  PenilaianLogbookScoredLogbookPage,
+  PenilaianLogbookScoredLogbookDetailPage,
+  PenilaianLogbookUnscoredLogbookPage,
+  PenilaianLogbookUnscoredLogbookDetailPage,
+  RekapReportPage,
+  RekapReportDetailPage,
+  RekapPenilaianPage,
+  RekapPenilaianDetailPage,
+  RekapLogbookPage,
+  RekapLogbookDetailPage,
+  ProfilePage,
+  ProfileEditPage,
+} from "@/pages";
 
 function App() {
   const { init, isInitialized } = useAuthStore();
@@ -59,10 +98,7 @@ function App() {
             </GuestRoute>
           }
         />
-        <Route
-          path={ROUTES.logout}
-          element={<PlaceholderPage title="Logout" />}
-        />
+        <Route path={ROUTES.logout} element={<Navigate to={ROUTES.login} replace />} />
 
         {/* Protected Admin Routes */}
         <Route
@@ -70,7 +106,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Dashboard" />
+                <DashboardPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -82,7 +118,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="PPDS List" />
+                <PpdsListPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -92,7 +128,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Create PPDS" />
+                <PpdsCreatePage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -102,7 +138,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="PPDS Detail" />
+                <PpdsDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -112,7 +148,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="PPDS Change Password" />
+                <PpdsChangePasswordPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -122,7 +158,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="PPDS Logbook" />
+                <PpdsLogbookPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -132,7 +168,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="PPDS Logbook Detail" />
+                <PpdsLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -144,7 +180,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="PPDS Inactive List" />
+                <PpdsInactiveListPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -154,7 +190,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="PPDS Inactive Detail" />
+                <PpdsInactiveDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -164,7 +200,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="PPDS Inactive Logbook" />
+                <PpdsInactiveLogbookPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -174,7 +210,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="PPDS Inactive Logbook Detail" />
+                <PpdsInactiveLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -186,7 +222,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Staff List" />
+                <StaffListPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -196,7 +232,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Create Staff" />
+                <StaffCreatePage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -206,7 +242,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Staff Detail" />
+                <StaffDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -216,7 +252,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Staff Change Password" />
+                <StaffChangePasswordPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -226,7 +262,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Staff Logbook" />
+                <StaffLogbookPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -236,7 +272,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Staff Logbook Detail" />
+                <StaffLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -248,7 +284,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Stase List" />
+                <StaseListPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -258,7 +294,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Create Stase" />
+                <StaseCreatePage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -268,7 +304,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Stase Detail" />
+                <StaseDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -280,7 +316,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Penilaian Logbook" />
+                <PenilaianLogbookListPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -290,7 +326,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Penilaian Logbook Detail" />
+                <PenilaianLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -300,7 +336,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Scored Logbook" />
+                <PenilaianLogbookScoredLogbookPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -313,7 +349,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Scored Logbook Detail" />
+                <PenilaianLogbookScoredLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -323,7 +359,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Unscored Logbook" />
+                <PenilaianLogbookUnscoredLogbookPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -336,7 +372,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Unscored Logbook Detail" />
+                <PenilaianLogbookUnscoredLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -348,7 +384,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Rekap Report" />
+                <RekapReportPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -358,7 +394,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Rekap Report Detail" />
+                <RekapReportDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -368,7 +404,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Rekap Penilaian" />
+                <RekapPenilaianPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -378,7 +414,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Rekap Penilaian Detail" />
+                <RekapPenilaianDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -388,7 +424,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Rekap Logbook" />
+                <RekapLogbookPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -398,7 +434,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PlaceholderPage title="Rekap Logbook Detail" />
+                <RekapLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -410,7 +446,7 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminLayout>
-                <PlaceholderPage title="Profile" />
+                <ProfilePage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -420,7 +456,7 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminLayout>
-                <PlaceholderPage title="Edit Profile" />
+                <ProfileEditPage />
               </AdminLayout>
             </ProtectedRoute>
           }

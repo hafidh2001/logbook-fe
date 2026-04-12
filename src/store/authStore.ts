@@ -31,7 +31,7 @@ const findMockUser = (username: string, password: string): MockUser | undefined 
   );
 };
 
-export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
+export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
