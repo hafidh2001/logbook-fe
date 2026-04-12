@@ -59,11 +59,11 @@ export const LoginPage = () => {
         <div className="flex flex-col items-center justify-center h-full">
           {/* Logo */}
           <div className="mb-6">
-            <Logo className="w-48 h-auto" />
+            <Logo className="w-80 h-auto" />
           </div>
           {/* Login Icon */}
           <div className="mt-4">
-            <LoginIcon className="w-64 h-auto" />
+            <LoginIcon className="w-96 h-auto" />
           </div>
         </div>
       </div>
