@@ -2,6 +2,15 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 
 export default function RekapLogbookPage() {
+  const handleExport = () => {
+    // TODO: Implement export
+  };
+
+  const handleSearch = (query: string) => {
+    // TODO: Implement search
+    console.log("Search:", query);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Topbar
@@ -11,6 +20,8 @@ export default function RekapLogbookPage() {
         ]}
         variant={3}
         searchPlaceholder="Cari logbook..."
+        onExport={handleExport}
+        onSearch={handleSearch}
       />
       <div className="p-6">
         <div className="text-center py-20">

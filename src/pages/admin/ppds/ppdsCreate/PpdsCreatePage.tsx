@@ -2,14 +2,24 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 
 export default function PpdsCreatePage() {
+  const handleSave = () => {
+    // TODO: Implement save
+  };
+
+  const handleDelete = () => {
+    // TODO: Implement delete
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Topbar
         breadcrumbs={[
           { label: "PPDS", to: ROUTES.ppds },
-          { label: "Tambah PPDS", to: ROUTES.ppdsCreate },
+          { label: "Tambah PPDS" },
         ]}
         variant={2}
+        onSave={handleSave}
+        onDelete={handleDelete}
       />
       <div className="p-6">
         <div className="text-center py-20">

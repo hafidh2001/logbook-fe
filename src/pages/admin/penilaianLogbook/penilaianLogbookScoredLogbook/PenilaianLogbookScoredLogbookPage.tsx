@@ -2,6 +2,11 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 
 export default function PenilaianLogbookScoredLogbookPage() {
+  const handleSearch = (query: string) => {
+    // TODO: Implement search
+    console.log("Search:", query);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Topbar
@@ -12,12 +17,13 @@ export default function PenilaianLogbookScoredLogbookPage() {
             to: ROUTES.penilaianLogbookDetail(":idLogbookCategory"),
           },
           {
-            label: "Scored",
+            label: "Sudah Dinilai",
             to: ROUTES.penilaianLogbookScoredLogbook(":idLogbookCategory"),
           },
         ]}
         variant={4}
         searchPlaceholder="Cari logbook..."
+        onSearch={handleSearch}
       />
       <div className="p-6">
         <div className="text-center py-20">

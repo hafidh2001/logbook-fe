@@ -1,13 +1,33 @@
 import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
+import { useNavigate } from "react-router-dom";
 
 export default function StaseListPage() {
+  const navigate = useNavigate();
+  
+  const handleCreate = () => {
+    // TODO: Implement create
+    navigate(ROUTES.staseCreate);
+  };
+
+  const handleExport = () => {
+    // TODO: Implement export
+  };
+
+  const handleSearch = (query: string) => {
+    // TODO: Implement search
+    console.log("Search:", query);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Topbar
         breadcrumbs={[{ label: "Stase", to: ROUTES.stase }]}
         variant={1}
         searchPlaceholder="Cari stase..."
+        onCreate={handleCreate}
+        onExport={handleExport}
+        onSearch={handleSearch}
       />
       <div className="p-6">
         <div className="text-center py-20">

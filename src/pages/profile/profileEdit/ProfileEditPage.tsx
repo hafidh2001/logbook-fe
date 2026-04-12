@@ -2,6 +2,14 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 
 export default function ProfileEditPage() {
+  const handleSave = () => {
+    // TODO: Implement save
+  };
+
+  const handleDelete = () => {
+    // TODO: Implement delete
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Topbar
@@ -10,6 +18,8 @@ export default function ProfileEditPage() {
           { label: "Edit Profil", to: ROUTES.profileEdit },
         ]}
         variant={2}
+        onSave={handleSave}
+        onDelete={handleDelete}
       />
       <div className="p-6">
         <div className="text-center py-20">

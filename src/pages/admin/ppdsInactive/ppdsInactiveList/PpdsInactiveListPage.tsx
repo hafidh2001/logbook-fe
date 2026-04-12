@@ -2,12 +2,18 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 
 export default function PpdsInactiveListPage() {
+  const handleSearch = (query: string) => {
+    // TODO: Implement search
+    console.log("Search:", query);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Topbar
         breadcrumbs={[{ label: "PPDS Inaktif", to: ROUTES.ppdsInactive }]}
         variant={4}
         searchPlaceholder="Cari PPDS inaktif..."
+        onSearch={handleSearch}
       />
       <div className="p-6">
         <div className="text-center py-20">

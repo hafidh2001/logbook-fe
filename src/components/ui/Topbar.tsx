@@ -75,7 +75,7 @@ export const Topbar = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
                   placeholder={searchPlaceholder}
-                  className="w-40 lg:w-56 pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent h-9"
+                  className="w-40 lg:w-56 pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent h-9 !outline-none"
                 />
                 <icons.Search
                   size={16}
@@ -85,7 +85,7 @@ export const Topbar = ({
               {onCreate && (
                 <button
                   onClick={onCreate}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#0062A3] hover:bg-[#003A6B] text-white text-sm font-medium rounded-lg transition-colors h-9"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors h-9"
                 >
                   <icons.Plus size={16} />
                   <span className="hidden sm:inline">Create</span>
@@ -109,7 +109,7 @@ export const Topbar = ({
               {onSave && (
                 <button
                   onClick={onSave}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#0062A3] hover:bg-[#003A6B] text-white text-sm font-medium rounded-lg transition-colors h-9"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors h-9"
                 >
                   <icons.Save size={16} />
                   <span className="hidden sm:inline">Save</span>
@@ -137,7 +137,7 @@ export const Topbar = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
                   placeholder={searchPlaceholder}
-                  className="w-40 lg:w-56 pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent h-9"
+                  className="w-40 lg:w-56 pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent h-9 !outline-none"
                 />
                 <icons.Search
                   size={16}
@@ -165,7 +165,7 @@ export const Topbar = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
                 placeholder={searchPlaceholder}
-                className="w-40 lg:w-56 pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent h-9"
+                className="w-40 lg:w-56 pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent h-9 !outline-none"
               />
               <icons.Search
                 size={16}
@@ -180,7 +180,7 @@ export const Topbar = ({
           {variant === 6 && onSave && (
             <button
               onClick={onSave}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0062A3] hover:bg-[#003A6B] text-white text-sm font-medium rounded-lg transition-colors h-9"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors h-9"
             >
               <icons.Save size={16} />
               <span className="hidden sm:inline">Save</span>
