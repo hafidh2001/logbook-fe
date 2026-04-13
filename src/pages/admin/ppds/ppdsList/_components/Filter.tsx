@@ -8,6 +8,7 @@ import { CheckboxLabel } from "@/components/fields/checkboxLabel";
 import { BasicSelectOpt } from "@/types";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
+import { getMonth } from "@/functions/getMonth";
 import {
   Sheet,
   SheetContent,
@@ -123,8 +124,18 @@ const hasFilterValue = (value: FilterValue, type: FilterFieldType): boolean => {
 const getChipLabel = (value: FilterValue, type: FilterFieldType): string => {
   if (type === "checkbox") return value ? "Ya" : "Tidak";
   if (type === "input") return String(value);
-  if (type === "calendar" || type === "monthYear") {
-    return value instanceof Date ? value.toLocaleDateString("id-ID") : "";
+  if (type === "calendar" && value instanceof Date) {
+    // Format: "04 Agustus, 2026"
+    const day = String(value.getDate()).padStart(2, "0");
+    const month = getMonth(value.getMonth() + 1, "id", "MMMM");
+    const year = value.getFullYear();
+    return `${day} ${month}, ${year}`;
+  }
+  if (type === "monthYear" && value instanceof Date) {
+    // Format: "Agustus, 2026"
+    const month = getMonth(value.getMonth() + 1, "id", "MMMM");
+    const year = value.getFullYear();
+    return `${month}, ${year}`;
   }
   if (type === "select") return String((value as BasicSelectOpt<string | number>)?.label || "");
   if (type === "multiSelect") return (value as BasicSelectOpt<string | number>[])?.map(v => v.label).join(", ") || "";
