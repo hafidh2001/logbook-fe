@@ -264,6 +264,48 @@ import { decryptAES } from '@/utils/decrypt';
 - Common enums and interfaces go in `@/types/index.ts`
 - Module-specific types go in `@/types/[module]/index.ts`
 
+### Global Types (`/src/types/index.ts`)
+Types yang bersifat global (digunakan di banyak tempat) dan tidak perlu bikin direktori sendiri, taruh di `/src/types/index.ts`. Ini seperti enum di bahasa lain.
+
+```typescript
+// /src/types/index.ts
+
+// Nullable type - untuk field yang bisa null
+export type Nullable<T> = T | null;
+
+// BasicSelectOpt - untuk option di select component
+export type BasicSelectOpt = {
+  value: string;
+  label: string;
+  isDisabled?: boolean;
+};
+
+// Contoh penggunaan Nullable
+export type TPpds = {
+  no: number;
+  displayName: string;
+  username: string;
+  email: Nullable<string>; // sama dengan string | null
+  phone: string;
+  stage: Nullable<string>; // bisa string atau null
+  logbook: number;
+};
+
+// Contoh penggunaan BasicSelectOpt untuk select options
+export const stageOptions: BasicSelectOpt[] = [
+  { value: "", label: "Semua Stage" },
+  { value: "Radiologi", label: "Radiologi" },
+  { value: "Stase Rekon I", label: "Stase Rekon I" },
+];
+```
+
+### Kenapa Gunakan Nullable dan BasicSelectOpt?
+
+| Cara Lama | Cara Baru | Keterangan |
+|-----------|-----------|------------|
+| `string \| null` | `Nullable<string>` | Lebih readable dan konsisten |
+| Custom interface untuk select | `BasicSelectOpt` | Standar untuk semua select component |
+
 ## 4. Naming Conventions
 
 ### Files
