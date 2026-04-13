@@ -36,7 +36,7 @@ export type MultiLevelColumn<T> = {
   columns?: MultiLevelColumn<T>[]; // For nested columns
 };
 
-interface ETableSpanProps<T extends Record<string, any>> {
+interface BaseTableSpanProps<T extends Record<string, any>> {
   data: T[];
   columns: MultiLevelColumn<T>[];
   pagination?: {
@@ -152,8 +152,8 @@ function getMaxDepth<T>(columns: MultiLevelColumn<T>[]): number {
   return maxDepth;
 }
 
-export const ETableSpan = <T extends Record<string, any>>(
-  opt: ETableSpanProps<T>
+export const BaseTableSpan = <T extends Record<string, any>>(
+  opt: BaseTableSpanProps<T>
 ) => {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 

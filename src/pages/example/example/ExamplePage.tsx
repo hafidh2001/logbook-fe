@@ -8,8 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ETable } from "@/components/etable/ETable";
-import { ETableSpan } from "@/components/etableSpan/ETableSpan";
+import { BaseTable } from "@/components/basetable/BaseTable";
+import { BaseTableSpan } from "@/components/baseTableSpan/BaseTableSpan";
 import { ConfirmationModal } from "@/components/confirmationModal";
 import { ExportButton } from "@/components/exportButton";
 import { LeafletMap } from "@/components/leafletMap";
@@ -35,7 +35,9 @@ export default function ExamplePage() {
   const turnstileToken = useExampleStore((state) => state.turnstileToken);
   const setModalOpen = useExampleStore((state) => state.setModalOpen);
   const setExportLoading = useExampleStore((state) => state.setExportLoading);
-  const setSelectedExportFormat = useExampleStore((state) => state.setSelectedExportFormat);
+  const setSelectedExportFormat = useExampleStore(
+    (state) => state.setSelectedExportFormat,
+  );
   const setTurnstileToken = useExampleStore((state) => state.setTurnstileToken);
 
   const exportText = selectedFormat
@@ -90,7 +92,9 @@ export default function ExamplePage() {
           </CardContent>
         </Card>
       </div>
-    ), []);
+    ),
+    [],
+  );
 
   return (
     <div className="space-y-8 p-6">
@@ -128,7 +132,9 @@ export default function ExamplePage() {
         <Card>
           <CardHeader>
             <CardTitle>Map & Turnstile</CardTitle>
-            <CardDescription>Leaflet map and Cloudflare Turnstile preview.</CardDescription>
+            <CardDescription>
+              Leaflet map and Cloudflare Turnstile preview.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="h-72 overflow-hidden rounded-lg border border-slate-200">
@@ -155,14 +161,20 @@ export default function ExamplePage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="h-full">
           <CardHeader>
-            <CardTitle>ETable Sample</CardTitle>
-            <CardDescription>Reusable table component with pagination.</CardDescription>
+            <CardTitle>BaseTable Sample</CardTitle>
+            <CardDescription>
+              Reusable table component with pagination.
+            </CardDescription>
           </CardHeader>
           <CardContent className="h-[420px]">
-            <ETable
+            <BaseTable
               data={sampleTableData}
               columns={tableColumns}
-              pagination={{ enabled: true, initialPageSize: 5, initialPageIndex: 0 }}
+              pagination={{
+                enabled: true,
+                initialPageSize: 5,
+                initialPageIndex: 0,
+              }}
               isShowNumbering
               noDataText="Tidak ada data"
             />
@@ -171,14 +183,18 @@ export default function ExamplePage() {
 
         <Card className="h-full">
           <CardHeader>
-            <CardTitle>ETableSpan Sample</CardTitle>
+            <CardTitle>BaseTableSpan Sample</CardTitle>
             <CardDescription>Table with multi-level headers.</CardDescription>
           </CardHeader>
           <CardContent className="h-[420px]">
-            <ETableSpan
+            <BaseTableSpan
               data={sampleSpanData}
               columns={spanColumns}
-              pagination={{ enabled: true, initialPageSize: 5, initialPageIndex: 0 }}
+              pagination={{
+                enabled: true,
+                initialPageSize: 5,
+                initialPageIndex: 0,
+              }}
               isShowNumbering
               noDataText="Tidak ada data"
             />

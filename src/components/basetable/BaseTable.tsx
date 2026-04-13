@@ -36,7 +36,7 @@ export type ExtendedColumnDef<T> = ColumnDef<T> & {
   align?: "start" | "center" | "end";
 };
 
-type ETableState<T> = {
+type BaseTableState<T> = {
   data: T[];
   columns: ColumnDef<T>[];
 };
@@ -48,7 +48,7 @@ export type SimpleColumnDef<T, COL extends Exclude<keyof T, symbol | number>> =
     name: COL;
     header?: ReactNode;
     render?: (opt: {
-      table: ETableState<T>;
+      table: BaseTableState<T>;
       row: T;
       index: number;
       el: {
@@ -59,7 +59,7 @@ export type SimpleColumnDef<T, COL extends Exclude<keyof T, symbol | number>> =
   };
 
 // Enhanced interface based on RapidSense BaseTable
-interface ETableProps<
+interface BaseTableProps<
   T extends Record<string, any>,
   COL extends Exclude<keyof T, symbol | number>
 > {
@@ -86,11 +86,11 @@ interface ETableProps<
   onPaginationChange?: (pageIndex: number, pageSize: number) => void;
 }
 
-export const ETable = <
+export const BaseTable = <
   T extends Record<string, any>,
   COL extends Exclude<keyof T, symbol | number>
 >(
-  opt: ETableProps<T, COL>
+  opt: BaseTableProps<T, COL>
 ) => {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   // Initialize pagination from props
