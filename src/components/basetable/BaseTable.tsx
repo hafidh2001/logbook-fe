@@ -1,6 +1,7 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import {
   Fragment,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -9,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { ChevronDown } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import {
   flexRender,
   getCoreRowModel,
@@ -58,7 +60,14 @@ export type SimpleColumnDef<T, COL extends Exclude<keyof T, symbol | number>> =
     }) => ReactElement;
   };
 
-// Enhanced interface based on RapidSense BaseTable
+// Meta type for pagination
+export type TableMeta = {
+  page: number;
+  offset: number;
+  pageCount?: number;
+};
+
+// Enhanced interface based on Rapidsense BaseTable
 interface BaseTableProps<
   T extends Record<string, any>,
   COL extends Exclude<keyof T, symbol | number>
@@ -69,7 +78,7 @@ interface BaseTableProps<
     enabled: boolean;
     initialPageIndex?: number;
     initialPageSize?: number;
-    mode?: "client" | "server"; // Add mode to distinguish between client/server pagination
+    mode?: "client" | "server";
   };
   isShowNumbering?: boolean;
   renderExpansion?: (row: Row<T>) => ReactElement;
@@ -78,11 +87,7 @@ interface BaseTableProps<
   onRowClick?: (row: Row<T>) => void;
   noDataText?: string;
   className?: string;
-  meta?: {
-    page: number;
-    offset: number;
-    pageCount?: number;
-  };
+  meta?: TableMeta;
   onPaginationChange?: (pageIndex: number, pageSize: number) => void;
 }
 
@@ -93,36 +98,110 @@ export const BaseTable = <
   opt: BaseTableProps<T, COL>
 ) => {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  // Initialize pagination from props
-  const initialPagination = {
-    pageIndex: opt.pagination?.initialPageIndex || 0,
-    pageSize: opt.pagination?.initialPageSize || 10,
-  };
-  
-  const [pagination, setPagination] = useState(initialPagination);
-
-  // Reset pagination when initialPageIndex changes (for server-side pagination)
-  useEffect(() => {
-    if (opt.pagination?.mode === "server" && opt.pagination?.initialPageIndex !== undefined) {
-      setPagination(prev => ({
-        ...prev,
-        pageIndex: opt.pagination!.initialPageIndex!,
-        pageSize: opt.pagination?.initialPageSize || prev.pageSize,
-      }));
-    }
-  }, [opt.pagination?.initialPageIndex, opt.pagination?.initialPageSize]);
-
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const div = useRef<HTMLDivElement>(null);
   const container = useRef<HTMLDivElement>(null);
   const tbody = useRef<HTMLTableSectionElement>(null);
-  const observerRef = useRef<ResizeObserver | null>(null);
 
-  // Enhanced column processing similar to BaseTable
+  // Determine pagination mode
+  const isServerPagination = opt.pagination?.mode === "server" || (opt.pagination?.mode !== "client" && !!opt.onPaginationChange);
+
+  // Get page from URL (1-based)
+  const getPageFromUrl = useCallback((): number => {
+    const pageParam = searchParams.get("page");
+    if (pageParam) {
+      const page = parseInt(pageParam, 10);
+      if (!isNaN(page) && page >= 1) {
+        return page;
+      }
+    }
+    return 1;
+  }, [searchParams]);
+
+  // Initialize pagination state - derive from URL
+  const getInitialPagination = useCallback(() => {
+    if (opt.meta) {
+      return {
+        pageIndex: (opt.meta.page ?? 1) - 1,
+        pageSize: opt.meta.offset ?? 10,
+      };
+    }
+    const urlPage = getPageFromUrl();
+    return {
+      pageIndex: urlPage - 1,
+      pageSize: opt.pagination?.initialPageSize || 10,
+    };
+  }, [opt.meta, opt.pagination?.initialPageSize, getPageFromUrl]);
+
+  const [pagination, setPagination] = useState(getInitialPagination);
+
+  // Sync pagination when meta changes (for server-side pagination)
+  useEffect(() => {
+    if (opt.meta) {
+      setPagination({
+        pageIndex: (opt.meta.page ?? 1) - 1,
+        pageSize: opt.meta.offset ?? 10,
+      });
+    }
+  }, [opt.meta?.page, opt.meta?.offset]);
+
+  // Sync pagination changes to URL search params - FIXED: use ref to track previous pageIndex
+  const prevPageIndexRef = useRef<number>(pagination.pageIndex);
+
+  useEffect(() => {
+    if (!opt.pagination?.enabled) return;
+
+    const prevPageIndex = prevPageIndexRef.current;
+    const newPage = (pagination.pageIndex + 1).toString();
+
+    // Only update URL if pageIndex actually changed
+    if (prevPageIndex !== pagination.pageIndex) {
+      const newSearchParams = new URLSearchParams(searchParams);
+      if (newPage === "1") {
+        newSearchParams.delete("page");
+      } else {
+        newSearchParams.set("page", newPage);
+      }
+      setSearchParams(newSearchParams, { replace: true });
+      prevPageIndexRef.current = pagination.pageIndex;
+    }
+  }, [pagination.pageIndex, searchParams, setSearchParams, opt.pagination?.enabled]);
+
+  // Handle edge case: when data becomes empty and page > 1, go to previous page
+  useEffect(() => {
+    if (opt.isLoading) return;
+
+    const currentPage = parseInt(searchParams.get("page") || "1", 10);
+    if (currentPage > 1 && opt.data.length === 0) {
+      const newPage = (currentPage - 1).toString();
+      const newSearchParams = new URLSearchParams(searchParams);
+      if (newPage === "1") {
+        newSearchParams.delete("page");
+      } else {
+        newSearchParams.set("page", newPage);
+      }
+      setSearchParams(newSearchParams, { replace: true });
+    }
+  }, [opt.data.length, searchParams, setSearchParams, opt.isLoading]);
+
+  // Helper function to get page from URL (1-based)
+  const getPageFromUrlFn = () => {
+    const pageParam = searchParams.get("page");
+    if (pageParam) {
+      const page = parseInt(pageParam, 10);
+      if (!isNaN(page) && page >= 1) {
+        return page;
+      }
+    }
+    return 1;
+  };
+
+  // Enhanced column processing - uses context.table to avoid stale closure
   const visibleColumns = useMemo<ColumnDef<T>[]>(() => {
     let processedColumns: ColumnDef<T>[] = [];
 
-    // Check if columns are already in ColumnDef format (RapidSense style)
+    // Check if columns are already in ColumnDef format
     const isColumnDefFormat =
       opt.columns.length > 0 &&
       typeof opt.columns[0] === "object" &&
@@ -132,10 +211,9 @@ export const BaseTable = <
       !("name" in opt.columns[0]);
 
     if (isColumnDefFormat) {
-      // Use columns directly if they're already in ColumnDef format
       processedColumns = [...(opt.columns as ColumnDef<T>[])];
     } else {
-      // Convert simplified format to ColumnDef format (original logic)
+      // Convert simplified format to ColumnDef format
       processedColumns = (opt.columns as SimpleColumnDef<T, COL>[]).map(
         (col) => {
           const colName = typeof col === "string" ? col : col.name;
@@ -152,9 +230,7 @@ export const BaseTable = <
                 return col.render({
                   table: {
                     data: opt.data,
-                    columns: visibleColumns,
-                    height: 0,
-                    rob: null,
+                    columns: processedColumns,
                   } as any,
                   row: props.row.original,
                   index: props.row.index,
@@ -182,44 +258,35 @@ export const BaseTable = <
     // Add numbering column if enabled
     if (opt.isShowNumbering) {
       filteredColumns.unshift({
-        accessorKey: "no",
+        id: "no",
         header: "No.",
         size: 40,
         minSize: 40,
         maxSize: 40,
         cell: (context) => {
-          // Use meta offset if available for server-side pagination
-          if (opt.meta?.offset !== undefined && !isNaN(opt.meta.offset)) {
-            const rowNumber = opt.meta.offset + context.row.index + 1;
+          // For server-side with meta, use meta offset
+          if (opt.meta?.offset !== undefined) {
+            const rowNumber = (opt.meta.page - 1) * opt.meta.offset + context.row.index + 1;
             return <span className="text-sm font-medium">{rowNumber}</span>;
           }
-
-          // Find the position of this row in the complete dataset
-          // This is the most reliable way to get continuous numbering
-          const allData = opt.data;
-          const currentRowData = context.row.original;
-
-          // Find the index of this row in the complete dataset
-          const originalIndex = allData.findIndex((item) => {
-            return item === currentRowData || JSON.stringify(item) === JSON.stringify(currentRowData);
-          });
-
-          // If we found the original index, use it (1-based)
-          if (originalIndex !== -1) {
-            return <span className="text-sm font-medium">{originalIndex + 1}</span>;
-          }
-
-          // Fallback: use local pagination calculation
-          const { pageIndex = 0, pageSize = 10 } = table.getState().pagination || {};
-          const rowNumber = pageIndex * pageSize + context.row.index + 1;
-
-          console.log('Fallback numbering used:', {
-            pageIndex,
-            pageSize,
-            rowIndex: context.row.index,
-            calculatedNumber: rowNumber
-          });
-
+          // For client-side: derive page directly from URL searchParams
+          // This avoids stale closure issues with table state
+          const currentPage = getPageFromUrlFn();
+          const pageIndex = currentPage - 1; // Convert to 0-based
+          const pageSize = pagination.pageSize;
+          // context.row.index is the ORIGINAL data index, not position in page
+          // We need to compute position within page manually
+          const positionInPage = context.row.index - (pageIndex * pageSize);
+          const rowNumber = pageIndex * pageSize + positionInPage + 1;
+          // console.log('[DEBUG] cell render:', {
+          //   currentPage,
+          //   pageIndex,
+          //   pageSize,
+          //   rowIndex: context.row.index,
+          //   positionInPage,
+          //   rowNumber,
+          //   searchParamsPage: searchParams.get('page')
+          // });
           return <span className="text-sm font-medium">{rowNumber}</span>;
         },
       } as ColumnDef<T>);
@@ -252,14 +319,14 @@ export const BaseTable = <
     opt.isShowNumbering,
     opt.renderExpansion,
     opt.meta,
-    pagination,
+    opt.data,
+    searchParams,
+    pagination.pageSize,
   ]);
 
-  // Determine pagination mode - default to client-side pagination
-  const isServerPagination = opt.pagination?.mode === "server" || (opt.pagination?.mode !== "client" && !!opt.onPaginationChange);
-
+  // Build table instance
   const table = useReactTable({
-    data: opt.data as any,
+    data: opt.data as T[],
     columns: visibleColumns,
     state: {
       pagination: opt.pagination?.enabled ? pagination : undefined,
@@ -269,7 +336,6 @@ export const BaseTable = <
       const newState = typeof updater === 'function' ? updater(pagination) : updater;
       setPagination(newState);
 
-      // For server-side pagination, notify parent component
       if (isServerPagination && opt.onPaginationChange) {
         opt.onPaginationChange(newState.pageIndex, newState.pageSize);
       }
@@ -283,7 +349,7 @@ export const BaseTable = <
     getExpandedRowModel: getExpandedRowModel(),
     manualPagination: isServerPagination,
     manualExpanding: true,
-    autoResetPageIndex: !isServerPagination, // Allow auto reset for client-side
+    autoResetPageIndex: !isServerPagination,
     getRowId: (row, index) => {
       // @ts-ignore
       return row.id?.toString() || index.toString();
@@ -294,18 +360,16 @@ export const BaseTable = <
   useEffect(() => {
     if (!div.current) return;
 
-    observerRef.current = new ResizeObserver((entries) => {
+    const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         void entry.contentRect.height;
       }
     });
 
-    observerRef.current.observe(div.current);
+    observer.observe(div.current);
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
+      observer.disconnect();
     };
   }, []);
 
@@ -330,15 +394,15 @@ export const BaseTable = <
                   </div>
                 </div>
               )}
-              <Table
-                className="w-full"
-                key={`table-${table.getState().pagination?.pageIndex || 0}-${table.getState().pagination?.pageSize || 10}`}
-              >
-                <TableHeader className="sticky top-0 z-10 bg-slate-50">
+              <Table className="w-full">
+                <TableHeader
+                  className="sticky top-0 z-20 bg-blue-600"
+                  style={{ position: 'sticky' }}
+                >
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow
                       key={headerGroup.id}
-                      className="border-b border-slate-200"
+                      className="border-b border-blue-700"
                     >
                       {headerGroup.headers.map((header) => {
                         const columnSize = header.column.columnDef.size;
@@ -352,7 +416,7 @@ export const BaseTable = <
                           if (columnId === "actions") return "200px";
                           if (columnId === "color") return "100px";
                           if (columnId === "expansion") return "50px";
-                          return "auto"; // Default for regular columns
+                          return "auto";
                         };
 
                         const finalWidth = columnSize
@@ -363,7 +427,7 @@ export const BaseTable = <
                           <TableHead
                             key={header.id}
                             className={cn(
-                              "bg-slate-50 text-slate-700 font-semibold border-r border-slate-200 last:border-r-0 h-12 px-4 text-center"
+                              "bg-blue-600 text-white font-semibold border-r border-blue-400 last:border-r-0 h-12 px-4 text-center"
                             )}
                             style={{
                               width: finalWidth,
@@ -410,7 +474,6 @@ export const BaseTable = <
                                 (cell.column.columnDef as any).justify ||
                                 "start";
 
-                              // Get text alignment classes
                               const getCellTextAlignClass = (
                                 justify: string
                               ) => {
@@ -434,8 +497,8 @@ export const BaseTable = <
                                   className={cn(
                                     "py-3 px-4 border-r border-slate-200 last:border-r-0",
                                     cellTextAlignClass,
-                                    cell.column.id === "no" && "text-center", // Force center for numbering
-                                    cell.column.id === "color" && "text-center" // Force center for color
+                                    cell.column.id === "no" && "text-center",
+                                    cell.column.id === "color" && "text-center"
                                   )}
                                 >
                                   {flexRender(
@@ -485,7 +548,7 @@ export const BaseTable = <
             {opt.pagination?.enabled && (
               <div className="flex-shrink-0 bg-white border-t border-slate-200">
                 <Pagination
-                  pageIndex={table.getState().pagination?.pageIndex || 0}
+                  pageIndex={table.getState().pagination.pageIndex}
                   pageCount={table.getPageCount()}
                   canPreviousPage={table.getCanPreviousPage()}
                   canNextPage={table.getCanNextPage()}
@@ -493,10 +556,9 @@ export const BaseTable = <
                     table.setPageIndex(pageIndex);
                   }}
                   setPageSize={(pageSize) => {
-                    // Update the table's page size
                     table.setPageSize(pageSize);
                   }}
-                  pageSize={table.getState().pagination?.pageSize || 10}
+                  pageSize={table.getState().pagination.pageSize}
                   isLoading={opt.isLoading}
                 />
               </div>

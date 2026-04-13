@@ -73,16 +73,16 @@ export const Pagination: React.FC<PaginationProps> = ({
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
+            className="hidden !h-8 !w-8 p-0 lg:flex"
             onClick={() => setPageIndex(0)}
             disabled={!canPreviousPage || isLoading}
           >
             <span className="sr-only">Go to first page</span>
-            <ChevronsLeft className="h-4 w-4" />
+            <ChevronsLeft className="!h-4 !w-4" />
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            className="!h-8 !w-8 p-0"
             onClick={() => setPageIndex(pageIndex - 1)}
             disabled={!canPreviousPage || isLoading}
           >
@@ -91,7 +91,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            className="!h-8 !w-8 p-0"
             onClick={() => setPageIndex(pageIndex + 1)}
             disabled={!canNextPage || isLoading}
           >
@@ -100,12 +100,12 @@ export const Pagination: React.FC<PaginationProps> = ({
           </Button>
           <Button
             variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
+            className="hidden !h-8 !w-8 p-0 lg:flex"
             onClick={() => setPageIndex(pageCount - 1)}
             disabled={!canNextPage || isLoading}
           >
             <span className="sr-only">Go to last page</span>
-            <ChevronsRight className="h-4 w-4" />
+            <ChevronsRight className="!h-4 !w-4" />
           </Button>
         </div>
       </div>

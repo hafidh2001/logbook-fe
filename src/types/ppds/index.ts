@@ -1,5 +1,4 @@
 export type TPpds = {
-  no: number;
   displayName: string;
   username: string;
   email: string;
