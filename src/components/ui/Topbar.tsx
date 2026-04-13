@@ -2,6 +2,7 @@ import { useState } from "react";
 import { icons } from "@/assets/images/Icon";
 import type { ITopbarProps } from "@/types/topbar";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export const Topbar = ({
   breadcrumbs,
@@ -58,46 +59,34 @@ export const Topbar = ({
 
         {/* Create */}
         {hasCreate && (
-          <button
-            onClick={onCreate}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors h-9"
-          >
+          <Button variant="default" onClick={onCreate}>
             <icons.Plus size={16} />
             <span className="hidden sm:inline">Create</span>
-          </button>
+          </Button>
         )}
 
         {/* Export */}
         {hasExport && (
-          <button
-            onClick={onExport}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors h-9"
-          >
+          <Button variant="secondary" onClick={onExport}>
             <icons.FileDown size={16} />
             <span className="hidden sm:inline">Export</span>
-          </button>
+          </Button>
         )}
 
         {/* Save */}
         {hasSave && (
-          <button
-            onClick={onSave}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors h-9"
-          >
+          <Button variant="default" onClick={onSave}>
             <icons.Save size={16} />
             <span className="inline">Save</span>
-          </button>
+          </Button>
         )}
 
         {/* Delete */}
         {hasDelete && (
-          <button
-            onClick={onDelete}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors h-9"
-          >
+          <Button variant="destructive" onClick={onDelete}>
             <icons.Trash size={16} />
             <span className="inline">Delete</span>
-          </button>
+          </Button>
         )}
       </div>
     );

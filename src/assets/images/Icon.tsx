@@ -32,6 +32,8 @@ import {
   Trash,
   Eye,
   EyeOff,
+  RotateCcw,
+  Filter,
 } from "lucide-react";
 
 export const icons = {
@@ -68,4 +70,6 @@ export const icons = {
   Trash,
   Eye,
   EyeOff,
+  RotateCcw,
+  Filter,
 };
