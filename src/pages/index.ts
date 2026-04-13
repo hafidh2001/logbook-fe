@@ -42,11 +42,9 @@ export const StaseDetailPage = lazyLoad(() => import('./admin/stase/staseDetail/
 
 // Admin Pages - Penilaian Logbook
 export const PenilaianLogbookListPage = lazyLoad(() => import('./admin/penilaianLogbook/penilaianLogbookList/PenilaianLogbookListPage'));
+export const PenilaianLogbookStatusPage = lazyLoad(() => import('./admin/penilaianLogbook/penilaianLogbookStatus/PenilaianLogbookStatusPage'));
+export const PenilaianLogbookStatusListPage = lazyLoad(() => import('./admin/penilaianLogbook/penilaianLogbookStatusList/PenilaianLogbookStatusListPage'));
 export const PenilaianLogbookDetailPage = lazyLoad(() => import('./admin/penilaianLogbook/penilaianLogbookDetail/PenilaianLogbookDetailPage'));
-export const PenilaianLogbookScoredLogbookPage = lazyLoad(() => import('./admin/penilaianLogbook/penilaianLogbookScoredLogbook/PenilaianLogbookScoredLogbookPage'));
-export const PenilaianLogbookScoredLogbookDetailPage = lazyLoad(() => import('./admin/penilaianLogbook/penilaianLogbookScoredLogbookDetail/PenilaianLogbookScoredLogbookDetailPage'));
-export const PenilaianLogbookUnscoredLogbookPage = lazyLoad(() => import('./admin/penilaianLogbook/penilaianLogbookUnscoredLogbook/PenilaianLogbookUnscoredLogbookPage'));
-export const PenilaianLogbookUnscoredLogbookDetailPage = lazyLoad(() => import('./admin/penilaianLogbook/penilaianLogbookUnscoredLogbookDetail/PenilaianLogbookUnscoredLogbookDetailPage'));
 
 // Admin Pages - Rekap
 export const RekapReportPage = lazyLoad(() => import('./admin/rekap/rekapReport/RekapReportPage'));

@@ -33,11 +33,8 @@ import {
   StaseCreatePage,
   StaseDetailPage,
   PenilaianLogbookListPage,
-  PenilaianLogbookDetailPage,
-  PenilaianLogbookScoredLogbookPage,
-  PenilaianLogbookScoredLogbookDetailPage,
-  PenilaianLogbookUnscoredLogbookPage,
-  PenilaianLogbookUnscoredLogbookDetailPage,
+  PenilaianLogbookStatusPage,
+  PenilaianLogbookStatusListPage,
   RekapReportPage,
   RekapReportDetailPage,
   RekapPenilaianPage,
@@ -47,6 +44,7 @@ import {
   ProfilePage,
   ProfileEditPage,
 } from "@/pages";
+import PenilaianLogbookDetailPage from "@/pages/admin/penilaianLogbook/penilaianLogbookDetail/PenilaianLogbookDetailPage";
 
 function App() {
   const { init, isInitialized } = useAuthStore();
@@ -76,10 +74,7 @@ function App() {
 
         {/* Example Routes - without AdminLayout */}
         <Route path={ROUTES.example} element={<ExamplePage />} />
-        <Route
-          path={ROUTES.exampleDetail()}
-          element={<ExampleDetailPage />}
-        />
+        <Route path={ROUTES.exampleDetail()} element={<ExampleDetailPage />} />
         <Route
           path={ROUTES.exampleItem(":exampleId")}
           element={<ExampleItemPage />}
@@ -98,7 +93,10 @@ function App() {
             </GuestRoute>
           }
         />
-        <Route path={ROUTES.logout} element={<Navigate to={ROUTES.login} replace />} />
+        <Route
+          path={ROUTES.logout}
+          element={<Navigate to={ROUTES.login} replace />}
+        />
 
         {/* Protected Admin Routes */}
         <Route
@@ -326,7 +324,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PenilaianLogbookDetailPage />
+                <PenilaianLogbookStatusPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -336,7 +334,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PenilaianLogbookScoredLogbookPage />
+                <PenilaianLogbookStatusListPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -344,12 +342,12 @@ function App() {
         <Route
           path={ROUTES.penilaianLogbookScoredLogbookDetail(
             ":idLogbookCategory",
-            ":idLogbook"
+            ":idLogbook",
           )}
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PenilaianLogbookScoredLogbookDetailPage />
+                <PenilaianLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -359,7 +357,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PenilaianLogbookUnscoredLogbookPage />
+                <PenilaianLogbookStatusListPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -367,12 +365,12 @@ function App() {
         <Route
           path={ROUTES.penilaianLogbookUnscoredLogbookDetail(
             ":idLogbookCategory",
-            ":idLogbook"
+            ":idLogbook",
           )}
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PenilaianLogbookUnscoredLogbookDetailPage />
+                <PenilaianLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
