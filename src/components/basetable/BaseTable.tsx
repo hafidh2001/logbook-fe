@@ -427,7 +427,7 @@ export const BaseTable = <
                           <TableHead
                             key={header.id}
                             className={cn(
-                              "bg-blue-600 text-white font-semibold border-r border-blue-400 last:border-r-0 h-12 px-4 text-center"
+                              "bg-blue-600 text-white font-semibold border-r last:border-r-0 h-12 px-4 text-center"
                             )}
                             style={{
                               width: finalWidth,
