@@ -89,12 +89,17 @@ export const MonthYearSelect: FC<Props> = ({
     if (selectedMonth && selectedYear) {
       const newDate = dayjs().year(selectedYear.value).month(selectedMonth.value - 1).date(1).toDate();
       setSelectedDate(newDate);
-      onChange?.(newDate);
+      // Only call onChange if the date actually changed
+      if (!selectedDate || selectedDate.getTime() !== newDate.getTime()) {
+        onChange?.(newDate);
+      }
     } else if (!selectedMonth || !selectedYear) {
-      setSelectedDate(undefined);
-      onChange?.(undefined);
+      if (selectedDate !== undefined) {
+        setSelectedDate(undefined);
+        onChange?.(undefined);
+      }
     }
-  }, [selectedMonth, selectedYear, onChange]);
+  }, [selectedMonth, selectedYear, onChange, selectedDate]);
 
   const handleClearable = useCallback(() => {
     setSelectedMonth(undefined);

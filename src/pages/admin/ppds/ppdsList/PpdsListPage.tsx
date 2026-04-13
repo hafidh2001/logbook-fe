@@ -2,7 +2,6 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
-import { BasicSelectOpt } from "@/types";
 
 export default function PpdsListPage() {
   const navigate = useNavigate();
@@ -20,7 +19,7 @@ export default function PpdsListPage() {
     console.log("Search:", query);
   };
 
-  const handleFilterSearch = (data: Record<string, BasicSelectOpt<string> | null>) => {
+  const handleFilterSearch = (data: Record<string, unknown>) => {
     console.log("Filter search:", data);
   };
 
