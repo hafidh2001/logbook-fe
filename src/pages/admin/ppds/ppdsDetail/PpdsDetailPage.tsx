@@ -310,6 +310,17 @@ export default function PpdsDetailPage() {
 
             </div>
           </div>
+
+          {/* Back Button */}
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => window.history.back()}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <icons.ArrowLeft className="h-4 w-4" />
+              Kembali
+            </button>
+          </div>
         </div>
       </div>
     </div>

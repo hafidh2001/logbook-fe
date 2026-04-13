@@ -1,30 +1,172 @@
 import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { InputField } from "@/components/fields/inputField";
+import { CalendarSelect } from "@/components/fields/calendarSelect";
+import { icons } from "@/assets/images/Icon";
+
+// Schema for profile edit form
+const profileEditSchema = z.object({
+  displayName: z.string().min(1, "Display Name harus diisi"),
+  email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  dateOfBirth: z.date().optional().nullable(),
+  code: z.string().optional(),
+});
+
+type ProfileEditFormData = z.infer<typeof profileEditSchema>;
+
+// Mock data - in real app this would come from API
+const mockProfileData = {
+  displayName: "DIANTI INSTITUSI",
+  email: "dianti@email.com",
+  phone: "08123456789",
+  address: "Jakarta, Indonesia",
+  dateOfBirth: null as Date | null,
+  code: "DIANTI001",
+};
 
 export default function ProfileEditPage() {
-  const handleSave = () => {
-    // TODO: Implement save
-  };
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ProfileEditFormData>({
+    resolver: zodResolver(profileEditSchema),
+    defaultValues: {
+      displayName: mockProfileData.displayName,
+      email: mockProfileData.email,
+      phone: mockProfileData.phone,
+      address: mockProfileData.address,
+      dateOfBirth: mockProfileData.dateOfBirth,
+      code: mockProfileData.code,
+    },
+  });
 
-  const handleDelete = () => {
-    // TODO: Implement delete
+  const onSubmit = (data: ProfileEditFormData) => {
+    console.log("Saving profile:", data);
+    // TODO: Call API to save
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Topbar
         breadcrumbs={[
           { label: "Profil", to: ROUTES.profile },
-          { label: "Edit Profil", to: ROUTES.profileEdit },
+          { label: "Edit Profil" },
         ]}
-        
-        onSave={handleSave}
-        onDelete={handleDelete}
+        onSave={handleSubmit(onSubmit)}
       />
-      <div className="p-6">
-        <div className="text-center py-20">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Edit Profil</h1>
-          <p className="text-gray-500">Form edit profil</p>
+      <div className="flex-1 px-4 sm:px-6 py-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Edit Profile Form - 2 Column Layout */}
+          <div className="bg-white rounded-lg border p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+
+                {/* Row 1: Display Name* | Email */}
+                <Controller
+                  name="displayName"
+                  control={control}
+                  render={({ field }) => (
+                    <InputField
+                      label="Display Name"
+                      required
+                      errorMessage={errors.displayName?.message}
+                      {...field}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      placeholder="Masukkan nama lengkap..."
+                    />
+                  )}
+                />
+                <Controller
+                  name="email"
+                  control={control}
+                  render={({ field }) => (
+                    <InputField
+                      label="Email"
+                      type="email"
+                      errorMessage={errors.email?.message}
+                      {...field}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      placeholder="Masukkan email..."
+                    />
+                  )}
+                />
+
+                {/* Row 2: Phone | Address */}
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field }) => (
+                    <InputField
+                      label="Phone"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      placeholder="Masukkan nomor telepon..."
+                    />
+                  )}
+                />
+                <Controller
+                  name="address"
+                  control={control}
+                  render={({ field }) => (
+                    <InputField
+                      label="Address"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      placeholder="Masukkan alamat..."
+                    />
+                  )}
+                />
+
+                {/* Row 3: Date Of Birth | Code */}
+                <Controller
+                  name="dateOfBirth"
+                  control={control}
+                  render={({ field }) => (
+                    <CalendarSelect
+                      label="Date Of Birth"
+                      {...field}
+                      value={field.value ?? undefined}
+                      onChange={field.onChange}
+                      placeholder="Pilih tanggal lahir..."
+                    />
+                  )}
+                />
+                <Controller
+                  name="code"
+                  control={control}
+                  render={({ field }) => (
+                    <InputField
+                      label="Code"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      placeholder="Masukkan code..."
+                    />
+                  )}
+                />
+
+              </div>
+          </div>
+
+          {/* Back Button */}
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => window.history.back()}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <icons.ArrowLeft className="h-4 w-4" />
+              Kembali
+            </button>
+          </div>
         </div>
       </div>
     </div>
