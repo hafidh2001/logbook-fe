@@ -5,7 +5,7 @@ import {
   ChevronRightIcon,
   ChevronsLeft,
   ChevronsRight,
-} from "lucide-react";
+} from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PaginationProps {
@@ -33,22 +33,18 @@ export const Pagination: React.FC<PaginationProps> = ({
 }) => {
   const currentPage = pageIndex + 1;
   const totalPages = Math.max(pageCount, 1);
-  
+
   return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <div className="flex-1 text-sm text-muted-foreground">
-        Page {currentPage} of {totalPages}
-      </div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
-        <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-2 py-2">
+      {/* Row 1 on mobile / Left side on desktop - Rows per page + Page info */}
+      <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+        <div className="flex items-center gap-2">
+          <p className="text-xs sm:text-sm font-medium whitespace-nowrap">Rows per page</p>
           <Select
             value={`${pageSize}`}
             onValueChange={(value) => {
               const newPageSize = Number(value);
-              // First reset to page 0, then change page size
               setPageIndex(0);
-              // Use setTimeout to ensure the page index update happens first
               setTimeout(() => {
                 setPageSize(newPageSize);
               }, 0);
@@ -67,45 +63,56 @@ export const Pagination: React.FC<PaginationProps> = ({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+        <span className="text-xs sm:text-sm font-medium whitespace-nowrap sm:hidden">
           Page {currentPage} of {totalPages}
-        </div>
-        <div className="flex items-center space-x-2">
+        </span>
+      </div>
+
+      {/* Row 2 on mobile / Right side on desktop - Page info + Navigation buttons */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs sm:text-sm font-medium whitespace-nowrap hidden sm:block">
+          Page {currentPage} of {totalPages}
+        </span>
+        <div className="flex items-center gap-1">
           <Button
             variant="outline"
-            className="hidden !h-8 !w-8 p-0 lg:flex"
+            size="icon"
             onClick={() => setPageIndex(0)}
             disabled={!canPreviousPage || isLoading}
+            className="h-8 w-8"
           >
             <span className="sr-only">Go to first page</span>
-            <ChevronsLeft className="!h-4 !w-4" />
+            <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
-            className="!h-8 !w-8 p-0"
+            size="icon"
             onClick={() => setPageIndex(pageIndex - 1)}
             disabled={!canPreviousPage || isLoading}
+            className="h-8 w-8"
           >
             <span className="sr-only">Go to previous page</span>
             <ChevronLeftIcon className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
-            className="!h-8 !w-8 p-0"
+            size="icon"
             onClick={() => setPageIndex(pageIndex + 1)}
             disabled={!canNextPage || isLoading}
+            className="h-8 w-8"
           >
             <span className="sr-only">Go to next page</span>
             <ChevronRightIcon className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
-            className="hidden !h-8 !w-8 p-0 lg:flex"
+            size="icon"
             onClick={() => setPageIndex(pageCount - 1)}
             disabled={!canNextPage || isLoading}
+            className="h-8 w-8"
           >
             <span className="sr-only">Go to last page</span>
-            <ChevronsRight className="!h-4 !w-4" />
+            <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
