@@ -47,6 +47,10 @@ export class ROUTES {
     return `${this.ppds}/${idUser}` as const;
   }
 
+  static ppdsEdit(idUser: string) {
+    return `${this.ppds}/${idUser}/edit` as const;
+  }
+
   static ppdsChangePassword(idUser: string) {
     return `${this.ppdsDetail(idUser)}/change-password` as const;
   }
@@ -68,6 +72,10 @@ export class ROUTES {
     return `${this.ppdsInactive}/${idUser}` as const;
   }
 
+  static ppdsInactiveEdit(idUser: string) {
+    return `${this.ppdsInactive}/${idUser}/edit` as const;
+  }
+
   static ppdsInactiveLogbook(idUser: string) {
     return `${this.ppdsInactiveDetail(idUser)}/logbook` as const;
   }
@@ -87,6 +95,10 @@ export class ROUTES {
 
   static staffDetail(idUser: string) {
     return `${this.staff}/${idUser}` as const;
+  }
+
+  static staffEdit(idUser: string) {
+    return `${this.staff}/${idUser}/edit` as const;
   }
 
   static staffChangePassword(idUser: string) {
@@ -114,6 +126,10 @@ export class ROUTES {
     return `${this.stase}/${idUser}` as const;
   }
 
+  static staseEdit(idUser: string) {
+    return `${this.stase}/${idUser}/edit` as const;
+  }
+
   // Penilaian Logbook Routes
   static get penilaianLogbook() {
     return `/admin/penilaian-logbook` as const;
@@ -127,7 +143,10 @@ export class ROUTES {
     return `${this.penilaianLogbookDetail(idLogbookCategory)}/scored-logbook` as const;
   }
 
-  static penilaianLogbookScoredLogbookDetail(idLogbookCategory: string, idLogbook: string) {
+  static penilaianLogbookScoredLogbookDetail(
+    idLogbookCategory: string,
+    idLogbook: string,
+  ) {
     return `${this.penilaianLogbookScoredLogbook(idLogbookCategory)}/${idLogbook}` as const;
   }
 
@@ -135,7 +154,10 @@ export class ROUTES {
     return `${this.penilaianLogbookDetail(idLogbookCategory)}/unscored-logbook` as const;
   }
 
-  static penilaianLogbookUnscoredLogbookDetail(idLogbookCategory: string, idLogbook: string) {
+  static penilaianLogbookUnscoredLogbookDetail(
+    idLogbookCategory: string,
+    idLogbook: string,
+  ) {
     return `${this.penilaianLogbookUnscoredLogbook(idLogbookCategory)}/${idLogbook}` as const;
   }
 
