@@ -76,11 +76,11 @@ export default function PenilaianLogbookDetailPage() {
         breadcrumbs={[
           { label: "Penilaian Logbook", to: ROUTES.penilaianLogbook },
           {
-            label: "Detail",
+            label: "Status",
             to: ROUTES.penilaianLogbookDetail(idLogbookCategory || ""),
           },
           {
-            label: isScored ? "Sudah Dinilai" : "Belum Dinilai",
+            label: isScored ? "Scored" : "Unscored",
             to: isScored
               ? ROUTES.penilaianLogbookScoredLogbook(idLogbookCategory || "")
               : ROUTES.penilaianLogbookUnscoredLogbook(idLogbookCategory || ""),

@@ -149,8 +149,8 @@ export default function PenilaianLogbookStatusListPage() {
       <Topbar
         breadcrumbs={[
           { label: "Penilaian Logbook", to: ROUTES.penilaianLogbook },
-          { label: "Detail", to: ROUTES.penilaianLogbookDetail(idLogbookCategory || "") },
-          { label: isScored ? "Sudah Dinilai" : "Belum Dinilai" },
+          { label: "Status", to: ROUTES.penilaianLogbookDetail(idLogbookCategory || "") },
+          { label: isScored ? "Scored" : "Unscored" },
         ]}
         searchPlaceholder="Cari logbook..."
         onSearch={handleSearch}
