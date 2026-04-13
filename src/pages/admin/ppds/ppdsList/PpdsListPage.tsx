@@ -9,8 +9,14 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
+import { Button } from "@/components/ui/button";
+import { icons } from "@/assets/images/Icon";
+import useWindowDimensions from "@/hooks/useWindowDimension";
 
 export default function PpdsListPage() {
+  const { width } = useWindowDimensions();
+  const sm = width >= 480;
+
   const navigate = useNavigate();
 
   const handleCreate = () => {
@@ -45,7 +51,7 @@ export default function PpdsListPage() {
     {
       accessorKey: "displayName",
       header: "Nama",
-      size: 150,
+      size: 180,
       cell: ({ getValue }) => (
         <span className="font-medium">{getValue() as string}</span>
       ),
@@ -53,7 +59,7 @@ export default function PpdsListPage() {
     {
       accessorKey: "username",
       header: "Username",
-      size: 120,
+      size: 180,
     },
     {
       accessorKey: "email",
@@ -63,7 +69,7 @@ export default function PpdsListPage() {
     {
       accessorKey: "nim",
       header: "NIM",
-      size: 100,
+      size: 150,
       cell: ({ getValue }) => (
         <span className="font-mono text-sm">{getValue() as string}</span>
       ),
@@ -71,11 +77,11 @@ export default function PpdsListPage() {
     {
       accessorKey: "stage",
       header: "Stage",
-      size: 120,
+      size: 130,
       cell: ({ getValue }) => {
         const stage = getValue() as string | null;
         return stage ? (
-          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium">
+          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
             {stage}
           </span>
         ) : (
@@ -86,7 +92,7 @@ export default function PpdsListPage() {
     {
       accessorKey: "logbook",
       header: "Logbook",
-      size: 80,
+      size: 100,
       cell: ({ getValue }) => (
         <span className="text-center block">{getValue() as number}</span>
       ),
@@ -94,10 +100,66 @@ export default function PpdsListPage() {
     {
       accessorKey: "dateOfBirth",
       header: "Tanggal Lahir",
-      size: 120,
+      size: 150,
       cell: ({ getValue }) => {
         const date = getValue() as string;
-        return dayjs(date).locale("id").format("DD MMMM YYYY");
+        return (
+          <span className="whitespace-nowrap">
+            {dayjs(date).locale("id").format("DD MMMM YYYY")}
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Action",
+      size: sm ? 320 : 180,
+      cell: ({ row }) => {
+        const handleView = (e: React.MouseEvent) => {
+          e.stopPropagation();
+          console.log("View:", row.original);
+          navigate(ROUTES.ppds);
+        };
+        const handleEdit = (e: React.MouseEvent) => {
+          e.stopPropagation();
+          console.log("Edit:", row.original);
+        };
+        const handleDelete = (e: React.MouseEvent) => {
+          e.stopPropagation();
+          console.log("Delete:", row.original);
+        };
+
+        return (
+          <div className="flex items-center justify-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleView}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              <icons.Eye className="h-4 w-4" />
+              <span className="hidden sm:inline">View</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleEdit}
+              className="bg-yellow-500 text-white hover:bg-yellow-600"
+            >
+              <icons.Pencil className="h-4 w-4" />
+              <span className="hidden sm:inline">Edit</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              <icons.Trash className="h-4 w-4" />
+              <span className="hidden sm:inline">Delete</span>
+            </Button>
+          </div>
+        );
       },
     },
   ];

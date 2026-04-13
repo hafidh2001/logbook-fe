@@ -394,7 +394,7 @@ export const BaseTable = <
                   </div>
                 </div>
               )}
-              <Table className="w-full">
+              <Table className="w-full" style={{ tableLayout: 'fixed' }}>
                 <TableHeader
                   className="sticky top-0 z-20 bg-blue-600"
                   style={{ position: 'sticky' }}
@@ -413,7 +413,7 @@ export const BaseTable = <
                         const getDefaultWidth = () => {
                           const columnId = header.column.id;
                           if (columnId === "no") return "60px";
-                          if (columnId === "actions") return "200px";
+                          if (columnId === "actions") return "auto";
                           if (columnId === "color") return "100px";
                           if (columnId === "expansion") return "50px";
                           return "auto";

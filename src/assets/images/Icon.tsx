@@ -34,6 +34,7 @@ import {
   EyeOff,
   RotateCcw,
   Filter,
+  Pencil,
 } from "lucide-react";
 
 export const icons = {
@@ -72,4 +73,5 @@ export const icons = {
   EyeOff,
   RotateCcw,
   Filter,
+  Pencil,
 };

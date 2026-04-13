@@ -1,11 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        sm: "480px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1440px",
+        "2xl": "1620px",
+        "3xl": "1920px",
+      },
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -50,5 +59,4 @@ export default {
     },
   },
   plugins: [],
-}
-
+};
