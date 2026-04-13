@@ -402,7 +402,7 @@ export const BaseTable = <
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow
                       key={headerGroup.id}
-                      className="border-b border-blue-700"
+                      // className="border-b border-blue-700"
                     >
                       {headerGroup.headers.map((header) => {
                         const columnSize = header.column.columnDef.size;
