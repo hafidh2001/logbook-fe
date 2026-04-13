@@ -35,6 +35,13 @@ import {
   RotateCcw,
   Filter,
   Pencil,
+  ArrowUpRight,
+  Check,
+  Clock,
+  MapPin,
+  Calendar,
+  UserCheck,
+  ArrowLeft,
 } from "lucide-react";
 
 export const icons = {
@@ -74,4 +81,11 @@ export const icons = {
   RotateCcw,
   Filter,
   Pencil,
+  ArrowUpRight,
+  Check,
+  Clock,
+  MapPin,
+  Calendar,
+  UserCheck,
+  ArrowLeft,
 };

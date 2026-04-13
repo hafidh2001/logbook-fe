@@ -12,12 +12,27 @@ import "dayjs/locale/id";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function PpdsListPage() {
   const { width } = useWindowDimensions();
   const sm = width >= 480;
 
   const navigate = useNavigate();
+
+  // Delete confirmation modal state
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    item: TPpds | null;
+  }>({ open: false, item: null });
 
   const handleCreate = () => {
     navigate(ROUTES.ppdsCreate);
@@ -44,6 +59,23 @@ export default function PpdsListPage() {
     console.log("Row clicked:", row.original);
     // TODO: Navigate to detail page with actual id
     navigate(ROUTES.ppds);
+  };
+
+  const handleDelete = (item: TPpds) => {
+    setDeleteModal({ open: true, item });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteModal.item) {
+      console.log("Deleting item:", deleteModal.item);
+      // TODO: Call API to delete
+      // api.deletePpds(deleteModal.item.id);
+    }
+    setDeleteModal({ open: false, item: null });
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ open: false, item: null });
   };
 
   // Define columns for PPDS table
@@ -113,20 +145,19 @@ export default function PpdsListPage() {
     {
       id: "actions",
       header: "Action",
-      size: sm ? 320 : 180,
+      size: sm ? 350 : 180,
       cell: ({ row }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
-          console.log("View:", row.original);
-          navigate(ROUTES.ppds);
+          navigate(ROUTES.ppdsDetail(String(row.original.id)));
         };
-        const handleEdit = (e: React.MouseEvent) => {
+        const handleChangePassword = (e: React.MouseEvent) => {
           e.stopPropagation();
-          console.log("Edit:", row.original);
+          navigate(ROUTES.ppdsChangePassword(String(row.original.id)));
         };
-        const handleDelete = (e: React.MouseEvent) => {
+        const handleDeleteClick = (e: React.MouseEvent) => {
           e.stopPropagation();
-          console.log("Delete:", row.original);
+          handleDelete(row.original);
         };
 
         return (
@@ -143,16 +174,16 @@ export default function PpdsListPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleEdit}
+              onClick={handleChangePassword}
               className="bg-yellow-500 text-white hover:bg-yellow-600"
             >
-              <icons.Pencil className="h-4 w-4" />
-              <span className="hidden sm:inline">Edit</span>
+              <icons.Lock className="h-4 w-4" />
+              <span className="hidden sm:inline">Password</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
               className="bg-red-600 text-white hover:bg-red-700"
             >
               <icons.Trash className="h-4 w-4" />
@@ -196,6 +227,31 @@ export default function PpdsListPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={deleteModal.open}
+        onOpenChange={(open) => setDeleteModal({ open, item: deleteModal.item })}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hapus Data</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus data{" "}
+              <span className="font-semibold">{deleteModal.item?.displayName}</span>?
+              Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleDeleteCancel}>
+              Batal
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
