@@ -1,8 +1,7 @@
 import { cn } from "@/lib/utils";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, forwardRef } from "react";
 import Select, { type Props as ReactSelectProps } from "react-select";
 import { BasicSelectOpt } from "@/types";
-import type { FC } from "react";
 
 interface Props extends Omit<ReactSelectProps, "isMulti" | "disabled" | "value" | "onChange"> {
   value?: BasicSelectOpt<string | number>[];
@@ -19,7 +18,7 @@ interface Props extends Omit<ReactSelectProps, "isMulti" | "disabled" | "value" 
   errorMessage?: string;
 }
 
-export const MultipleSelect: FC<Props> = ({
+export const MultipleSelect = forwardRef<Select, Props>(({
   value,
   onChange,
   required,
@@ -33,7 +32,7 @@ export const MultipleSelect: FC<Props> = ({
   errorMessage,
   disabled,
   ...rest
-}) => {
+}, ref) => {
   const handleChange = useCallback((e: BasicSelectOpt<string | number>[]) => {
     onChange?.(e);
   }, [onChange]);
@@ -72,6 +71,7 @@ export const MultipleSelect: FC<Props> = ({
   return (
     <div className="flex flex-col gap-1">
       <Select
+        ref={ref}
         {...selectProps}
         isDisabled={disabled}
         styles={{
@@ -121,4 +121,6 @@ export const MultipleSelect: FC<Props> = ({
       )}
     </div>
   );
-};
+});
+
+MultipleSelect.displayName = "MultipleSelect";

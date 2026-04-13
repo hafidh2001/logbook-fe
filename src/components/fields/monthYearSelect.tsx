@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, forwardRef } from "react";
 import Select from "react-select";
 import { cn } from "@/lib/utils";
 import {
@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { CalendarDays, X } from "lucide-react";
 import dayjs from "dayjs";
 import { getMonth } from "@/functions/getMonth";
-import type { FC } from "react";
 
 interface Props {
   name?: string;
@@ -35,7 +34,7 @@ interface YearOption {
   label: string;
 }
 
-export const MonthYearSelect: FC<Props> = ({
+export const MonthYearSelect = forwardRef<HTMLDivElement, Props>(({
   name,
   value,
   onChange,
@@ -46,7 +45,7 @@ export const MonthYearSelect: FC<Props> = ({
   labelClassName,
   label,
   required,
-}) => {
+}, ref) => {
   const [openPopover, setOpenPopover] = useState(false);
 
   // Generate month options
@@ -172,7 +171,7 @@ export const MonthYearSelect: FC<Props> = ({
   }), [yearOpts, handleYearChange, selectedYear]);
 
   return (
-    <div className={cn("flex flex-col gap-1", containerClassName)}>
+    <div className={cn("flex flex-col gap-1", containerClassName)} ref={ref}>
       {label && (
         <label className={cn("text-sm font-medium text-gray-700", labelClassName)}>
           {label}
@@ -217,4 +216,6 @@ export const MonthYearSelect: FC<Props> = ({
       </Popover>
     </div>
   );
-};
+});
+
+MonthYearSelect.displayName = "MonthYearSelect";

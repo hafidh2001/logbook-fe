@@ -8,8 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
 import { CalendarDays, X } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
-import type { FC } from "react";
+import { useState, useCallback, useMemo, forwardRef } from "react";
 
 interface Props {
   name?: string;
@@ -30,7 +29,7 @@ interface Props {
   defaultMonth?: Date;
 }
 
-export const CalendarSelect: FC<Props> = ({
+export const CalendarSelect = forwardRef<HTMLInputElement, Props>(({
   name,
   value,
   onChange,
@@ -43,7 +42,7 @@ export const CalendarSelect: FC<Props> = ({
   isDisabled,
   disabledCalendar,
   defaultMonth,
-}) => {
+}, ref) => {
   const [openPopover, setOpenPopover] = useState(false);
 
   const handleDaySelect = useCallback((date: Date | undefined) => {
@@ -104,6 +103,7 @@ export const CalendarSelect: FC<Props> = ({
         <PopoverTrigger asChild>
           <div className="flex w-full relative">
             <Input
+              ref={ref}
               id={name}
               spellCheck={false}
               value={displayValue}
@@ -138,9 +138,11 @@ export const CalendarSelect: FC<Props> = ({
       </Popover>
     </div>
   );
-};
+});
 
-export const PopoverCalendar: FC = () => {
+CalendarSelect.displayName = "CalendarSelect";
+
+export const PopoverCalendar = () => {
   const [date, setDate] = useState<Date | undefined>(dayjs().toDate());
 
   return (

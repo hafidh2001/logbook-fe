@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
-import { useCallback } from "react";
-import type { FC, InputHTMLAttributes } from "react";
+import { useCallback, forwardRef } from "react";
+import type { InputHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
@@ -14,7 +14,7 @@ interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "o
   errorMessage?: string;
 }
 
-export const InputField: FC<Props> = ({
+export const InputField = forwardRef<HTMLInputElement, Props>(({
   value,
   onChange,
   containerClassName,
@@ -24,7 +24,7 @@ export const InputField: FC<Props> = ({
   maxMenuHeight = 37,
   errorMessage,
   ...rest
-}) => {
+}, ref) => {
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     onChange?.(e.currentTarget.value);
   }, [onChange]);
@@ -43,6 +43,7 @@ export const InputField: FC<Props> = ({
         </label>
       )}
       <Input
+        ref={ref}
         id={rest.id || rest.name}
         value={value || ""}
         onChange={handleChange}
@@ -59,4 +60,6 @@ export const InputField: FC<Props> = ({
       )}
     </div>
   );
-};
+});
+
+InputField.displayName = "InputField";

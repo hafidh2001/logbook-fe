@@ -1,8 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
-import { useCallback } from "react";
-import type { FC } from "react";
+import { useCallback, forwardRef } from "react";
 
 interface Props extends Omit<React.ComponentPropsWithoutRef<typeof Checkbox>, "checked" | "onCheckedChange"> {
   checked?: boolean;
@@ -14,7 +13,7 @@ interface Props extends Omit<React.ComponentPropsWithoutRef<typeof Checkbox>, "c
   required?: boolean;
 }
 
-export const CheckboxLabel: FC<Props> = ({
+export const CheckboxLabel = forwardRef<HTMLDivElement, Props>(({
   checked,
   onCheckedChange,
   containerClassName,
@@ -23,13 +22,13 @@ export const CheckboxLabel: FC<Props> = ({
   message,
   required,
   ...rest
-}) => {
+}, ref) => {
   const handleCheckedChange = useCallback((e: CheckboxPrimitive.CheckedState) => {
     onCheckedChange?.(e);
   }, [onCheckedChange]);
 
   return (
-    <div className={cn("flex items-center space-x-2", containerClassName)}>
+    <div ref={ref} className={cn("flex items-center space-x-2", containerClassName)}>
       <Checkbox
         id={rest.id || rest.name}
         checked={checked}
@@ -52,4 +51,6 @@ export const CheckboxLabel: FC<Props> = ({
       )}
     </div>
   );
-};
+});
+
+CheckboxLabel.displayName = "CheckboxLabel";
