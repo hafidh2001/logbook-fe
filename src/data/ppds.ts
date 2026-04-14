@@ -211,6 +211,39 @@ export const mockPpdsList: TPpds[] = [
   },
 ];
 
+export const mockPpdsInactiveList = [
+  {
+    id: 1,
+    display_name: "ppds1",
+    username: "cekk",
+    phone: "081",
+    address: "jl ahmad yani",
+    date_of_birth: "15 June 2006 01:4",
+    nim: "12345",
+    email: "new@mail.",
+    role: "ppds",
+    stase: null,
+    inactive_at: "15 August 2024",
+    inactive_notes: null,
+    logbook: "0 item",
+  },
+  {
+    id: 2,
+    display_name: "Developer",
+    username: "odna",
+    phone: "123",
+    address: null,
+    date_of_birth: null,
+    nim: null,
+    email: "alfyando@",
+    role: "ppds",
+    stase: "RSO OTK",
+    inactive_at: "15 August 2024",
+    inactive_notes: null,
+    logbook: "8 items",
+  },
+];
+
 export const mockPpdsDetail: Array<any> = [
   {
     displayName: "Ujang",

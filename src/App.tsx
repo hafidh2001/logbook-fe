@@ -20,9 +20,6 @@ import {
   PpdsLogbookPage,
   PpdsLogbookDetailPage,
   PpdsInactiveListPage,
-  PpdsInactiveDetailPage,
-  PpdsInactiveLogbookPage,
-  PpdsInactiveLogbookDetailPage,
   StaffListPage,
   StaffCreatePage,
   StaffDetailPage,
@@ -188,7 +185,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PpdsInactiveDetailPage />
+                <PpdsDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -198,7 +195,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PpdsInactiveLogbookPage />
+                <PpdsLogbookPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -208,7 +205,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <PpdsInactiveLogbookDetailPage />
+                <PpdsLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }

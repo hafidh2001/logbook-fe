@@ -1,6 +1,6 @@
 import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
 import dayjs from "dayjs";
 
@@ -98,6 +98,13 @@ export default function PpdsLogbookDetailPage() {
     idUser: string;
     idLogbook: string;
   }>();
+  const location = useLocation();
+
+  const isInactive = location.pathname.includes("/ppds-inactive/");
+
+  const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
+  const ppdsDetailRoute = isInactive ? ROUTES.ppdsInactiveDetail(idUser || "") : ROUTES.ppdsDetail(idUser || "");
+  const ppdsLogbookRoute = isInactive ? ROUTES.ppdsInactiveLogbook(idUser || "") : ROUTES.ppdsLogbook(idUser || "");
 
   const { identitas, kegiatan, staff } = mockLogbookDetail;
 
@@ -105,9 +112,9 @@ export default function PpdsLogbookDetailPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Topbar
         breadcrumbs={[
-          { label: "PPDS", to: ROUTES.ppds },
-          { label: "Detail", to: ROUTES.ppdsDetail(idUser || "") },
-          { label: "Logbook", to: ROUTES.ppdsLogbook(idUser || "") },
+          { label: isInactive ? "PPDS Nonaktif" : "PPDS", to: ppdsListRoute },
+          { label: "Detail", to: ppdsDetailRoute },
+          { label: "Logbook", to: ppdsLogbookRoute },
           { label: "Detail", to: undefined },
         ]}
       />

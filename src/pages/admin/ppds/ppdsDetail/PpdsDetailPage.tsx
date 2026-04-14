@@ -1,6 +1,6 @@
 import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -54,6 +54,11 @@ const mockPpdsData = {
 export default function PpdsDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isInactive = location.pathname.includes("/ppds-inactive/");
+
+  const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
 
   const {
     control,
@@ -88,7 +93,7 @@ export default function PpdsDetailPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Topbar
         breadcrumbs={[
-          { label: "PPDS", to: ROUTES.ppds },
+          { label: isInactive ? "PPDS Nonaktif" : "PPDS", to: ppdsListRoute },
           { label: "Detail", to: undefined },
         ]}
         onSave={handleSubmit(onSubmit)}
@@ -299,7 +304,7 @@ export default function PpdsDetailPage() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => navigate(ROUTES.ppdsLogbook(String(idUser)))}
+                    onClick={() => navigate(isInactive ? ROUTES.ppdsInactiveLogbook(String(idUser)) : ROUTES.ppdsLogbook(String(idUser)))}
                     className="flex-shrink-0 mb-0.5"
                   >
                     Detail

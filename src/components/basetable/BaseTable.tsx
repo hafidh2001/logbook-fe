@@ -260,9 +260,9 @@ export const BaseTable = <
       filteredColumns.unshift({
         id: "no",
         header: "No.",
-        size: 40,
-        minSize: 40,
-        maxSize: 40,
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
         cell: (context) => {
           // For server-side with meta, use meta offset
           if (opt.meta?.offset !== undefined) {

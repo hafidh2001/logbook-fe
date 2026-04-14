@@ -15,17 +15,12 @@ export const DashboardPage = lazyLoad(() => import('./admin/dashboard/DashboardP
 
 // Admin Pages - PPDS
 export const PpdsListPage = lazyLoad(() => import('./admin/ppds/ppdsList/PpdsListPage'));
+export const PpdsInactiveListPage = lazyLoad(() => import('./admin/ppds/ppdsInactiveList/PpdsInactiveListPage'));
 export const PpdsCreatePage = lazyLoad(() => import('./admin/ppds/ppdsCreate/PpdsCreatePage'));
 export const PpdsDetailPage = lazyLoad(() => import('./admin/ppds/ppdsDetail/PpdsDetailPage'));
 export const PpdsChangePasswordPage = lazyLoad(() => import('./admin/ppds/ppdsChangePassword/PpdsChangePasswordPage'));
 export const PpdsLogbookPage = lazyLoad(() => import('./admin/ppds/ppdsLogbook/PpdsLogbookPage'));
 export const PpdsLogbookDetailPage = lazyLoad(() => import('./admin/ppds/ppdsLogbookDetail/PpdsLogbookDetailPage'));
-
-// Admin Pages - PPDS Inactive
-export const PpdsInactiveListPage = lazyLoad(() => import('./admin/ppdsInactive/ppdsInactiveList/PpdsInactiveListPage'));
-export const PpdsInactiveDetailPage = lazyLoad(() => import('./admin/ppdsInactive/ppdsInactiveDetail/PpdsInactiveDetailPage'));
-export const PpdsInactiveLogbookPage = lazyLoad(() => import('./admin/ppdsInactive/ppdsInactiveLogbook/PpdsInactiveLogbookPage'));
-export const PpdsInactiveLogbookDetailPage = lazyLoad(() => import('./admin/ppdsInactive/ppdsInactiveLogbookDetail/PpdsInactiveLogbookDetailPage'));
 
 // Admin Pages - Staff
 export const StaffListPage = lazyLoad(() => import('./admin/staff/staffList/StaffListPage'));

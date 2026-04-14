@@ -1,6 +1,6 @@
 import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
 import { mockPpdsLogbook } from "@/data/ppds";
@@ -28,6 +28,13 @@ export default function PpdsLogbookPage() {
 
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isInactive = location.pathname.includes("/ppds-inactive/");
+
+  const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
+  const ppdsDetailRoute = isInactive ? ROUTES.ppdsInactiveDetail(idUser || "") : ROUTES.ppdsDetail(idUser || "");
+  const ppdsLogbookRoute = isInactive ? ROUTES.ppdsInactiveLogbook(idUser || "") : ROUTES.ppdsLogbook(idUser || "");
 
   const logbooks = mockPpdsLogbook.logbooks as LogbookEntry[];
 
@@ -50,7 +57,10 @@ export default function PpdsLogbookPage() {
 
   const handleRowClick = (row: Row<LogbookEntry>) => {
     console.log("Row clicked:", row.original);
-    navigate(ROUTES.ppdsLogbookDetail(String(idUser), String(row.original.no)));
+    const detailRoute = isInactive
+      ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(row.original.no))
+      : ROUTES.ppdsLogbookDetail(String(idUser), String(row.original.no));
+    navigate(detailRoute);
   };
 
   const getVerifiedBadge = (status: string | null) => {
@@ -166,7 +176,10 @@ export default function PpdsLogbookPage() {
       cell: ({ row }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.ppdsLogbookDetail(String(idUser), String(row.original.no)));
+          const detailRoute = isInactive
+            ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(row.original.no))
+            : ROUTES.ppdsLogbookDetail(String(idUser), String(row.original.no));
+          navigate(detailRoute);
         };
 
         return (
@@ -190,8 +203,8 @@ export default function PpdsLogbookPage() {
     <div className="h-screen bg-gray-50 flex flex-col">
       <Topbar
         breadcrumbs={[
-          { label: "PPDS", to: ROUTES.ppds },
-          { label: "Detail", to: ROUTES.ppdsDetail(idUser || "") },
+          { label: isInactive ? "PPDS Nonaktif" : "PPDS", to: ppdsListRoute },
+          { label: "Detail", to: ppdsDetailRoute },
           { label: "Logbook" },
         ]}
         searchPlaceholder="Cari logbook..."
