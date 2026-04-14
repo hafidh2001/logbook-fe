@@ -27,8 +27,6 @@ import {
   StaffLogbookPage,
   StaffLogbookDetailPage,
   StaseListPage,
-  StaseCreatePage,
-  StaseDetailPage,
   PenilaianLogbookListPage,
   PenilaianLogbookStatusPage,
   PenilaianLogbookStatusListPage,
@@ -40,6 +38,7 @@ import {
   RekapLogbookDetailPage,
   ProfilePage,
   ProfileEditPage,
+  StaseFormPage,
 } from "@/pages";
 import PenilaianLogbookDetailPage from "@/pages/admin/penilaianLogbook/penilaianLogbookDetail/PenilaianLogbookDetailPage";
 
@@ -289,7 +288,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <StaseCreatePage />
+                <StaseFormPage />
               </AdminLayout>
             </ProtectedRoute>
           }
@@ -299,7 +298,7 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
-                <StaseDetailPage />
+                <StaseFormPage />
               </AdminLayout>
             </ProtectedRoute>
           }

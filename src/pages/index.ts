@@ -32,8 +32,7 @@ export const StaffLogbookDetailPage = lazyLoad(() => import('./admin/staff/staff
 
 // Admin Pages - Stase
 export const StaseListPage = lazyLoad(() => import('./admin/stase/staseList/StaseListPage'));
-export const StaseCreatePage = lazyLoad(() => import('./admin/stase/staseCreate/StaseCreatePage'));
-export const StaseDetailPage = lazyLoad(() => import('./admin/stase/staseDetail/StaseDetailPage'));
+export const StaseFormPage = lazyLoad(() => import('./admin/stase/staseForm/StaseFormPage'));
 
 // Admin Pages - Penilaian Logbook
 export const PenilaianLogbookListPage = lazyLoad(() => import('./admin/penilaianLogbook/penilaianLogbookList/PenilaianLogbookListPage'));
