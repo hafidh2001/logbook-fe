@@ -34,8 +34,7 @@ export default function PpdsLogbookPage() {
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
   const ppdsDetailRoute = isInactive ? ROUTES.ppdsInactiveDetail(idUser || "") : ROUTES.ppdsDetail(idUser || "");
-  const ppdsLogbookRoute = isInactive ? ROUTES.ppdsInactiveLogbook(idUser || "") : ROUTES.ppdsLogbook(idUser || "");
-
+  
   const logbooks = mockPpdsLogbook.logbooks as LogbookEntry[];
 
   const handleExport = () => {
