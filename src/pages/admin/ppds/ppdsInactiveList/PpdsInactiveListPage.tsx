@@ -77,28 +77,29 @@ export default function PpdsInactiveListPage() {
       accessorKey: "display_name",
       header: "Nama",
       size: 180,
-      cell: ({ getValue }) => (
-        <span className="font-medium">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.display_name ?? "-"}</span>
       ),
     },
     {
       accessorKey: "username",
       header: "Username",
       size: 180,
+      cell: ({ row: { original } }) => original.username ?? "-",
     },
     {
       accessorKey: "email",
       header: "Email",
       size: 180,
+      cell: ({ row: { original } }) => original.email ?? "-",
     },
     {
       accessorKey: "nim",
       header: "NIM",
       size: 150,
-      cell: ({ getValue }) => {
-        const nim = getValue() as string | null;
-        return nim ? (
-          <span className="font-mono text-sm">{nim}</span>
+      cell: ({ row: { original } }) => {
+        return original.nim ? (
+          <span className="font-mono text-sm">{original.nim}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
@@ -108,11 +109,10 @@ export default function PpdsInactiveListPage() {
       accessorKey: "stase",
       header: "Stase",
       size: 130,
-      cell: ({ getValue }) => {
-        const stase = getValue() as string | null;
-        return stase ? (
+      cell: ({ row: { original } }) => {
+        return original.stase ? (
           <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
-            {stase}
+            {original.stase}
           </span>
         ) : (
           <span className="text-gray-400 text-xs">-</span>
@@ -123,27 +123,28 @@ export default function PpdsInactiveListPage() {
       accessorKey: "inactive_at",
       header: "Inactive Date",
       size: 150,
+      cell: ({ row: { original } }) => original.inactive_at ?? "-",
     },
     {
       accessorKey: "logbook",
       header: "Logbook",
       size: 100,
-      cell: ({ getValue }) => (
-        <span className="text-center block">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="text-center block">{original.logbook ?? "-"}</span>
       ),
     },
     {
       id: "actions",
       header: "Action",
       size: sm ? 220 : 120,
-      cell: ({ row }) => {
+      cell: ({ row: { original } }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.ppdsInactiveDetail(String(row.original.id)));
+          navigate(ROUTES.ppdsInactiveDetail(String(original.id)));
         };
         const handleDeleteClick = (e: React.MouseEvent) => {
           e.stopPropagation();
-          handleDelete(row.original);
+          handleDelete(original);
         };
 
         return (

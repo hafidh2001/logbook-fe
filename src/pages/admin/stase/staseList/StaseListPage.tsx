@@ -81,19 +81,18 @@ export default function StaseListPage() {
       accessorKey: "user",
       header: "User",
       size: 150,
-      cell: ({ getValue }) => (
-        <span className="font-medium">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.user ?? "-"}</span>
       ),
     },
     {
       accessorKey: "stase",
       header: "Stase",
       size: 180,
-      cell: ({ getValue }) => {
-        const stase = getValue() as string;
-        return stase ? (
+      cell: ({ row: { original } }) => {
+        return original.stase ? (
           <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
-            {stase}
+            {original.stase}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -104,16 +103,16 @@ export default function StaseListPage() {
       accessorKey: "date",
       header: "Date",
       size: 180,
+      cell: ({ row: { original } }) => original.date ?? "-",
     },
     {
       accessorKey: "notes",
       header: "Notes",
       size: 200,
-      cell: ({ getValue }) => {
-        const notes = getValue() as string | null;
-        return notes ? (
-          <span className="truncate block max-w-[180px]" title={notes}>
-            {notes}
+      cell: ({ row: { original } }) => {
+        return original.notes ? (
+          <span className="truncate block max-w-[180px]" title={original.notes}>
+            {original.notes}
           </span>
         ) : (
           <span className="text-gray-400">-</span>

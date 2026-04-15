@@ -34,7 +34,7 @@ export default function PpdsLogbookPage() {
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
   const ppdsDetailRoute = isInactive ? ROUTES.ppdsInactiveDetail(idUser || "") : ROUTES.ppdsDetail(idUser || "");
-  
+
   const logbooks = mockPpdsLogbook.logbooks as LogbookEntry[];
 
   const handleExport = () => {
@@ -93,20 +93,21 @@ export default function PpdsLogbookPage() {
       accessorKey: "no",
       header: "No.",
       size: 60,
-      cell: ({ getValue }) => (
-        <span className="text-center block">{getValue() as number}</span>
+      cell: ({ row: { original } }) => (
+        <span className="text-center block">{original.no}</span>
       ),
     },
     {
       accessorKey: "date",
       header: "Date",
       size: 180,
-      cell: ({ getValue }) => {
-        const date = getValue() as string;
-        return (
+      cell: ({ row: { original } }) => {
+        return original.date ? (
           <span className="whitespace-nowrap">
-            {dayjs(date).locale("id").format("DD MMM YYYY – HH:mm")}
+            {dayjs(original.date).locale("id").format("DD MMM YYYY – HH:mm")}
           </span>
+        ) : (
+          <span className="text-gray-400">-</span>
         );
       },
     },
@@ -114,18 +115,17 @@ export default function PpdsLogbookPage() {
       accessorKey: "activity",
       header: "Activity",
       size: 200,
-      cell: ({ getValue }) => (
-        <span className="font-medium">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.activity ?? "-"}</span>
       ),
     },
     {
       accessorKey: "staffPengajar",
       header: "Staff Pengajar",
       size: 150,
-      cell: ({ getValue }) => {
-        const staff = getValue() as string | null;
-        return staff ? (
-          <span>{staff}</span>
+      cell: ({ row: { original } }) => {
+        return original.staffPengajar ? (
+          <span>{original.staffPengajar}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
@@ -135,12 +135,11 @@ export default function PpdsLogbookPage() {
       accessorKey: "hospital",
       header: "Hospital",
       size: 180,
-      cell: ({ getValue }) => {
-        const hospital = getValue() as string | null;
-        return hospital ? (
+      cell: ({ row: { original } }) => {
+        return original.hospital ? (
           <span className="flex items-center gap-1">
             <icons.MapPin className="h-3 w-3 text-gray-400" />
-            {hospital}
+            {original.hospital}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -151,11 +150,10 @@ export default function PpdsLogbookPage() {
       accessorKey: "notes",
       header: "Notes",
       size: 200,
-      cell: ({ getValue }) => {
-        const notes = getValue() as string;
-        return notes ? (
-          <span className="truncate block max-w-[180px]" title={notes}>
-            {notes}
+      cell: ({ row: { original } }) => {
+        return original.notes ? (
+          <span className="truncate block max-w-[180px]" title={original.notes}>
+            {original.notes}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -166,18 +164,18 @@ export default function PpdsLogbookPage() {
       accessorKey: "verifiedStatus",
       header: "Status",
       size: 140,
-      cell: ({ getValue }) => getVerifiedBadge(getValue() as string | null),
+      cell: ({ row: { original } }) => getVerifiedBadge(original.verifiedStatus),
     },
     {
       id: "actions",
       header: "Action",
       size: sm ? 120 : 80,
-      cell: ({ row }) => {
+      cell: ({ row: { original } }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
           const detailRoute = isInactive
-            ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(row.original.no))
-            : ROUTES.ppdsLogbookDetail(String(idUser), String(row.original.no));
+            ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(original.no))
+            : ROUTES.ppdsLogbookDetail(String(idUser), String(original.no));
           navigate(detailRoute);
         };
 

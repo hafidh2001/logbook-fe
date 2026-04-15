@@ -84,20 +84,21 @@ export default function StaffLogbookPage() {
       accessorKey: "no",
       header: "No.",
       size: 60,
-      cell: ({ getValue }) => (
-        <span className="text-center block">{getValue() as number}</span>
+      cell: ({ row: { original } }) => (
+        <span className="text-center block">{original.no}</span>
       ),
     },
     {
       accessorKey: "date",
       header: "Date",
       size: 180,
-      cell: ({ getValue }) => {
-        const date = getValue() as string;
-        return (
+      cell: ({ row: { original } }) => {
+        return original.date ? (
           <span className="whitespace-nowrap">
-            {dayjs(date).locale("id").format("DD MMM YYYY – HH:mm")}
+            {dayjs(original.date).locale("id").format("DD MMM YYYY – HH:mm")}
           </span>
+        ) : (
+          <span className="text-gray-400">-</span>
         );
       },
     },
@@ -105,18 +106,17 @@ export default function StaffLogbookPage() {
       accessorKey: "activity",
       header: "Activity",
       size: 200,
-      cell: ({ getValue }) => (
-        <span className="font-medium">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.activity ?? "-"}</span>
       ),
     },
     {
       accessorKey: "ppds",
       header: "PPDS",
       size: 150,
-      cell: ({ getValue }) => {
-        const ppds = getValue() as string | null;
-        return ppds ? (
-          <span>{ppds}</span>
+      cell: ({ row: { original } }) => {
+        return original.ppds ? (
+          <span>{original.ppds}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
@@ -126,12 +126,11 @@ export default function StaffLogbookPage() {
       accessorKey: "hospital",
       header: "Hospital",
       size: 180,
-      cell: ({ getValue }) => {
-        const hospital = getValue() as string | null;
-        return hospital ? (
+      cell: ({ row: { original } }) => {
+        return original.hospital ? (
           <span className="flex items-center gap-1">
             <icons.MapPin className="h-3 w-3 text-gray-400" />
-            {hospital}
+            {original.hospital}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -142,11 +141,10 @@ export default function StaffLogbookPage() {
       accessorKey: "notes",
       header: "Notes",
       size: 200,
-      cell: ({ getValue }) => {
-        const notes = getValue() as string;
-        return notes ? (
-          <span className="truncate block max-w-[180px]" title={notes}>
-            {notes}
+      cell: ({ row: { original } }) => {
+        return original.notes ? (
+          <span className="truncate block max-w-[180px]" title={original.notes}>
+            {original.notes}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -157,7 +155,7 @@ export default function StaffLogbookPage() {
       accessorKey: "verifiedStatus",
       header: "Status",
       size: 140,
-      cell: ({ getValue }) => getVerifiedBadge(getValue() as string | null),
+      cell: ({ row: { original } }) => getVerifiedBadge(original.verifiedStatus),
     },
     {
       id: "actions",

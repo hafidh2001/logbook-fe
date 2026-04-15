@@ -40,6 +40,7 @@ CP-Antrean-Truck is a mobile-first React application for warehouse staff to mana
 12. [Form Standards (React Hook Form + Zod)](#12-form-standards)
 13. [Environment Configuration](#13-environment-configuration)
 14. [Common Pitfalls to Avoid](#14-common-pitfalls-to-avoid)
+15. [BaseTable Cell Pattern Standards](#15-basetable-cell-pattern-standards)
 
 ## 1. Project Structure
 
@@ -882,6 +883,155 @@ interface ImportMetaEnv {
 const apiUrl = import.meta.env.VITE_API_URL;
 const apiToken = import.meta.env.VITE_API_TOKEN;
 ```
+
+## 15. BaseTable Cell Pattern Standards
+
+### Overview
+All pages using `BaseTable` component must follow this cell rendering pattern for consistency across the codebase.
+
+### Required Cell Pattern
+Always use `row.original` to access cell data, never use `getValue()`:
+
+```typescript
+// ✅ Good - Using row.original
+cell: ({ row: { original } }) => (
+  <span className="font-medium">{original.fieldName ?? "-"}</span>
+)
+
+// ❌ Bad - Using getValue
+cell: ({ getValue }) => (
+  <span className="font-medium">{getValue() as string}</span>
+)
+```
+
+### Null Handling
+Always use null coalescing (`??`) to display a fallback value when data is null or undefined:
+
+```typescript
+// ✅ Good - Proper null handling
+cell: ({ row: { original } }) => (
+  <span className="font-medium">{original.name ?? "-"}</span>
+)
+
+// ✅ Good - Number fallback
+cell: ({ row: { original } }) => (
+  <span>{original.totalScored ?? 0}</span>
+)
+
+// ❌ Bad - No fallback
+cell: ({ row: { original } }) => (
+  <span>{original.name}</span>  // Can render "null" or "undefined"
+)
+```
+
+### Standard Cell Templates
+
+#### Simple Text Field
+```typescript
+cell: ({ row: { original } }) => (
+  <span className="font-medium">{original.fieldName ?? "-"}</span>
+)
+```
+
+#### Nullable Text Field
+```typescript
+cell: ({ row: { original } }) => {
+  return original.fieldName ? (
+    <span>{original.fieldName}</span>
+  ) : (
+    <span className="text-gray-400">-</span>
+  );
+}
+```
+
+#### Truncated Text with Tooltip
+```typescript
+cell: ({ row: { original } }) => {
+  return original.notes ? (
+    <span className="truncate block max-w-[180px]" title={original.notes}>
+      {original.notes}
+    </span>
+  ) : (
+    <span className="text-gray-400">-</span>
+  );
+}
+```
+
+#### Badge/Tag Display
+```typescript
+cell: ({ row: { original } }) => {
+  return original.stase ? (
+    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
+      {original.stase}
+    </span>
+  ) : (
+    <span className="text-gray-400">-</span>
+  );
+}
+```
+
+#### Icon with Text
+```typescript
+cell: ({ row: { original } }) => {
+  return original.hospital ? (
+    <span className="flex items-center gap-1">
+      <icons.MapPin className="h-3 w-3 text-gray-400" />
+      {original.hospital}
+    </span>
+  ) : (
+    <span className="text-gray-400">-</span>
+  );
+}
+```
+
+#### Status Badge
+```typescript
+cell: ({ row: { original } }) => getStatusBadge(original.status)
+```
+
+### Example Column Definition
+```typescript
+const columns: ColumnDef<TData>[] = [
+  {
+    accessorKey: "displayName",
+    header: "Nama",
+    size: 180,
+    cell: ({ row: { original } }) => (
+      <span className="font-medium">{original.displayName ?? "-"}</span>
+    ),
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+    size: 180,
+    cell: ({ row: { original } }) => {
+      return original.email ? (
+        <span>{original.email}</span>
+      ) : (
+        <span className="text-gray-400">-</span>
+      );
+    },
+  },
+  {
+    accessorKey: "code",
+    header: "Code",
+    size: 150,
+    cell: ({ row: { original } }) => {
+      return original.code ? (
+        <span className="font-mono text-sm">{original.code}</span>
+      ) : (
+        <span className="text-gray-400">-</span>
+      );
+    },
+  },
+];
+```
+
+### Key Principles
+1. **Always destructure `row.original`** - Never use `getValue()` directly
+2. **Always provide fallback** - Use `?? "-"` or `?? 0` for null values
+3. **Consistent styling** - Follow the same pattern for similar field types
+4. **Handle null explicitly** - Check nullable fields before rendering
 
 ## 14. Common Pitfalls to Avoid
 

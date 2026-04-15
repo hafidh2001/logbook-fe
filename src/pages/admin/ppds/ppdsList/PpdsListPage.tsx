@@ -84,37 +84,38 @@ export default function PpdsListPage() {
       accessorKey: "displayName",
       header: "Nama",
       size: 180,
-      cell: ({ getValue }) => (
-        <span className="font-medium">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.displayName ?? "-"}</span>
       ),
     },
     {
       accessorKey: "username",
       header: "Username",
       size: 180,
+      cell: ({ row: { original } }) => original.username ?? "-",
     },
     {
       accessorKey: "email",
       header: "Email",
       size: 180,
+      cell: ({ row: { original } }) => original.email ?? "-",
     },
     {
       accessorKey: "nim",
       header: "NIM",
       size: 150,
-      cell: ({ getValue }) => (
-        <span className="font-mono text-sm">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="font-mono text-sm">{original.nim ?? "-"}</span>
       ),
     },
     {
       accessorKey: "stage",
       header: "Stage",
       size: 130,
-      cell: ({ getValue }) => {
-        const stage = getValue() as string | null;
-        return stage ? (
+      cell: ({ row: { original } }) => {
+        return original.stage ? (
           <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
-            {stage}
+            {original.stage}
           </span>
         ) : (
           <span className="text-gray-400 text-xs">-</span>
@@ -125,20 +126,21 @@ export default function PpdsListPage() {
       accessorKey: "logbook",
       header: "Logbook",
       size: 100,
-      cell: ({ getValue }) => (
-        <span className="text-center block">{getValue() as number}</span>
+      cell: ({ row: { original } }) => (
+        <span className="text-center block">{original.logbook ?? "-"}</span>
       ),
     },
     {
       accessorKey: "dateOfBirth",
       header: "Tanggal Lahir",
       size: 150,
-      cell: ({ getValue }) => {
-        const date = getValue() as string;
-        return (
+      cell: ({ row: { original } }) => {
+        return original.dateOfBirth ? (
           <span className="whitespace-nowrap">
-            {dayjs(date).locale("id").format("DD MMMM YYYY")}
+            {dayjs(original.dateOfBirth).locale("id").format("DD MMMM YYYY")}
           </span>
+        ) : (
+          <span className="text-gray-400">-</span>
         );
       },
     },
@@ -146,18 +148,18 @@ export default function PpdsListPage() {
       id: "actions",
       header: "Action",
       size: sm ? 350 : 180,
-      cell: ({ row }) => {
+      cell: ({ row: { original } }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.ppdsDetail(String(row.original.id)));
+          navigate(ROUTES.ppdsDetail(String(original.id)));
         };
         const handleChangePassword = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.ppdsChangePassword(String(row.original.id)));
+          navigate(ROUTES.ppdsChangePassword(String(original.id)));
         };
         const handleDeleteClick = (e: React.MouseEvent) => {
           e.stopPropagation();
-          handleDelete(row.original);
+          handleDelete(original);
         };
 
         return (

@@ -81,23 +81,23 @@ export default function StaffListPage() {
       accessorKey: "display_name",
       header: "Nama",
       size: 180,
-      cell: ({ getValue }) => (
-        <span className="font-medium">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.display_name ?? "-"}</span>
       ),
     },
     {
       accessorKey: "username",
       header: "Username",
       size: 180,
+      cell: ({ row: { original } }) => original.username ?? "-",
     },
     {
       accessorKey: "email",
       header: "Email",
       size: 180,
-      cell: ({ getValue }) => {
-        const email = getValue() as string | null;
-        return email ? (
-          <span>{email}</span>
+      cell: ({ row: { original } }) => {
+        return original.email ? (
+          <span>{original.email}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
@@ -107,10 +107,9 @@ export default function StaffListPage() {
       accessorKey: "phone",
       header: "Phone",
       size: 150,
-      cell: ({ getValue }) => {
-        const phone = getValue() as string | null;
-        return phone ? (
-          <span>{phone}</span>
+      cell: ({ row: { original } }) => {
+        return original.phone ? (
+          <span>{original.phone}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
@@ -120,10 +119,9 @@ export default function StaffListPage() {
       accessorKey: "code",
       header: "Code",
       size: 150,
-      cell: ({ getValue }) => {
-        const code = getValue() as string | null;
-        return code ? (
-          <span className="font-mono text-sm">{code}</span>
+      cell: ({ row: { original } }) => {
+        return original.code ? (
+          <span className="font-mono text-sm">{original.code}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
@@ -133,26 +131,26 @@ export default function StaffListPage() {
       accessorKey: "logbook_status",
       header: "Logbook",
       size: 100,
-      cell: ({ getValue }) => (
-        <span className="text-center block">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="text-center block">{original.logbook_status ?? "-"}</span>
       ),
     },
     {
       id: "actions",
       header: "Action",
       size: sm ? 350 : 180,
-      cell: ({ row }) => {
+      cell: ({ row: { original } }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.staffDetail(String(row.original.id)));
+          navigate(ROUTES.staffDetail(String(original.id)));
         };
         const handleChangePassword = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.staffChangePassword(String(row.original.id)));
+          navigate(ROUTES.staffChangePassword(String(original.id)));
         };
         const handleDeleteClick = (e: React.MouseEvent) => {
           e.stopPropagation();
-          handleDelete(row.original);
+          handleDelete(original);
         };
 
         return (

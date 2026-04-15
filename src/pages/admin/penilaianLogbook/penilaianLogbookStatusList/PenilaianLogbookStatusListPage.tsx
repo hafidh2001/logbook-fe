@@ -53,23 +53,23 @@ export default function PenilaianLogbookStatusListPage() {
       accessorKey: "date",
       header: "Date",
       size: 120,
+      cell: ({ row: { original } }) => original.date ?? "-",
     },
     {
       accessorKey: "ppds",
       header: "PPDS",
       size: 150,
-      cell: ({ getValue }) => (
-        <span className="font-medium">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.ppds ?? "-"}</span>
       ),
     },
     {
       accessorKey: "code",
       header: "Code",
       size: 100,
-      cell: ({ getValue }) => {
-        const code = getValue() as string | null;
-        return code ? (
-          <span className="font-mono text-sm">{code}</span>
+      cell: ({ row: { original } }) => {
+        return original.code ? (
+          <span className="font-mono text-sm">{original.code}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
@@ -79,26 +79,28 @@ export default function PenilaianLogbookStatusListPage() {
       accessorKey: "semester",
       header: "Semester",
       size: 120,
+      cell: ({ row: { original } }) => original.semester ?? "-",
     },
     {
       accessorKey: "stase",
       header: "Stase",
       size: 120,
+      cell: ({ row: { original } }) => original.stase ?? "-",
     },
     {
       accessorKey: "activity",
       header: "Activity",
       size: 150,
+      cell: ({ row: { original } }) => original.activity ?? "-",
     },
     {
       accessorKey: "title",
       header: "Judul",
       size: 150,
-      cell: ({ getValue }) => {
-        const title = getValue() as string;
-        return title ? (
-          <span className="truncate block max-w-[140px]" title={title}>
-            {title}
+      cell: ({ row: { original } }) => {
+        return original.title ? (
+          <span className="truncate block max-w-[140px]" title={original.title}>
+            {original.title}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -109,9 +111,8 @@ export default function PenilaianLogbookStatusListPage() {
       accessorKey: "total",
       header: "Total",
       size: 100,
-      cell: ({ getValue }) => {
-        const total = getValue() as number;
-        return <span className="font-medium">{total.toFixed(1)}</span>;
+      cell: ({ row: { original } }) => {
+        return <span className="font-medium">{original.total.toFixed(1)}</span>;
       },
     },
     {

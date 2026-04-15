@@ -17,24 +17,24 @@ export default function PenilaianLogbookListPage() {
       accessorKey: "name",
       header: "Nama",
       size: 300,
-      cell: ({ getValue }) => (
-        <span className="font-medium">{getValue() as string}</span>
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.name ?? "-"}</span>
       ),
     },
     {
       accessorKey: "totalScored",
       header: "Scored",
       size: 150,
-      cell: ({ getValue }) => (
-        <span className="text-center block">{getValue() as number}</span>
+      cell: ({ row: { original } }) => (
+        <span className="text-center block">{original.totalScored ?? 0}</span>
       ),
     },
     {
       accessorKey: "totalUnscored",
       header: "Unscored",
       size: 150,
-      cell: ({ getValue }) => (
-        <span className="text-center block">{getValue() as number}</span>
+      cell: ({ row: { original } }) => (
+        <span className="text-center block">{original.totalUnscored ?? 0}</span>
       ),
     },
     {
