@@ -11,6 +11,8 @@ interface Props {
   required?: boolean;
   errorMessage?: string;
   disabled?: boolean;
+  id?: string;
+  name?: string;
 }
 
 export const SwitchField = forwardRef<HTMLButtonElement, Props>(({
