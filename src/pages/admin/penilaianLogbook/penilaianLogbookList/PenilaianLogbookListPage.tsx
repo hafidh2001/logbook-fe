@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { BaseTable } from "@/components/basetable/BaseTable";
 import { mockPenlaianLogbookList } from "@/data/penilaianLogbook";
 import type { ColumnDef } from "@tanstack/react-table";
+import type { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 
@@ -11,6 +12,11 @@ type TPenilaianLogbook = (typeof mockPenlaianLogbookList)[number];
 
 export default function PenilaianLogbookListPage() {
   const navigate = useNavigate();
+
+  const handleRowClick = (row: Row<any>) => {
+    navigate(ROUTES.penilaianLogbookDetail(String(row.original.id)))
+  };
+
   // Define columns for Penilaian Logbook table
   const columns: ColumnDef<TPenilaianLogbook>[] = [
     {
@@ -65,9 +71,7 @@ export default function PenilaianLogbookListPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
-      <Topbar
-        breadcrumbs={[{ label: "Penilaian Logbook" }]}
-      />
+      <Topbar breadcrumbs={[{ label: "Penilaian Logbook" }]} />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Table Section */}
@@ -81,6 +85,7 @@ export default function PenilaianLogbookListPage() {
                 initialPageIndex: 0,
                 initialPageSize: 10,
               }}
+              onRowClick={handleRowClick}
               noDataText="Tidak ada data penilaian logbook"
               className="h-full"
             />

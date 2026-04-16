@@ -5,7 +5,6 @@ import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
 import { mockPpdsInactiveList } from "@/data/ppds";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
@@ -48,11 +47,6 @@ export default function PpdsInactiveListPage() {
 
   const handleFilterReset = () => {
     console.log("Filter reset");
-  };
-
-  const handleRowClick = (row: Row<TPpdsInactive>) => {
-    console.log("Row clicked:", row.original);
-    navigate(ROUTES.ppdsInactiveDetail(String(row.original.id)));
   };
 
   const handleDelete = (item: TPpdsInactive) => {
@@ -197,7 +191,6 @@ export default function PpdsInactiveListPage() {
                 initialPageIndex: 0,
                 initialPageSize: 10,
               }}
-              onRowClick={handleRowClick}
               noDataText="Tidak ada data PPDS nonaktif"
               className="h-full"
             />

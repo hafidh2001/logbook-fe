@@ -5,7 +5,6 @@ import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
 import { mockStaseList } from "@/data/stase";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
@@ -52,11 +51,6 @@ export default function StaseListPage() {
 
   const handleFilterReset = () => {
     console.log("Filter reset");
-  };
-
-  const handleRowClick = (row: Row<TStase>) => {
-    console.log("Row clicked:", row.original);
-    navigate(ROUTES.staseDetail(String(row.original.id)));
   };
 
   const handleDelete = (item: TStase) => {
@@ -184,7 +178,6 @@ export default function StaseListPage() {
                 initialPageIndex: 0,
                 initialPageSize: 10,
               }}
-              onRowClick={handleRowClick}
               noDataText="Tidak ada data stase"
               className="h-full"
             />
