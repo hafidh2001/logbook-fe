@@ -384,7 +384,7 @@ export default function RekapReportDetailPage() {
     // TODO: Implement export
   };
 
-  const { idUser } = useParams<{ idUser: string }>();
+  const { idUser:_ } = useParams<{ idUser: string }>();
 
   const { ppds_name, card_summary, activity_breakdown, logbook_table } =
     mockReportDetail;

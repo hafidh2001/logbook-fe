@@ -18,10 +18,10 @@ interface Kegiatan {
   hospital: string | null;
 }
 
-interface Ppds {
-  ppds: string | null;
-  verifiedStatus: "pending" | "verified";
-}
+// interface Ppds {
+//   ppds: string | null;
+//   verifiedStatus: "pending" | "verified";
+// }
 
 // Mock data - in real app this would come from API
 const mockLogbookDetail = {
@@ -93,7 +93,7 @@ const StatusBadge = ({
 };
 
 export default function StaffLogbookDetailPage() {
-  const { idUser, idLogbook } = useParams<{
+  const { idUser, idLogbook: _ } = useParams<{
     idUser: string;
     idLogbook: string;
   }>();
@@ -168,8 +168,13 @@ export default function StaffLogbookDetailPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Verified Status</span>
-                  <StatusBadge status={kegiatan.verifiedStatus} type="verified" />
+                  <span className="text-sm text-gray-500 w-24">
+                    Verified Status
+                  </span>
+                  <StatusBadge
+                    status={kegiatan.verifiedStatus}
+                    type="verified"
+                  />
                 </div>
                 {/* Row 3 - Hospital (full width) */}
                 <div className="sm:col-span-2 flex items-center gap-2">

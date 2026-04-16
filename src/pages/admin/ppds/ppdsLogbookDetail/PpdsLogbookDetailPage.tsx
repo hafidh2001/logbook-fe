@@ -18,10 +18,10 @@ interface Kegiatan {
   hospital: string | null;
 }
 
-interface Staff {
-  staffPengajar: string | null;
-  staffStatus: "pending" | "verified";
-}
+// interface Staff {
+//   staffPengajar: string | null;
+//   staffStatus: "pending" | "verified";
+// }
 
 // Mock data - in real app this would come from API
 const mockLogbookDetail = {
@@ -94,7 +94,7 @@ const StatusBadge = ({
 };
 
 export default function PpdsLogbookDetailPage() {
-  const { idUser, idLogbook } = useParams<{
+  const { idUser, idLogbook: _ } = useParams<{
     idUser: string;
     idLogbook: string;
   }>();
@@ -103,8 +103,12 @@ export default function PpdsLogbookDetailPage() {
   const isInactive = location.pathname.includes("/ppds-inactive/");
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
-  const ppdsDetailRoute = isInactive ? ROUTES.ppdsInactiveDetail(idUser || "") : ROUTES.ppdsDetail(idUser || "");
-  const ppdsLogbookRoute = isInactive ? ROUTES.ppdsInactiveLogbook(idUser || "") : ROUTES.ppdsLogbook(idUser || "");
+  const ppdsDetailRoute = isInactive
+    ? ROUTES.ppdsInactiveDetail(idUser || "")
+    : ROUTES.ppdsDetail(idUser || "");
+  const ppdsLogbookRoute = isInactive
+    ? ROUTES.ppdsInactiveLogbook(idUser || "")
+    : ROUTES.ppdsLogbook(idUser || "");
 
   const { identitas, kegiatan, staff } = mockLogbookDetail;
 
@@ -137,7 +141,9 @@ export default function PpdsLogbookDetailPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Inisial Code</span>
+                  <span className="text-sm text-gray-500 w-24">
+                    Inisial Code
+                  </span>
                   <span className="text-sm font-medium text-gray-800">
                     {formatDisplayText(identitas.inisialCode)}
                   </span>
@@ -184,8 +190,13 @@ export default function PpdsLogbookDetailPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Verified Status</span>
-                  <StatusBadge status={kegiatan.verifiedStatus} type="verified" />
+                  <span className="text-sm text-gray-500 w-24">
+                    Verified Status
+                  </span>
+                  <StatusBadge
+                    status={kegiatan.verifiedStatus}
+                    type="verified"
+                  />
                 </div>
                 {/* Row 3 - Hospital (full width) */}
                 <div className="sm:col-span-2 flex items-center gap-2">
@@ -207,7 +218,9 @@ export default function PpdsLogbookDetailPage() {
             </div>
             <div className="p-4">
               <div className="sm:col-span-2 flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-24">Staff Pengajar</span>
+                <span className="text-sm text-gray-500 w-24">
+                  Staff Pengajar
+                </span>
                 <span className="text-sm font-medium text-gray-800">
                   {formatDisplayText(staff.staffPengajar)}
                 </span>
