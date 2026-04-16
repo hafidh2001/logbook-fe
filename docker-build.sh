@@ -8,8 +8,8 @@ fi
 # Build Docker image with build arguments
 docker build \
     --build-arg VITE_DECRYPT_SECRET_KEY="$VITE_DECRYPT_SECRET_KEY" \
-    -t {project-name}:latest \
+    -t hafidh2001/logbook:latest \
     .
 
 echo "Docker build completed!"
-echo "To run: docker run -p 8080:80 {project-name}:latest"
+echo "To run: docker run -p 8080:80 hafidh2001/logbook:latest"

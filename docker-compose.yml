@@ -10,8 +10,8 @@ services:
         VITE_DECRYPT_SECRET_KEY: ${VITE_DECRYPT_SECRET_KEY}
         VITE_API_URL: ${VITE_API_URL}
         VITE_API_TOKEN: ${VITE_API_TOKEN}
-    image: hafidh2001/project-name:latest
-    container_name: project-name
+    image: hafidh2001/logbook:latest
+    container_name: logbook
     ports:
       - "8080:80"
     restart: unless-stopped
@@ -21,7 +21,7 @@ services:
   # Development service
   dev:
     image: node:20-alpine
-    container_name: project-name-dev
+    container_name: logbook-dev
     working_dir: /app
     volumes:
       - .:/app

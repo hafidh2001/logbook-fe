@@ -14,7 +14,7 @@ if [ -f .env ]; then
     export $(cat .env | grep -v '^#' | xargs)
 fi
 
-IMAGE_NAME="hafidh2001/{project-name}" # Replace with your actual image name
+IMAGE_NAME="hafidh2001/logbook" # Replace with your actual image name
 TAG="arm64"
 
 echo "Building Docker image for ARM64 architecture..."
