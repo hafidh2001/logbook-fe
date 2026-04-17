@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
-import { Logo } from "@/assets/images/Logo";
+import logbook from "@/assets/images/logbook.png";
 import { LoginIcon } from "@/assets/images/LoginIcon";
 import { useAuthStore } from "@/store/authStore";
 import { ROUTES } from "@/utils/routes";
@@ -59,7 +59,7 @@ export const LoginPage = () => {
         <div className="flex flex-col items-center justify-center h-full">
           {/* Logo */}
           <div className="mb-6">
-            <Logo className="w-80 h-auto" />
+            <img src={logbook} alt="Logo" className="w-80 h-auto" />
           </div>
           {/* Login Icon */}
           <div className="mt-4">
@@ -73,7 +73,7 @@ export const LoginPage = () => {
         <div className="w-full max-w-md">
           {/* Mobile Logo (visible only on mobile) */}
           <div className="lg:hidden flex flex-col items-center mb-8">
-            <Logo className="w-40 h-auto mb-4" />
+            <img src={logbook} alt="Logo" className="w-40 h-auto mb-4" />
           </div>
 
           {/* Header */}

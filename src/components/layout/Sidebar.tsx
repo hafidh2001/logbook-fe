@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
 import { ROUTES } from "@/utils/routes";
-import { Logo } from "@/assets/images/Logo";
+import logbook from "@/assets/images/logbook.png";
 import { navItems } from "@/data/sidebar";
 import { useAuthStore } from "@/store/authStore";
 import { LogoutModal } from "@/components/ui/LogoutModal";
@@ -35,7 +35,7 @@ export const Sidebar = () => {
     <>
       {/* Mobile Header - Always visible on mobile */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-40">
-        <Logo className="h-8 w-auto" />
+        <img src={logbook} alt="Logo" className="h-8 w-auto" />
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -52,7 +52,7 @@ export const Sidebar = () => {
       <aside className="hidden lg:flex lg:w-64 lg:h-screen lg:bg-white lg:border-r lg:border-gray-100 lg:flex-col lg:px-4 lg:py-6 lg:gap-1">
         {/* Logo */}
         <div className="flex items-center justify-center px-2 mb-7">
-          <Logo className="w-40 h-auto" />
+          <img src={logbook} alt="Logo" className="w-40 h-auto" />
         </div>
 
         {/* Nav */}
