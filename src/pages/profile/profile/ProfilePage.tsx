@@ -26,13 +26,15 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
-      <Topbar
-        breadcrumbs={[{ label: "Profil" }]}
-      />
+      <Topbar breadcrumbs={[{ label: "Profil" }]} />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Card 1 - Profile Header */}
-          <CardWrapper title="Profil" className="mb-4">
+          <CardWrapper
+            title="Profil"
+            className="mb-4"
+            contentClassName="sm:flex justify-between items-center"
+          >
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
@@ -48,7 +50,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 sm:mt-0">
               <Button
                 variant="default"
                 size="sm"
@@ -79,7 +81,9 @@ export default function ProfilePage() {
               </div>
               {/* Row 2 */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-36">Telephone Number</span>
+                <span className="text-sm text-gray-500 w-36">
+                  Telephone Number
+                </span>
                 <span className="text-sm font-medium text-gray-800">
                   {mockProfileData.telephoneNumber}
                 </span>
@@ -92,7 +96,9 @@ export default function ProfilePage() {
               </div>
               {/* Row 3 */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-36">Tanggal Lahir</span>
+                <span className="text-sm text-gray-500 w-36">
+                  Tanggal Lahir
+                </span>
                 <span className="text-sm font-medium text-gray-800">
                   {mockProfileData.tanggalLahir || "-"}
                 </span>
