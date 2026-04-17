@@ -1,12 +1,13 @@
 import { Topbar } from "@/components/ui/Topbar";
+import { CardWrapper } from "@/components/ui/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { icons } from "@/assets/images/Icon";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { PasswordField } from "@/components/fields/passwordField";
 
 // Schema for change password form
 const changePasswordSchema = z
@@ -30,9 +31,6 @@ const mockPpdsData = {
 
 export default function PpdsChangePasswordPage() {
   const { idUser } = useParams<{ idUser: string }>();
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     control,
@@ -64,121 +62,61 @@ export default function PpdsChangePasswordPage() {
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Profile Card */}
-          <div className="bg-white rounded-lg border overflow-hidden mb-4">
-            <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Profil
-              </h3>
-            </div>
-            <div className="p-4">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
-                  <icons.User className="h-11 w-11 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    {mockPpdsData.displayName}
-                  </h2>
-                  <p className="text-sm text-gray-500">NIM: {mockPpdsData.nim}</p>
-                  <p className="text-sm text-gray-500 capitalize">Role: {mockPpdsData.role}</p>
-                </div>
+          <CardWrapper title="Profil" className="mb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
+                <icons.User className="h-11 w-11 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {mockPpdsData.displayName}
+                </h2>
+                <p className="text-sm text-gray-500">NIM: {mockPpdsData.nim}</p>
+                <p className="text-sm text-gray-500 capitalize">Role: {mockPpdsData.role}</p>
               </div>
             </div>
-          </div>
+          </CardWrapper>
 
           {/* Change Password Form - 2 Column Layout */}
-          <div className="bg-white rounded-lg border overflow-hidden mb-4">
-            <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Ubah Password
-              </h3>
+          <CardWrapper title="Ubah Password" className="mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+              {/* Row 1: Password* | Confirm Password* */}
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => (
+                  <PasswordField
+                    {...field}
+                    label="Password"
+                    placeholder="Masukkan password baru..."
+                    errorMessage={errors.password?.message}
+                  />
+                )}
+              />
+              <Controller
+                name="confirmPassword"
+                control={control}
+                render={({ field }) => (
+                  <PasswordField
+                    {...field}
+                    label="Konfirmasi Password"
+                    placeholder="Masukkan konfirmasi password..."
+                    errorMessage={errors.confirmPassword?.message}
+                  />
+                )}
+              />
             </div>
-            <div className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-                {/* Row 1: Password* | Confirm Password* */}
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="flex flex-col gap-1">
-                      <label className="text-sm font-medium text-gray-700">
-                        Password<span className="text-red-600 ml-1">*</span>
-                      </label>
-                      <div className="relative">
-                        <Input
-                          {...field}
-                          type={showPassword ? "text" : "password"}
-                          value={field.value || ""}
-                          onChange={field.onChange}
-                          placeholder="Masukkan password baru..."
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600"
-                        >
-                          {showPassword ? (
-                            <icons.EyeOff className="h-4 w-4 text-gray-400" />
-                          ) : (
-                            <icons.Eye className="h-4 w-4 text-gray-400" />
-                          )}
-                        </button>
-                      </div>
-                      {errors.password && (
-                        <p className="text-sm text-red-600">{errors.password.message}</p>
-                      )}
-                    </div>
-                  )}
-                />
-                <Controller
-                  name="confirmPassword"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="flex flex-col gap-1">
-                      <label className="text-sm font-medium text-gray-700">
-                        Konfirmasi Password<span className="text-red-600 ml-1">*</span>
-                      </label>
-                      <div className="relative">
-                        <Input
-                          {...field}
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={field.value || ""}
-                          onChange={field.onChange}
-                          placeholder="Masukkan konfirmasi password..."
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600"
-                        >
-                          {showConfirmPassword ? (
-                            <icons.EyeOff className="h-4 w-4 text-gray-400" />
-                          ) : (
-                            <icons.Eye className="h-4 w-4 text-gray-400" />
-                          )}
-                        </button>
-                      </div>
-                      {errors.confirmPassword && (
-                        <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
-                      )}
-                    </div>
-                  )}
-                />
-              </div>
-            </div>
-          </div>
+          </CardWrapper>
 
           {/* Back Button */}
           <div className="mt-4 flex justify-end">
-            <button
+            <Button
+              variant="secondary"
               onClick={() => window.history.back()}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <icons.ArrowLeft className="h-4 w-4" />
               Kembali
-            </button>
+            </Button>
           </div>
         </div>
       </div>

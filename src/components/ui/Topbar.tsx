@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { icons } from "@/assets/images/Icon";
 import type { ITopbarProps } from "@/types/topbar";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { InputField } from "@/components/fields/inputField";
 
 export const Topbar = ({
   breadcrumbs,
@@ -41,18 +41,14 @@ export const Topbar = ({
       <div className="flex items-center justify-end lg:justify-end gap-2 flex-shrink-0 order-2 lg:order-2">
         {/* Search */}
         {hasSearch && (
-          <form onSubmit={handleSearch} className="relative w-full">
-            <icons.Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none"
-            />
-            <Input
-              type="text"
+          <form onSubmit={handleSearch} className="w-full">
+            <InputField
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(value) => setSearchQuery(value)}
               onKeyDown={handleSearchKeyDown}
               placeholder={searchPlaceholder}
-              className="w-full lg:w-56 pl-9 pr-4 h-9"
+              startIcon={<icons.Search size={16} className="text-gray-400" />}
+              containerClassName="mb-0"
             />
           </form>
         )}

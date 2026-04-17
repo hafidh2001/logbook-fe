@@ -1,22 +1,16 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
-import { icons } from "@/assets/images/Icon";
 import logbook from "@/assets/images/logbook.png";
 import { LoginIcon } from "@/assets/images/LoginIcon";
 import { useAuthStore } from "@/store/authStore";
 import { ROUTES } from "@/utils/routes";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  FormField,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { icons } from "@/assets/images/Icon";
+import { InputField } from "@/components/fields/inputField";
+import { PasswordField } from "@/components/fields/passwordField";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username harus diisi"),
@@ -29,10 +23,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isLoading, error } = useAuthStore();
-  const [showPassword, setShowPassword] = useState(false);
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
@@ -96,70 +89,56 @@ export const LoginPage = () => {
           {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Username Field */}
-            <FormField error={errors.username?.message}>
-              <FormLabel htmlFor="username">Username</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <icons.User className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <Input
-                    type="text"
-                    id="username"
-                    placeholder="Masukkan username"
-                    className="pl-10 pr-4 py-3"
-                    {...register("username")}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormField>
+            <Controller
+              name="username"
+              control={control}
+              render={({ field }) => (
+                <InputField
+                  {...field}
+                  label="Username"
+                  placeholder="Masukkan username"
+                  startIcon={<icons.User className="h-5 w-5 text-gray-400" />}
+                  errorMessage={errors.username?.message}
+                />
+              )}
+            />
 
             {/* Password Field */}
-            <FormField error={errors.password?.message}>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <icons.Lock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    placeholder="Masukkan password"
-                    className="pl-10 pr-10 py-3"
-                    {...register("password")}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600"
-                  >
-                    {showPassword ? (
-                      <icons.EyeOff className="h-5 w-5 text-gray-400" />
-                    ) : (
-                      <icons.Eye className="h-5 w-5 text-gray-400" />
-                    )}
-                  </button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormField>
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <PasswordField
+                  {...field}
+                  label="Password"
+                  placeholder="Masukkan password"
+                  startIcon={<icons.Lock className="h-5 w-5 text-gray-400" />}
+                  errorMessage={errors.password?.message}
+                />
+              )}
+            />
 
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
-              <FormField className="flex items-center gap-2">
-                <Checkbox
-                  id="rememberMe"
-                  {...register("rememberMe")}
-                />
-                <FormLabel
-                  htmlFor="rememberMe"
-                  className="text-sm text-gray-600 font-normal cursor-pointer"
-                >
-                  Ingat saya
-                </FormLabel>
-              </FormField>
+              <Controller
+                name="rememberMe"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="rememberMe"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                    <label
+                      htmlFor="rememberMe"
+                      className="text-sm text-gray-600 font-normal cursor-pointer"
+                    >
+                      Ingat saya
+                    </label>
+                  </div>
+                )}
+              />
               <a
                 href="#"
                 className="text-sm text-[#0062A3] hover:text-[#003A6B] font-medium"
