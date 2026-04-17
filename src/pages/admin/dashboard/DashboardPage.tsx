@@ -175,14 +175,14 @@ export default function DashboardPage() {
           {/* Row 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Bar Chart - Logbook by Status */}
-            <div className="bg-white rounded-lg border overflow-hidden">
+            <div className="bg-white rounded-lg border overflow-hidden flex flex-col">
               <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
                   Jumlah Logbook dan Status
                 </h3>
               </div>
-              <div className="p-4 h-72 flex justify-center items-center">
-                <div className="w-full h-full">
+              <div className="p-4 flex-1 overflow-x-auto flex justify-center items-center">
+                <div className="min-w-full h-full">
                   <BarChart
                   data={barChartData}
                   options={{
@@ -236,7 +236,7 @@ export default function DashboardPage() {
                 </h3>
               </div>
               <div className="p-4 h-72 flex items-center justify-center">
-                <div className="w-full max-w-xs">
+                <div className="w-full sm:w-[270px]">
                   <DoughnutChart
                     data={doughnutStageData}
                     options={{
@@ -261,7 +261,7 @@ export default function DashboardPage() {
                 </h3>
               </div>
               <div className="p-4 h-72 flex items-center justify-center">
-                <div className="w-full max-w-xs">
+                <div className="w-full sm:w-[270px]">
                   <DoughnutChart
                     data={doughnutStaseData}
                     options={{
@@ -317,14 +317,14 @@ export default function DashboardPage() {
             </div>
 
             {/* Line Chart - PPDS Baru */}
-            <div className="bg-white rounded-lg border overflow-hidden">
+            <div className="bg-white rounded-lg border overflow-hidden flex flex-col">
               <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
                   Jumlah PPDS Baru
                 </h3>
               </div>
-              <div className="p-4 h-72 flex justify-center items-center">
-                <div className="w-full h-full">
+              <div className="p-4 flex-1 overflow-x-auto flex justify-center items-center">
+                <div className="min-w-full h-full">
                   <LineChart
                     data={lineChartData}
                     options={{
