@@ -89,7 +89,7 @@ export const Topbar = ({
   };
 
   return (
-    <div className="sticky top-0 z-30 bg-white border-b border-gray-100">
+    <div className="fixed top-16 left-0 right-0 z-30 bg-white border-b border-gray-100 lg:sticky lg:top-0 lg:left-auto lg:right-auto lg:z-30 shadow-sm">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 px-4 lg:px-6 py-3">
         {/* Left side - Breadcrumbs (TOP on mobile, LEFT on desktop) */}
         <div className="order-1 lg:order-1 min-w-0 flex items-center min-h-[40px]">

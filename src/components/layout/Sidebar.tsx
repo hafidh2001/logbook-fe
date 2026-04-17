@@ -33,8 +33,8 @@ export const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Header - Always visible on mobile */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-40">
+      {/* Mobile Header - Visible only on mobile, acts as header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-40 shadow-sm">
         <img src={logbook} alt="Logo" className="h-8 w-auto" />
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

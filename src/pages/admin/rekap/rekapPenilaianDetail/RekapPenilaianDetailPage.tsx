@@ -27,7 +27,7 @@ export default function RekapPenilaianDetailPage() {
 
   if (!penilaian) {
     return (
-      <div className="h-screen bg-gray-50 flex flex-col">
+      <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
         <Topbar
           breadcrumbs={[
             { label: "Rekap" },
@@ -53,7 +53,7 @@ export default function RekapPenilaianDetailPage() {
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[
           { label: "Rekap" },

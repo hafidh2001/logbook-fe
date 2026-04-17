@@ -56,7 +56,7 @@ export default function RekapLogbookDetailPage() {
 
   if (!logbook) {
     return (
-      <div className="h-screen bg-gray-50 flex flex-col">
+      <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
         <Topbar
           breadcrumbs={[
             { label: "Rekap" },
@@ -82,7 +82,7 @@ export default function RekapLogbookDetailPage() {
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[
           { label: "Rekap" },

@@ -197,7 +197,7 @@ export default function PpdsLogbookPage() {
   ];
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[
           { label: isInactive ? "PPDS Nonaktif" : "PPDS", to: ppdsListRoute },

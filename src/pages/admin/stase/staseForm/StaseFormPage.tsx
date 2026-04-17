@@ -90,7 +90,7 @@ export default function StaseFormPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[
           { label: "Stase", to: ROUTES.stase },

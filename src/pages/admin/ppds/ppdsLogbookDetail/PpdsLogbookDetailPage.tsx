@@ -114,7 +114,7 @@ export default function PpdsLogbookDetailPage() {
   const { identitas, kegiatan, staff } = mockLogbookDetail;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[
           { label: isInactive ? "PPDS Nonaktif" : "PPDS", to: ppdsListRoute },

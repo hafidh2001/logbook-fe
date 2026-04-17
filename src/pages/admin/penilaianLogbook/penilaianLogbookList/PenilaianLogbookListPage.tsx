@@ -70,7 +70,7 @@ export default function PenilaianLogbookListPage() {
   ];
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col pt-[68px] lg:pt-0">
       <Topbar breadcrumbs={[{ label: "Penilaian Logbook" }]} />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
