@@ -96,7 +96,7 @@ export const Topbar = ({
     <div className="sticky top-0 z-30 bg-white border-b border-gray-100">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 px-4 lg:px-6 py-3">
         {/* Left side - Breadcrumbs (TOP on mobile, LEFT on desktop) */}
-        <div className="order-1 lg:order-1 min-w-0">
+        <div className="order-1 lg:order-1 min-w-0 flex items-center min-h-[40px]">
           <nav className="flex items-center gap-2 text-sm overflow-x-auto">
             {breadcrumbs.length === 0 ? (
               <span className="text-gray-400">-</span>
