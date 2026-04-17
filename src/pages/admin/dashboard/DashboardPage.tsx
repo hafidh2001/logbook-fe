@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/ui/Topbar";
+import { CardWrapper } from "@/components/ui/cardWrapper";
 import { DashboardIcon } from "@/assets/images/DashboardIcon";
 import { icons } from "@/assets/images/Icon";
 import { mockDashboard } from "@/data/dashboard";
@@ -175,15 +176,13 @@ export default function DashboardPage() {
           {/* Row 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Bar Chart - Logbook by Status */}
-            <div className="bg-white rounded-lg border overflow-hidden flex flex-col">
-              <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  Jumlah Logbook dan Status
-                </h3>
-              </div>
-              <div className="p-4 flex-1 overflow-x-auto flex justify-center items-center">
-                <div className="min-w-full h-full">
-                  <BarChart
+            <CardWrapper
+              title="Jumlah Logbook dan Status"
+              className="flex flex-col"
+              contentClassName="flex-1 overflow-x-auto flex justify-center items-center"
+            >
+              <div className="min-w-full h-full">
+                <BarChart
                   data={barChartData}
                   options={{
                     responsive: true,
@@ -200,18 +199,12 @@ export default function DashboardPage() {
                     },
                   }}
                 />
-                </div>
               </div>
-            </div>
+            </CardWrapper>
 
             {/* Scrollable List - Log Aktivitas */}
-            <div className="bg-white rounded-lg border overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  Log Aktivitas
-                </h3>
-              </div>
-              <div className="p-4 max-h-72 overflow-y-auto">
+            <CardWrapper title="Log Aktivitas">
+              <div className="max-h-72 overflow-y-auto">
                 <div className="space-y-3">
                   {data.log_aktivitas.map((item, index) => (
                     <div key={index} className="flex items-start gap-3">
@@ -223,19 +216,14 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
-            </div>
+            </CardWrapper>
           </div>
 
           {/* Row 3 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Doughnut Chart - PPDS Per Stage */}
-            <div className="bg-white rounded-lg border overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  PPDS Per Stage
-                </h3>
-              </div>
-              <div className="p-4 h-72 flex items-center justify-center">
+            <CardWrapper title="PPDS Per Stage">
+              <div className="h-72 flex items-center justify-center">
                 <div className="w-full sm:w-[270px]">
                   <DoughnutChart
                     data={doughnutStageData}
@@ -251,16 +239,11 @@ export default function DashboardPage() {
                   />
                 </div>
               </div>
-            </div>
+            </CardWrapper>
 
             {/* Doughnut Chart - PPDS Per Stase */}
-            <div className="bg-white rounded-lg border overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  PPDS Per Stase
-                </h3>
-              </div>
-              <div className="p-4 h-72 flex items-center justify-center">
+            <CardWrapper title="PPDS Per Stase">
+              <div className="h-72 flex items-center justify-center">
                 <div className="w-full sm:w-[270px]">
                   <DoughnutChart
                     data={doughnutStaseData}
@@ -276,19 +259,14 @@ export default function DashboardPage() {
                   />
                 </div>
               </div>
-            </div>
+            </CardWrapper>
           </div>
 
           {/* Row 4 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Scrollable List - Menunggu Verifikasi */}
-            <div className="bg-white rounded-lg border overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  Menunggu Verifikasi
-                </h3>
-              </div>
-              <div className="p-4 max-h-80 overflow-y-auto">
+            <CardWrapper title="Menunggu Verifikasi">
+              <div className="max-h-80 overflow-y-auto">
                 <div className="space-y-3">
                   {data.menunggu_verifikasi.map((item, index) => (
                     <div
@@ -314,49 +292,41 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
-            </div>
+            </CardWrapper>
 
             {/* Line Chart - PPDS Baru */}
-            <div className="bg-white rounded-lg border overflow-hidden flex flex-col">
-              <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  Jumlah PPDS Baru
-                </h3>
-              </div>
-              <div className="p-4 flex-1 overflow-x-auto flex justify-center items-center">
-                <div className="min-w-full h-full">
-                  <LineChart
-                    data={lineChartData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          display: false,
-                        },
+            <CardWrapper
+              title="Jumlah PPDS Baru"
+              className="flex flex-col"
+              contentClassName="flex-1 overflow-x-auto flex justify-center items-center"
+            >
+              <div className="min-w-full h-full">
+                <LineChart
+                  data={lineChartData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false,
                       },
-                      scales: {
-                        y: {
-                          beginAtZero: true,
-                        },
+                    },
+                    scales: {
+                      y: {
+                        beginAtZero: true,
                       },
-                    }}
-                  />
-                </div>
+                    },
+                  }}
+                />
               </div>
-            </div>
+            </CardWrapper>
           </div>
 
           {/* Row 5 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Kinerja DPJP */}
-            <div className="bg-white rounded-lg border overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  Kinerja DPJP
-                </h3>
-              </div>
-              <div className="p-4 max-h-80 overflow-y-auto">
+            <CardWrapper title="Kinerja DPJP">
+              <div className="max-h-80 overflow-y-auto">
                 <div className="space-y-3">
                   {data.kinerja_dpjp.map((item, index) => (
                     <div
@@ -389,16 +359,11 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
-            </div>
+            </CardWrapper>
 
             {/* Kinerja PPDS */}
-            <div className="bg-white rounded-lg border overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  Kinerja PPDS
-                </h3>
-              </div>
-              <div className="p-4 max-h-80 overflow-y-auto">
+            <CardWrapper title="Kinerja PPDS">
+              <div className="max-h-80 overflow-y-auto">
                 <div className="space-y-3">
                   {data.kinerja_ppds.map((item, index) => (
                     <div
@@ -424,7 +389,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
-            </div>
+            </CardWrapper>
           </div>
         </div>
       </div>

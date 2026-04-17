@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/ui/Topbar";
+import { CardWrapper } from "@/components/ui/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
 import { mockRekapLogbook } from "@/data/rekap";
@@ -92,144 +93,123 @@ export default function RekapLogbookDetailPage() {
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Card 1 - Identitas */}
-          <div className="bg-white rounded-lg border overflow-hidden mb-4">
-            <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Identitas
-              </h3>
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Row 1 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">PPDS</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.ppds)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Semester</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.semester)}
-                  </span>
-                </div>
-                {/* Row 2 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Code</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.pin)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Stase</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.stase)}
-                  </span>
-                </div>
-                {/* Row 3 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">PIN</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.pin)}
-                  </span>
-                </div>
-                <div></div>
+          <CardWrapper title="Identitas" className="mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Row 1 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">PPDS</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.ppds)}
+                </span>
               </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Semester</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.semester)}
+                </span>
+              </div>
+              {/* Row 2 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Code</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.pin)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Stase</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.stase)}
+                </span>
+              </div>
+              {/* Row 3 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">PIN</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.pin)}
+                </span>
+              </div>
+              <div></div>
             </div>
-          </div>
+          </CardWrapper>
 
           {/* Card 2 - Kegiatan */}
-          <div className="bg-white rounded-lg border overflow-hidden mb-4">
-            <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Kegiatan
-              </h3>
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Row 1 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Date</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.date)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Catatan</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.attachment)}
-                  </span>
-                </div>
-                {/* Row 2 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Activity</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.activity)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Status</span>
-                  <StatusBadge status={logbook.status} />
-                </div>
-                {/* Row 3 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Kategori</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.category)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Patient</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.patient)}
-                  </span>
-                </div>
-                {/* Row 4 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Peran</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.peran)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Diagnosis</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.diagnosis)}
-                  </span>
-                </div>
-                {/* Row 5 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Judul</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.title)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 w-24">Treatment</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {formatDisplayText(logbook.treatment)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3 - Staff */}
-          <div className="bg-white rounded-lg border overflow-hidden mb-4">
-            <div className="px-4 py-3 border-b border-gray-200 bg-slate-100">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Staff
-              </h3>
-            </div>
-            <div className="p-4">
-              <div className="sm:col-span-2 flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-24">Staff Pengajar</span>
+          <CardWrapper title="Kegiatan" className="mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Row 1 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Date</span>
                 <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(logbook.staff_pengajar)}
+                  {formatDisplayText(logbook.date)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Catatan</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.attachment)}
+                </span>
+              </div>
+              {/* Row 2 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Activity</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.activity)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Status</span>
+                <StatusBadge status={logbook.status} />
+              </div>
+              {/* Row 3 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Kategori</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.category)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Patient</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.patient)}
+                </span>
+              </div>
+              {/* Row 4 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Peran</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.peran)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Diagnosis</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.diagnosis)}
+                </span>
+              </div>
+              {/* Row 5 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Judul</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.title)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 w-24">Treatment</span>
+                <span className="text-sm font-medium text-gray-800">
+                  {formatDisplayText(logbook.treatment)}
                 </span>
               </div>
             </div>
-          </div>
+          </CardWrapper>
+
+          {/* Card 3 - Staff */}
+          <CardWrapper title="Staff" className="mb-4">
+            <div className="sm:col-span-2 flex items-center gap-2">
+              <span className="text-sm text-gray-500 w-24">Staff Pengajar</span>
+              <span className="text-sm font-medium text-gray-800">
+                {formatDisplayText(logbook.staff_pengajar)}
+              </span>
+            </div>
+          </CardWrapper>
 
           {/* Back Button */}
           <div className="mt-4 flex justify-end">
