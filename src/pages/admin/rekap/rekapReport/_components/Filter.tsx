@@ -1,5 +1,5 @@
-import { FilterPanel } from "@/components/filter";
-import type { FilterFieldConfig, FilterProps } from "@/components/filter";
+import { FilterPanel } from "@/components/filterPanel/filter";
+import type { FilterFieldConfig, FilterProps } from "@/components/filterPanel/filter";
 
 const filterFields: FilterFieldConfig[] = [
   {
