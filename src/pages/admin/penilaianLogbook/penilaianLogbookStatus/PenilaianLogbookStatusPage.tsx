@@ -2,18 +2,22 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate, useParams } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
-import { mockPenlaianLogbookList } from "@/data/penilaianLogbook";
-
-// Find mock data by category id
-const getMockData = (id: string) => {
-  const numericId = Number(id);
-  return mockPenlaianLogbookList.find((item) => item.id === numericId);
-};
+import { usePenilaianLogbookStore } from "@/store/penilaianLogbookStore";
+import { useEffect } from "react";
 
 export default function PenilaianLogbookStatusPage() {
   const { idLogbookCategory } = useParams<{ idLogbookCategory: string }>();
   const navigate = useNavigate();
-  const mockData = getMockData(idLogbookCategory || "");
+
+    const { penilaianList, loadPenilaianList, reset } = usePenilaianLogbookStore();
+  
+    useEffect(() => {
+      loadPenilaianList();
+      return () => reset();
+    }, [loadPenilaianList, reset]);
+
+  // Find data by category id
+  const mockData = penilaianList.find((item) => item.id === Number(idLogbookCategory));
 
   const handleScoredClick = () => {
     navigate(ROUTES.penilaianLogbookScoredLogbook(idLogbookCategory || ""));

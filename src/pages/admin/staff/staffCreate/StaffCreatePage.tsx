@@ -1,35 +1,19 @@
 import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
+import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useState } from "react";
 import { InputField } from "@/components/fields/inputField";
 import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { icons } from "@/assets/images/Icon";
 import { Input } from "@/components/ui/input";
-
-// Schema for Staff create form
-const staffCreateSchema = z
-  .object({
-    displayName: z.string().min(1, "Display Name harus diisi"),
-    username: z.string().min(1, "Username harus diisi"),
-    email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
-    phone: z.string().min(1, "Phone harus diisi"),
-    dateOfBirth: z.date().optional().nullable(),
-    code: z.string().optional(),
-    address: z.string().optional(),
-    password: z.string().min(1, "Password harus diisi").min(8, "Password minimal 8 karakter"),
-    confirmPassword: z.string().min(1, "Konfirmasi Password harus diisi"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Password tidak cocok",
-    path: ["confirmPassword"],
-  });
-
-type StaffCreateFormData = z.infer<typeof staffCreateSchema>;
+import { useStaffStore } from "@/store/staffStore";
+import { staffCreateSchema, StaffCreateFormData } from "@/validations/staff/staff";
 
 export default function StaffCreatePage() {
+  const navigate = useNavigate();
+  const { createStaff } = useStaffStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -52,9 +36,12 @@ export default function StaffCreatePage() {
     },
   });
 
-  const onSubmit = (data: StaffCreateFormData) => {
-    console.log("Creating Staff:", data);
-    // TODO: Call API to create
+  const onSubmit = async (data: StaffCreateFormData) => {
+    const { confirmPassword, ...createData } = data;
+    const success = await createStaff(createData);
+    if (success) {
+      navigate(ROUTES.staff);
+    }
   };
 
   return (

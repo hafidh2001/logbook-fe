@@ -5,43 +5,8 @@ import { useParams } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
-
-interface Identitas {
-  displayName: string;
-  code: string | null;
-}
-
-interface Kegiatan {
-  date: string;
-  notes: string | null;
-  activity: string;
-  verifiedStatus: string | null;
-  hospital: string | null;
-}
-
-// interface Ppds {
-//   ppds: string | null;
-//   verifiedStatus: "pending" | "verified";
-// }
-
-// Mock data - in real app this would come from API
-const mockLogbookDetail = {
-  identitas: {
-    displayName: "DIANTI STAFF",
-    code: "12345",
-  } as Identitas,
-  kegiatan: {
-    date: "2026-04-06 14:00",
-    notes: "Tes",
-    activity: "Kegiatan Poli Klinik",
-    verifiedStatus: "pending",
-    hospital: "RSUD DR Moewardi",
-  } as Kegiatan,
-  ppds: {
-    ppds: "Ujang",
-    verifiedStatus: "pending" as const,
-  },
-};
+import { useEffect } from "react";
+import { useLogbookStore } from "@/store/logbookStore";
 
 const formatDisplayText = (value: string | null | undefined): string => {
   if (value === null || value === undefined || value === "") return "-";
@@ -94,12 +59,35 @@ const StatusBadge = ({
 };
 
 export default function StaffLogbookDetailPage() {
-  const { idUser, idLogbook: _ } = useParams<{
+  const { idUser, idLogbook } = useParams<{
     idUser: string;
     idLogbook: string;
   }>();
 
-  const { identitas, kegiatan, ppds } = mockLogbookDetail;
+  const { staffLogbook, staffLogbookDetail, loadStaffLogbook, loadStaffLogbookDetail, resetDetail } = useLogbookStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadStaffLogbook(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadStaffLogbook, resetDetail]);
+
+  useEffect(() => {
+    if (idUser && idLogbook) {
+      loadStaffLogbookDetail(idUser, idLogbook);
+    }
+  }, [idUser, idLogbook, loadStaffLogbookDetail]);
+
+  const identitas = staffLogbook?.participant || { displayName: "-", code: null };
+  const kegiatan = staffLogbookDetail || {
+    date: "-",
+    notes: null,
+    activity: "-",
+    verifiedStatus: null,
+    hospital: null,
+  };
+  const ppds = { ppds: staffLogbookDetail?.ppds || "-", verifiedStatus: staffLogbookDetail?.verifiedStatus || null };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">

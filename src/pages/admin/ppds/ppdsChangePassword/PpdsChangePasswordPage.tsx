@@ -8,16 +8,20 @@ import { icons } from "@/assets/images/Icon";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/fields/passwordField";
 import { changePasswordSchema, ChangePasswordFormData } from "@/validations/common/changePassword";
-
-// Mock data - in real app this would come from API
-const mockPpdsData = {
-  displayName: "Ujang",
-  nim: "7777",
-  role: "ppds",
-};
+import { usePpdsStore } from "@/store/ppdsStore";
+import { useEffect } from "react";
 
 export default function PpdsChangePasswordPage() {
   const { idUser } = useParams<{ idUser: string }>();
+
+  const { selectedPpds, loadPpdsDetail, resetDetail } = usePpdsStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadPpdsDetail(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadPpdsDetail, resetDetail]);
 
   const {
     control,
@@ -56,10 +60,10 @@ export default function PpdsChangePasswordPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-800">
-                  {mockPpdsData.displayName}
+                  {selectedPpds?.displayName || "-"}
                 </h2>
-                <p className="text-sm text-gray-500">NIM: {mockPpdsData.nim}</p>
-                <p className="text-sm text-gray-500 capitalize">Role: {mockPpdsData.role}</p>
+                <p className="text-sm text-gray-500">NIM: {selectedPpds?.nim || "-"}</p>
+                <p className="text-sm text-gray-500 capitalize">Role: {selectedPpds?.role || "ppds"}</p>
               </div>
             </div>
           </CardWrapper>

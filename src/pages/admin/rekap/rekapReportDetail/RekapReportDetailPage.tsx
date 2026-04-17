@@ -7,18 +7,9 @@ import {
   BaseTable,
   type ExtendedColumnDef,
 } from "@/components/basetable/BaseTable";
-
-interface CardSummary {
-  period: string;
-  total_logbooks: number;
-  semester: string;
-  status: string;
-}
-
-interface ActivityBreakdown {
-  count: number;
-  label: string;
-}
+import { useEffect } from "react";
+import { useRekapStore } from "@/store/rekapStore";
+import { LoadingPage } from "@/components/ui/Loading";
 
 interface LogbookItem {
   date: string;
@@ -27,324 +18,6 @@ interface LogbookItem {
   stase: string;
   status: "pending" | "verified";
 }
-
-interface ReportDetailData {
-  ppds_name: string;
-  card_summary: CardSummary;
-  activity_breakdown: ActivityBreakdown[];
-  logbook_table: {
-    total: number;
-    items: LogbookItem[];
-  };
-}
-
-// Mock data - in real app this would come from API
-const mockReportDetail: ReportDetailData = {
-  ppds_name: "Chairul Arby Desiyanto",
-  card_summary: {
-    period: "1/4/2026 - 30/4/2026",
-    total_logbooks: 41,
-    semester: "Semester 8",
-    status: "Active",
-  },
-  activity_breakdown: [
-    { count: 28, label: "Kegiatan Poli Klinik" },
-    { count: 11, label: "Kegiatan Bangsal" },
-    { count: 2, label: "Kegiatan Kamar Operasi" },
-  ],
-  logbook_table: {
-    total: 41,
-    items: [
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "9/4/2026",
-        activity: "Kegiatan Poli Klinik",
-        title: null,
-        stase: "RSDM OTK",
-        status: "pending",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "8/4/2026",
-        activity: "Kegiatan Bangsal",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "7/4/2026",
-        activity: "Kegiatan Kamar Operasi",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-      {
-        date: "7/4/2026",
-        activity: "Kegiatan Kamar Operasi",
-        title: null,
-        stase: "RSDM OTK",
-        status: "verified",
-      },
-    ],
-  },
-};
 
 const StatusBadge = ({ status }: { status: string | null }) => {
   if (!status) {
@@ -381,14 +54,25 @@ const StatusBadge = ({ status }: { status: string | null }) => {
 };
 
 export default function RekapReportDetailPage() {
+  const { idUser } = useParams<{ idUser: string }>();
+
+  const {
+    rekapReportDetail,
+    isLoadingDetail,
+    loadRekapReportDetail,
+    resetDetail,
+  } = useRekapStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadRekapReportDetail(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadRekapReportDetail, resetDetail]);
+
   const handleExport = () => {
     // TODO: Implement export
   };
-
-  const { idUser:_ } = useParams<{ idUser: string }>();
-
-  const { ppds_name, card_summary, activity_breakdown, logbook_table } =
-    mockReportDetail;
 
   const columns: ExtendedColumnDef<LogbookItem>[] = [
     {
@@ -420,7 +104,9 @@ export default function RekapReportDetailPage() {
     },
   ];
 
-  return (
+  return isLoadingDetail ? (
+    <LoadingPage />
+  ) : (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[
@@ -435,7 +121,7 @@ export default function RekapReportDetailPage() {
           {/* Header Title */}
           <div className="mb-4 flex-shrink-0">
             <h1 className="text-2xl font-bold text-gray-800">
-              Detail Rekap Report - {ppds_name}
+              Detail Rekap Report - {rekapReportDetail?.ppds_name ?? "-"}
             </h1>
           </div>
 
@@ -448,7 +134,7 @@ export default function RekapReportDetailPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500 w-28">Period</span>
                     <span className="text-sm font-medium text-gray-800">
-                      {card_summary.period}
+                      {rekapReportDetail?.card_summary.period ?? "-"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -456,21 +142,19 @@ export default function RekapReportDetailPage() {
                       Total Logbooks
                     </span>
                     <span className="text-sm font-medium text-gray-800">
-                      {card_summary.total_logbooks}
+                      {rekapReportDetail?.card_summary.total_logbooks ?? "-"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500 w-28">
-                      Semester
-                    </span>
+                    <span className="text-sm text-gray-500 w-28">Semester</span>
                     <span className="text-sm font-medium text-gray-800">
-                      {card_summary.semester}
+                      {rekapReportDetail?.card_summary.semester ?? "-"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500 w-28">Status</span>
                     <span className="text-sm font-medium text-gray-800">
-                      {card_summary.status}
+                      {rekapReportDetail?.card_summary.status ?? "-"}
                     </span>
                   </div>
                 </div>
@@ -479,26 +163,28 @@ export default function RekapReportDetailPage() {
               {/* Card 2 - Activity Breakdown */}
               <CardWrapper title="Activity Breakdown" className="mb-4">
                 <div className="flex flex-col sm:flex-row gap-4">
-                  {activity_breakdown.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
-                    >
-                      <div className="w-10 h-10 flex items-center justify-center bg-blue-100 text-blue-600 font-bold rounded-lg">
-                        {item.count}
+                  {rekapReportDetail?.activity_breakdown.map(
+                    (item: { count: number; label: string }, index: number) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
+                      >
+                        <div className="w-10 h-10 flex items-center justify-center bg-blue-100 text-blue-600 font-bold rounded-lg">
+                          {item.count}
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">
+                          {item.label}
+                        </span>
                       </div>
-                      <span className="text-sm font-medium text-gray-700">
-                        {item.label}
-                      </span>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               </CardWrapper>
 
               {/* Table Section */}
               <div className="min-h-[300px] flex flex-col bg-white rounded-lg border overflow-hidden">
                 <BaseTable
-                  data={logbook_table.items}
+                  data={rekapReportDetail?.logbook_table.items ?? []}
                   columns={columns}
                   pagination={{
                     enabled: true,

@@ -4,45 +4,8 @@ import { ROUTES } from "@/utils/routes";
 import { useParams, useLocation } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
 import dayjs from "dayjs";
-
-interface Identitas {
-  ppds: string;
-  inisialCode: string | null;
-  nim: string;
-}
-
-interface Kegiatan {
-  date: string;
-  catatan: string | null;
-  activity: string;
-  verifiedStatus: string | null;
-  hospital: string | null;
-}
-
-// interface Staff {
-//   staffPengajar: string | null;
-//   staffStatus: "pending" | "verified";
-// }
-
-// Mock data - in real app this would come from API
-const mockLogbookDetail = {
-  identitas: {
-    ppds: "Yudhistira",
-    inisialCode: null,
-    nim: "0101",
-  } as Identitas,
-  kegiatan: {
-    date: "2026-04-06 14:00",
-    catatan: "Tes",
-    activity: "Kegiatan Poli Klinik",
-    verifiedStatus: "pending",
-    hospital: "RSUD DR Moewardi",
-  } as Kegiatan,
-  staff: {
-    staffPengajar: "DIANTI STAFF",
-    staffStatus: "pending" as const,
-  },
-};
+import { useEffect } from "react";
+import { useLogbookStore } from "@/store/logbookStore";
 
 const formatDisplayText = (value: string | null | undefined): string => {
   if (value === null || value === undefined || value === "") return "-";
@@ -95,11 +58,26 @@ const StatusBadge = ({
 };
 
 export default function PpdsLogbookDetailPage() {
-  const { idUser, idLogbook: _ } = useParams<{
+  const { idUser, idLogbook } = useParams<{
     idUser: string;
     idLogbook: string;
   }>();
   const location = useLocation();
+
+  const { ppdsLogbook, ppdsLogbookDetail, loadPpdsLogbook, loadPpdsLogbookDetail, resetDetail } = useLogbookStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadPpdsLogbook(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadPpdsLogbook, resetDetail]);
+
+  useEffect(() => {
+    if (idUser && idLogbook) {
+      loadPpdsLogbookDetail(idUser, idLogbook);
+    }
+  }, [idUser, idLogbook, loadPpdsLogbookDetail]);
 
   const isInactive = location.pathname.includes("/ppds-inactive/");
 
@@ -111,7 +89,16 @@ export default function PpdsLogbookDetailPage() {
     ? ROUTES.ppdsInactiveLogbook(idUser || "")
     : ROUTES.ppdsLogbook(idUser || "");
 
-  const { identitas, kegiatan, staff } = mockLogbookDetail;
+  const identitas = ppdsLogbook?.participant || { displayName: "-", nim: null };
+  const kegiatan = ppdsLogbookDetail || {
+    date: "-",
+    notes: null,
+    activity: "-",
+    verifiedStatus: null,
+    hospital: null,
+    staffPengajar: null,
+  };
+  const staff = { staffPengajar: ppdsLogbookDetail?.staffPengajar || "-", staffStatus: ppdsLogbookDetail?.verifiedStatus || null };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
@@ -132,7 +119,7 @@ export default function PpdsLogbookDetailPage() {
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 w-24">PPDS</span>
                 <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(identitas.ppds)}
+                  {formatDisplayText(identitas.displayName)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -140,7 +127,7 @@ export default function PpdsLogbookDetailPage() {
                   Inisial Code
                 </span>
                 <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(identitas.inisialCode)}
+                  -
                 </span>
               </div>
               {/* Row 2 */}
@@ -167,7 +154,7 @@ export default function PpdsLogbookDetailPage() {
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 w-24">Catatan</span>
                 <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(kegiatan.catatan)}
+                  {formatDisplayText(kegiatan.notes)}
                 </span>
               </div>
               {/* Row 2 */}

@@ -9,23 +9,21 @@ import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import dayjs from "dayjs";
 import { staffSchema, StaffFormData } from "@/validations/staff/staff";
-
-// Mock data - in real app this would come from API
-const mockStaffData = {
-  displayName: "DIANTI STAFF",
-  username: "dianti_staff",
-  email: "dianti@avolut.com",
-  phone: "08133060261",
-  dateOfBirth: dayjs("23 February 2001", "DD MMMM YYYY").toDate(),
-  code: "12345",
-  address: "surabaya",
-  role: "staff",
-  logbookCount: "35",
-};
+import { useStaffStore } from "@/store/staffStore";
+import { useEffect } from "react";
 
 export default function StaffDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
+
+  const { selectedStaff, loadStaffDetail, updateStaff, deleteStaff, resetDetail } = useStaffStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadStaffDetail(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadStaffDetail, resetDetail]);
 
   const {
     control,
@@ -34,25 +32,29 @@ export default function StaffDetailPage() {
   } = useForm<StaffFormData>({
     resolver: zodResolver(staffSchema),
     defaultValues: {
-      displayName: mockStaffData.displayName,
-      username: mockStaffData.username,
-      email: mockStaffData.email,
-      phone: mockStaffData.phone,
-      dateOfBirth: mockStaffData.dateOfBirth,
-      code: mockStaffData.code,
-      address: mockStaffData.address,
-      role: mockStaffData.role,
-      logbookCount: mockStaffData.logbookCount,
+      displayName: selectedStaff?.display_name || "",
+      username: selectedStaff?.username || "",
+      email: selectedStaff?.email || "",
+      phone: selectedStaff?.phone || "",
+      dateOfBirth: selectedStaff?.date_of_birth ? dayjs(selectedStaff.date_of_birth, "DD MMMM YYYY").toDate() : null,
+      code: selectedStaff?.code || "",
+      address: selectedStaff?.address || "",
+      role: selectedStaff?.role || "staff",
+      logbookCount: selectedStaff?.logbook_status || "0",
     },
   });
 
-  const onSubmit = (data: StaffFormData) => {
-    console.log("Saving Staff:", { idUser, ...data });
-    // TODO: Call API to save
+  const onSubmit = async (data: StaffFormData) => {
+    if (idUser) {
+      await updateStaff(idUser, data);
+    }
   };
 
-  const handleDelete = () => {
-    // TODO: Implement delete
+  const handleDelete = async () => {
+    if (idUser) {
+      await deleteStaff(idUser);
+      navigate(ROUTES.staff);
+    }
   };
 
   return (

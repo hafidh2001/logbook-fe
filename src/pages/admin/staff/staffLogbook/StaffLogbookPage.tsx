@@ -3,7 +3,7 @@ import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { mockStaffLogbook } from "@/data/staff";
+import { useLogbookStore } from "@/store/logbookStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
 import dayjs from "dayjs";
@@ -11,16 +11,9 @@ import "dayjs/locale/id";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
+import { useEffect } from "react";
 
-interface LogbookEntry {
-  no: number;
-  date: string;
-  ppds: string | null;
-  activity: string;
-  hospital: string | null;
-  notes: string;
-  verifiedStatus: "pending" | "verified";
-}
+type LogbookEntry = Record<string, any>;
 
 export default function StaffLogbookPage() {
   const { width } = useWindowDimensions();
@@ -29,7 +22,16 @@ export default function StaffLogbookPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
 
-  const logbooks = mockStaffLogbook.logbooks as LogbookEntry[];
+  const { staffLogbook, isLoading, loadStaffLogbook, reset } = useLogbookStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadStaffLogbook(idUser);
+    }
+    return () => reset();
+  }, [idUser, loadStaffLogbook, reset]);
+
+  const logbooks = staffLogbook?.logbooks || [];
 
   const handleExport = () => {
     // TODO: Implement export
@@ -206,6 +208,7 @@ export default function StaffLogbookPage() {
             <BaseTable
               data={logbooks}
               columns={columns}
+              isLoading={isLoading}
               isShowNumbering={false}
               pagination={{
                 enabled: true,

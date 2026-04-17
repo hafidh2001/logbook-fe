@@ -1,23 +1,24 @@
 import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
+import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InputField } from "@/components/fields/inputField";
 import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { icons } from "@/assets/images/Icon";
 import { profileEditSchema, ProfileEditFormData } from "@/validations/user/profile";
-
-// Mock data - in real app this would come from API
-const mockProfileData = {
-  displayName: "DIANTI INSTITUSI",
-  email: "dianti@email.com",
-  phone: "08123456789",
-  address: "Jakarta, Indonesia",
-  dateOfBirth: null as Date | null,
-  code: "DIANTI001",
-};
+import { useProfileStore } from "@/store/profileStore";
+import { useEffect } from "react";
 
 export default function ProfileEditPage() {
+  const navigate = useNavigate();
+  const { profile, loadProfile, updateProfile, reset } = useProfileStore();
+
+  useEffect(() => {
+    loadProfile();
+    return () => reset();
+  }, [loadProfile, reset]);
+
   const {
     control,
     handleSubmit,
@@ -25,18 +26,27 @@ export default function ProfileEditPage() {
   } = useForm<ProfileEditFormData>({
     resolver: zodResolver(profileEditSchema),
     defaultValues: {
-      displayName: mockProfileData.displayName,
-      email: mockProfileData.email,
-      phone: mockProfileData.phone,
-      address: mockProfileData.address,
-      dateOfBirth: mockProfileData.dateOfBirth,
-      code: mockProfileData.code,
+      displayName: profile?.displayName || "",
+      email: profile?.email || "",
+      phone: profile?.telephoneNumber || "",
+      address: profile?.address || "",
+      dateOfBirth: profile?.tanggalLahir ? new Date(profile.tanggalLahir) : null,
+      code: profile?.code || "",
     },
   });
 
-  const onSubmit = (data: ProfileEditFormData) => {
-    console.log("Saving profile:", data);
-    // TODO: Call API to save
+  const onSubmit = async (data: ProfileEditFormData) => {
+    const success = await updateProfile({
+      displayName: data.displayName,
+      email: data.email,
+      telephoneNumber: data.phone,
+      address: data.address,
+      tanggalLahir: data.dateOfBirth?.toISOString() || null,
+      code: data.code,
+    });
+    if (success) {
+      navigate(ROUTES.profile);
+    }
   };
 
   return (

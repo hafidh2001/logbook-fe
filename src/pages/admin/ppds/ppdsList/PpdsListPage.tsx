@@ -1,9 +1,9 @@
+import { useEffect } from "react";
 import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { mockPpdsList } from "@/data/ppds";
 import { TPpds } from "@/types/ppds";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
@@ -21,6 +21,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { usePpdsStore } from "@/store/ppdsStore";
 
 export default function PpdsListPage() {
   const { width } = useWindowDimensions();
@@ -28,11 +29,26 @@ export default function PpdsListPage() {
 
   const navigate = useNavigate();
 
+  const {
+    ppdsList,
+    isLoading,
+    loadPpdsList,
+    deletePpds,
+    reset,
+  } = usePpdsStore();
+
   // Delete confirmation modal state
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
     item: TPpds | null;
   }>({ open: false, item: null });
+
+  useEffect(() => {
+    loadPpdsList();
+    return () => {
+      reset();
+    };
+  }, [loadPpdsList, reset]);
 
   const handleCreate = () => {
     navigate(ROUTES.ppdsCreate);
@@ -56,20 +72,16 @@ export default function PpdsListPage() {
   };
 
   const handleRowClick = (row: Row<TPpds>) => {
-    console.log("Row clicked:", row.original);
-    // TODO: Navigate to detail page with actual id
-    navigate(ROUTES.ppds);
+    navigate(ROUTES.ppdsDetail(String(row.original.id)));
   };
 
   const handleDelete = (item: TPpds) => {
     setDeleteModal({ open: true, item });
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteModal.item) {
-      console.log("Deleting item:", deleteModal.item);
-      // TODO: Call API to delete
-      // api.deletePpds(deleteModal.item.id);
+      await deletePpds(String(deleteModal.item.id));
     }
     setDeleteModal({ open: false, item: null });
   };
@@ -214,9 +226,10 @@ export default function PpdsListPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={mockPpdsList}
+              data={ppdsList}
               columns={columns}
               isShowNumbering
+              isLoading={isLoading}
               pagination={{
                 enabled: true,
                 initialPageIndex: 0,

@@ -4,21 +4,18 @@ import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
 import { Button } from "@/components/ui/button";
-
-// Mock data - in real app this would come from API
-const mockProfileData = {
-  displayName: "DIANTI INSTITUSI",
-  role: "institution",
-  nama: "Dianti Kusuma",
-  email: "dianti@email.com",
-  telephoneNumber: "08123456789",
-  code: "DIANTI001",
-  tanggalLahir: null as string | null,
-  address: "Jakarta, Indonesia",
-};
+import { useProfileStore } from "@/store/profileStore";
+import { useEffect } from "react";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+
+  const { profile, loadProfile, reset } = useProfileStore();
+
+  useEffect(() => {
+    loadProfile();
+    return () => reset();
+  }, [loadProfile, reset]);
 
   const handleEditProfile = () => {
     navigate(ROUTES.profileEdit);
@@ -42,10 +39,10 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-gray-800">
-                    {mockProfileData.displayName}
+                    {profile?.displayName || "-"}
                   </h2>
                   <p className="text-sm text-gray-500 capitalize">
-                    Role: {mockProfileData.role}
+                    Role: {profile?.role || "-"}
                   </p>
                 </div>
               </div>
@@ -70,13 +67,13 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 w-36">Nama</span>
                 <span className="text-sm font-medium text-gray-800">
-                  {mockProfileData.nama}
+                  {profile?.nama ?? "-"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 w-36">Email</span>
                 <span className="text-sm font-medium text-gray-800">
-                  {mockProfileData.email}
+                  {profile?.email || "-"}
                 </span>
               </div>
               {/* Row 2 */}
@@ -85,13 +82,13 @@ export default function ProfilePage() {
                   Telephone Number
                 </span>
                 <span className="text-sm font-medium text-gray-800">
-                  {mockProfileData.telephoneNumber}
+                  {profile?.telephoneNumber || "-"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 w-36">Code</span>
                 <span className="text-sm font-medium text-gray-800">
-                  {mockProfileData.code}
+                  {profile?.code || "-"}
                 </span>
               </div>
               {/* Row 3 */}
@@ -100,13 +97,13 @@ export default function ProfilePage() {
                   Tanggal Lahir
                 </span>
                 <span className="text-sm font-medium text-gray-800">
-                  {mockProfileData.tanggalLahir || "-"}
+                  {profile?.tanggalLahir || "-"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 w-36">Address</span>
                 <span className="text-sm font-medium text-gray-800">
-                  {mockProfileData.address}
+                  {profile?.address || "-"}
                 </span>
               </div>
             </div>

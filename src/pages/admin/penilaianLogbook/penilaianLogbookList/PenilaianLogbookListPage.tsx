@@ -2,16 +2,24 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { mockPenlaianLogbookList } from "@/data/penilaianLogbook";
+import { usePenilaianLogbookStore } from "@/store/penilaianLogbookStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
+import { useEffect } from "react";
 
-type TPenilaianLogbook = (typeof mockPenlaianLogbookList)[number];
+type TPenilaianLogbook = Record<string, any>;
 
 export default function PenilaianLogbookListPage() {
   const navigate = useNavigate();
+
+  const { penilaianList, isLoading, loadPenilaianList, reset } = usePenilaianLogbookStore();
+
+  useEffect(() => {
+    loadPenilaianList();
+    return () => reset();
+  }, [loadPenilaianList, reset]);
 
   const handleRowClick = (row: Row<any>) => {
     navigate(ROUTES.penilaianLogbookDetail(String(row.original.id)))
@@ -77,8 +85,9 @@ export default function PenilaianLogbookListPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={mockPenlaianLogbookList}
+              data={penilaianList}
               columns={columns}
+              isLoading={isLoading}
               isShowNumbering
               pagination={{
                 enabled: true,

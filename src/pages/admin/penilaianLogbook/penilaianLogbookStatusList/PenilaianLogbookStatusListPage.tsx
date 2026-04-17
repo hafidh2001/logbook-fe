@@ -3,14 +3,15 @@ import { ROUTES } from "@/utils/routes";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { mockPenilaianLogbookStatusList } from "@/data/penilaianLogbook";
+import { usePenilaianLogbookStore } from "@/store/penilaianLogbookStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
+import { useEffect } from "react";
 
-type TPenilaianLogbookStatus = (typeof mockPenilaianLogbookStatusList)[number];
+type TPenilaianLogbookStatus = Record<string, any>;
 
 export default function PenilaianLogbookStatusListPage() {
   const { width } = useWindowDimensions();
@@ -20,11 +21,18 @@ export default function PenilaianLogbookStatusListPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { statusList, isLoading, loadStatusList, reset } = usePenilaianLogbookStore();
+
+  useEffect(() => {
+    loadStatusList();
+    return () => reset();
+  }, [loadStatusList, reset]);
+
   // Determine if scored or unscored based on URL path
   const isScored = location.pathname.includes("/scored-logbook");
 
   // Filter data based on status
-  const filteredData = mockPenilaianLogbookStatusList.filter(
+  const filteredData = statusList.filter(
     (item) => item.status === (isScored ? "scored" : "unscored")
   );
 
@@ -166,6 +174,7 @@ export default function PenilaianLogbookStatusListPage() {
             <BaseTable
               data={filteredData}
               columns={columns}
+              isLoading={isLoading}
               isShowNumbering
               pagination={{
                 enabled: true,

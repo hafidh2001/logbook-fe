@@ -2,14 +2,24 @@ import { Topbar } from "@/components/ui/Topbar";
 import { CardWrapper } from "@/components/ui/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
-import { mockRekapPenilaian } from "@/data/rekap";
+import { useRekapStore } from "@/store/rekapStore";
 import { icons } from "@/assets/images/Icon";
+import { useEffect } from "react";
 
 export default function RekapPenilaianDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
 
-  const penilaian = mockRekapPenilaian.find((item) => item.id === Number(idUser));
+  const { rekapPenilaianDetail, isLoadingDetail, loadRekapPenilaianDetail, resetDetail } = useRekapStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadRekapPenilaianDetail(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadRekapPenilaianDetail, resetDetail]);
+
+  const penilaian = rekapPenilaianDetail;
 
   const formatDisplayText = (value: string | null | undefined): string => {
     if (value === null || value === undefined || value === "") return "-";
@@ -25,7 +35,7 @@ export default function RekapPenilaianDetailPage() {
     navigate(ROUTES.rekapPenilaian);
   };
 
-  if (!penilaian) {
+  if (!penilaian && !isLoadingDetail) {
     return (
       <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
         <Topbar
@@ -50,6 +60,10 @@ export default function RekapPenilaianDetailPage() {
         </div>
       </div>
     );
+  }
+
+  if (!penilaian) {
+    return null;
   }
 
   return (

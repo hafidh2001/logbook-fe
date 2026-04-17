@@ -3,12 +3,12 @@ import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { mockStaffList } from "@/data/staff";
+import { useStaffStore } from "@/store/staffStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-type TStaff = (typeof mockStaffList)[number];
+import type { Staff } from "@/services/staffApi";
 
 export default function StaffListPage() {
   const { width } = useWindowDimensions();
@@ -26,10 +25,17 @@ export default function StaffListPage() {
 
   const navigate = useNavigate();
 
+  const { staffList, isLoading, loadStaffList, deleteStaff, reset } = useStaffStore();
+
+  useEffect(() => {
+    loadStaffList();
+    return () => reset();
+  }, [loadStaffList, reset]);
+
   // Delete confirmation modal state
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
-    item: TStaff | null;
+    item: Staff | null;
   }>({ open: false, item: null });
 
   const handleCreate = () => {
@@ -53,14 +59,13 @@ export default function StaffListPage() {
     console.log("Filter reset");
   };
 
-  const handleDelete = (item: TStaff) => {
+  const handleDelete = (item: Staff) => {
     setDeleteModal({ open: true, item });
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteModal.item) {
-      console.log("Deleting item:", deleteModal.item);
-      // TODO: Call API to delete
+      await deleteStaff(String(deleteModal.item.id));
     }
     setDeleteModal({ open: false, item: null });
   };
@@ -70,7 +75,7 @@ export default function StaffListPage() {
   };
 
   // Define columns for Staff table
-  const columns: ColumnDef<TStaff>[] = [
+  const columns: ColumnDef<Staff>[] = [
     {
       accessorKey: "display_name",
       header: "Nama",
@@ -180,7 +185,7 @@ export default function StaffListPage() {
         );
       },
     },
-  ];
+  ] as ColumnDef<Staff>[];
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
@@ -199,8 +204,10 @@ export default function StaffListPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={mockStaffList}
-              columns={columns}
+              data={staffList}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              columns={columns as any}
+              isLoading={isLoading}
               isShowNumbering
               pagination={{
                 enabled: true,

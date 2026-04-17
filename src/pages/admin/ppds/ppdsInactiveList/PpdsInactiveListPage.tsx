@@ -3,12 +3,12 @@ import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { mockPpdsInactiveList } from "@/data/ppds";
+import { useLogbookStore } from "@/store/logbookStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,13 +18,20 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-type TPpdsInactive = (typeof mockPpdsInactiveList)[number];
+type TPpdsInactive = Record<string, any>;
 
 export default function PpdsInactiveListPage() {
   const { width } = useWindowDimensions();
   const sm = width >= 480;
 
   const navigate = useNavigate();
+
+  const { inactiveList, isLoading, loadInactiveList, reset } = useLogbookStore();
+
+  useEffect(() => {
+    loadInactiveList();
+    return () => reset();
+  }, [loadInactiveList, reset]);
 
   // Delete confirmation modal state
   const [deleteModal, setDeleteModal] = useState<{
@@ -183,8 +190,9 @@ export default function PpdsInactiveListPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={mockPpdsInactiveList}
+              data={inactiveList}
               columns={columns}
+              isLoading={isLoading}
               isShowNumbering
               pagination={{
                 enabled: true,

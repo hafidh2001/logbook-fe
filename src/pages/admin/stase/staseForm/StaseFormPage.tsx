@@ -1,6 +1,6 @@
 import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InputField } from "@/components/fields/inputField";
@@ -10,6 +10,9 @@ import { SwitchField } from "@/components/fields/switchField";
 import { icons } from "@/assets/images/Icon";
 import type { BasicSelectOpt } from "@/types";
 import { staseSchema, createInitialStaseValues, StaseFormData } from "@/validations/stase/stase";
+import { useStaseStore } from "@/store/staseStore";
+import { useEffect } from "react";
+import dayjs from "dayjs";
 
 // Options
 const userOptions: BasicSelectOpt<string>[] = [
@@ -64,6 +67,16 @@ const mockStaseData = {
 
 export default function StaseFormPage() {
   const { idUser } = useParams<{ idUser: string }>();
+  const navigate = useNavigate();
+
+  const { loadStaseDetail, createStase, updateStase, deleteStase, resetDetail } = useStaseStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadStaseDetail(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadStaseDetail, resetDetail]);
 
   const isEditMode = !!idUser;
   const initialValues = isEditMode ? mockStaseData : createInitialStaseValues;
@@ -77,16 +90,24 @@ export default function StaseFormPage() {
     defaultValues: initialValues,
   });
 
-  const onSubmit = (data: StaseFormData) => {
-    console.log(isEditMode ? "Updating Stase:" : "Creating Stase:", {
-      idUser,
-      ...data,
-    });
-    // TODO: Call API
+  const onSubmit = async (data: StaseFormData) => {
+    const { date, ...rest } = data;
+    const submitData = {
+      ...rest,
+      date: date ? dayjs(date).format("YYYY-MM-DD") : "",
+    };
+    if (isEditMode && idUser) {
+      await updateStase(idUser, submitData);
+    } else {
+      await createStase(submitData);
+    }
   };
 
-  const handleDelete = () => {
-    // TODO: Implement delete
+  const handleDelete = async () => {
+    if (idUser) {
+      await deleteStase(idUser);
+      navigate(ROUTES.stase);
+    }
   };
 
   return (

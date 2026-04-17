@@ -3,19 +3,27 @@ import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { mockRekapReport } from "@/data/rekap";
+import { useRekapStore } from "@/store/rekapStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
+import { useEffect } from "react";
 
-type TRekapReport = (typeof mockRekapReport)[number];
+type TRekapReport = Record<string, any>;
 
 export default function RekapReportPage() {
   const { width } = useWindowDimensions();
   const sm = width >= 480;
   const navigate = useNavigate();
+
+  const { rekapReport, isLoading, loadRekapReport, reset } = useRekapStore();
+
+  useEffect(() => {
+    loadRekapReport();
+    return () => reset();
+  }, [loadRekapReport, reset]);
 
   const handleExport = () => {
     // TODO: Implement export
@@ -274,8 +282,9 @@ export default function RekapReportPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={mockRekapReport}
+              data={rekapReport}
               columns={columns}
+              isLoading={isLoading}
               isShowNumbering
               pagination={{
                 enabled: true,

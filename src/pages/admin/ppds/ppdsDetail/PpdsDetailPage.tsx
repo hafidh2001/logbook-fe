@@ -10,30 +10,15 @@ import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import type { BasicSelectOpt } from "@/types";
 import { ppdsSchema, PpdsFormData } from "@/validations/ppds/ppds";
+import { usePpdsStore } from "@/store/ppdsStore";
+import { useEffect } from "react";
+import dayjs from "dayjs";
 
 // Status options
 const statusOptions: BasicSelectOpt<string>[] = [
   { value: "aktif", label: "Aktif" },
   { value: "nonaktif", label: "Nonaktif" },
 ];
-
-// Mock data - in real app this would come from API
-const mockPpdsData = {
-  displayName: "Ujang",
-  username: "ujangzhafran",
-  phone: "088",
-  email: "ujang@email.c",
-  nim: "7777",
-  dateOfBirth: new Date("2005-02-09"),
-  address: "Blora",
-  stage: "Stase Rekon I",
-  role: "ppds",
-  status: "aktif",
-  inactiveAt: null as Date | null,
-  inactiveNotes: "",
-  reactivateDate: null as Date | null,
-  logbook: 28,
-};
 
 export default function PpdsDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
@@ -44,6 +29,15 @@ export default function PpdsDetailPage() {
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
 
+  const { selectedPpds, loadPpdsDetail, updatePpds, deletePpds, resetDetail } = usePpdsStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadPpdsDetail(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadPpdsDetail, resetDetail]);
+
   const {
     control,
     handleSubmit,
@@ -51,26 +45,36 @@ export default function PpdsDetailPage() {
   } = useForm<PpdsFormData>({
     resolver: zodResolver(ppdsSchema),
     defaultValues: {
-      displayName: mockPpdsData.displayName,
-      username: mockPpdsData.username,
-      phone: mockPpdsData.phone,
-      email: mockPpdsData.email,
-      nim: mockPpdsData.nim,
-      dateOfBirth: mockPpdsData.dateOfBirth,
-      address: mockPpdsData.address,
-      status: mockPpdsData.status,
-      inactiveAt: mockPpdsData.inactiveAt,
-      inactiveNotes: mockPpdsData.inactiveNotes,
+      displayName: selectedPpds?.displayName || "",
+      username: selectedPpds?.username || "",
+      phone: selectedPpds?.phone || "",
+      email: selectedPpds?.email || "",
+      nim: selectedPpds?.nim || "",
+      dateOfBirth: selectedPpds?.dateOfBirth ? dayjs(selectedPpds.dateOfBirth).toDate() : null,
+      address: selectedPpds?.address || "",
+      status: "aktif",
+      inactiveAt: null,
+      inactiveNotes: "",
     },
   });
 
-  const onSubmit = (data: PpdsFormData) => {
-    console.log("Saving PPDS:", { idUser, ...data });
-    // TODO: Call API to save
+  const onSubmit = async (data: PpdsFormData) => {
+    if (idUser) {
+      const { dateOfBirth, inactiveAt, ...rest } = data;
+      const updateData = {
+        ...rest,
+        dateOfBirth: dateOfBirth ? dayjs(dateOfBirth).format("YYYY-MM-DD") : undefined,
+        inactiveAt: inactiveAt ? dayjs(inactiveAt).format("YYYY-MM-DD") : undefined,
+      };
+      await updatePpds(idUser, updateData);
+    }
   };
 
-  const handleDelete = () => {
-    // TODO: Implement delete
+  const handleDelete = async () => {
+    if (idUser) {
+      await deletePpds(idUser);
+      navigate(ppdsListRoute);
+    }
   };
 
   return (
@@ -203,7 +207,7 @@ export default function PpdsDetailPage() {
               <div className="flex flex-col gap-1">
                 <InputField
                   label="Stase"
-                  value={mockPpdsData.stage}
+                  value={selectedPpds?.stage || "-"}
                   disabled
                   placeholder="Stase PPDS..."
                 />
@@ -213,7 +217,7 @@ export default function PpdsDetailPage() {
               </div>
               <InputField
                 label="Role"
-                value={mockPpdsData.role}
+                value={selectedPpds?.role || "ppds"}
                 disabled
                 placeholder="Role..."
               />
@@ -280,7 +284,7 @@ export default function PpdsDetailPage() {
                   <div className="flex-1">
                     <InputField
                       label="Logbook"
-                      value={String(mockPpdsData.logbook)}
+                      value={String(selectedPpds?.logbook || 0)}
                       disabled
                       placeholder="Jumlah logbook..."
                     />

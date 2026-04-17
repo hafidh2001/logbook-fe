@@ -3,12 +3,12 @@ import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { mockStaseList } from "@/data/stase";
+import { useStaseStore } from "@/store/staseStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,14 +17,22 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import type { Stase } from "@/store/staseStore";
 
-type TStase = (typeof mockStaseList)[number];
+type TStase = Stase;
 
 export default function StaseListPage() {
   const { width } = useWindowDimensions();
   const sm = width >= 480;
 
   const navigate = useNavigate();
+
+  const { staseList, isLoading, loadStaseList, deleteStase, reset } = useStaseStore();
+
+  useEffect(() => {
+    loadStaseList();
+    return () => reset();
+  }, [loadStaseList, reset]);
 
   // Delete confirmation modal state
   const [deleteModal, setDeleteModal] = useState<{
@@ -57,10 +65,9 @@ export default function StaseListPage() {
     setDeleteModal({ open: true, item });
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteModal.item) {
-      console.log("Deleting item:", deleteModal.item);
-      // TODO: Call API to delete
+      await deleteStase(String(deleteModal.item.id));
     }
     setDeleteModal({ open: false, item: null });
   };
@@ -170,8 +177,9 @@ export default function StaseListPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={mockStaseList}
+              data={staseList}
               columns={columns}
+              isLoading={isLoading}
               isShowNumbering
               pagination={{
                 enabled: true,

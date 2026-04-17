@@ -42,6 +42,7 @@ import {
   Calendar,
   UserCheck,
   ArrowLeft,
+  Loader,
 } from "lucide-react";
 
 export const icons = {
@@ -88,4 +89,5 @@ export const icons = {
   Calendar,
   UserCheck,
   ArrowLeft,
+  Loader,
 };

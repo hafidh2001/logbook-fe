@@ -3,7 +3,7 @@ import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { mockPpdsLogbook } from "@/data/ppds";
+import { useLogbookStore } from "@/store/logbookStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
 import dayjs from "dayjs";
@@ -11,16 +11,9 @@ import "dayjs/locale/id";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
+import { useEffect } from "react";
 
-interface LogbookEntry {
-  no: number;
-  date: string;
-  staffPengajar: string | null;
-  activity: string;
-  hospital: string | null;
-  notes: string;
-  verifiedStatus: "pending" | "verified";
-}
+type LogbookEntry = Record<string, any>;
 
 export default function PpdsLogbookPage() {
   const { width } = useWindowDimensions();
@@ -30,12 +23,21 @@ export default function PpdsLogbookPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { ppdsLogbook, isLoading, loadPpdsLogbook, reset } = useLogbookStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadPpdsLogbook(idUser);
+    }
+    return () => reset();
+  }, [idUser, loadPpdsLogbook, reset]);
+
   const isInactive = location.pathname.includes("/ppds-inactive/");
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
   const ppdsDetailRoute = isInactive ? ROUTES.ppdsInactiveDetail(idUser || "") : ROUTES.ppdsDetail(idUser || "");
 
-  const logbooks = mockPpdsLogbook.logbooks as LogbookEntry[];
+  const logbooks = ppdsLogbook?.logbooks || [];
 
   const handleExport = () => {
     // TODO: Implement export
@@ -218,6 +220,7 @@ export default function PpdsLogbookPage() {
             <BaseTable
               data={logbooks}
               columns={columns}
+              isLoading={isLoading}
               isShowNumbering={false}
               pagination={{
                 enabled: true,

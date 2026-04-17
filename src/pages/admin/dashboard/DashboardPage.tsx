@@ -2,14 +2,24 @@ import { Topbar } from "@/components/ui/Topbar";
 import { CardWrapper } from "@/components/ui/cardWrapper";
 import { DashboardIcon } from "@/assets/images/DashboardIcon";
 import { icons } from "@/assets/images/Icon";
-import { mockDashboard } from "@/data/dashboard";
+import { useDashboardStore } from "@/store/dashboardStore";
 import { BarChart } from "@/components/chart/barChart";
 import { DoughnutChart } from "@/components/chart/doughnutChart";
 import { LineChart } from "@/components/chart/lineChart";
 import type { ChartData } from "chart.js";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
-  const data = mockDashboard;
+  const { dashboardData: data, loadDashboard, reset } = useDashboardStore();
+
+  useEffect(() => {
+    loadDashboard();
+    return () => reset();
+  }, [loadDashboard, reset]);
+
+  if (!data) {
+    return null;
+  }
 
   // Bar Chart data for logbook by status
   const barChartData: ChartData<"bar", number[], string> = {

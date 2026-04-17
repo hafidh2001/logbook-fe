@@ -2,14 +2,24 @@ import { Topbar } from "@/components/ui/Topbar";
 import { CardWrapper } from "@/components/ui/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
-import { mockRekapLogbook } from "@/data/rekap";
+import { useRekapStore } from "@/store/rekapStore";
 import { icons } from "@/assets/images/Icon";
+import { useEffect } from "react";
 
 export default function RekapLogbookDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
 
-  const logbook = mockRekapLogbook.find((item) => item.id === Number(idUser));
+  const { rekapLogbookDetail, isLoadingDetail, loadRekapLogbookDetail, resetDetail } = useRekapStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadRekapLogbookDetail(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadRekapLogbookDetail, resetDetail]);
+
+  const logbook = rekapLogbookDetail;
 
   const formatDisplayText = (value: string | null | undefined): string => {
     if (value === null || value === undefined || value === "") return "-";
@@ -54,7 +64,7 @@ export default function RekapLogbookDetailPage() {
     navigate(ROUTES.rekapLogbook);
   };
 
-  if (!logbook) {
+  if (!logbook && !isLoadingDetail) {
     return (
       <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
         <Topbar
@@ -79,6 +89,10 @@ export default function RekapLogbookDetailPage() {
         </div>
       </div>
     );
+  }
+
+  if (!logbook) {
+    return null;
   }
 
   return (

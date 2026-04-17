@@ -2,7 +2,8 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useParams, useLocation } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
-import { mockPenilaianLogbookStatusList } from "@/data/penilaianLogbook";
+import { useEffect } from "react";
+import { usePenilaianLogbookStore } from "@/store/penilaianLogbookStore";
 
 const formatDisplayText = (value: string | null | undefined): string => {
   if (value === null || value === undefined || value === "") return "-";
@@ -61,14 +62,19 @@ export default function PenilaianLogbookDetailPage() {
   }>();
   const location = useLocation();
 
+  const { penilaianLogbookDetail, loadPenilaianLogbookDetail, resetDetail } = usePenilaianLogbookStore();
+
+  useEffect(() => {
+    if (idLogbook) {
+      loadPenilaianLogbookDetail(idLogbook);
+    }
+    return () => resetDetail();
+  }, [idLogbook, loadPenilaianLogbookDetail, resetDetail]);
+
   // Determine if scored or unscored based on URL path
   const isScored = location.pathname.includes("/scored-logbook/");
 
-  // Find mock data by id
-  const numericId = Number(idLogbook);
-  const mockData = mockPenilaianLogbookStatusList.find(
-    (item) => item.id === numericId,
-  );
+  const mockData = penilaianLogbookDetail;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">

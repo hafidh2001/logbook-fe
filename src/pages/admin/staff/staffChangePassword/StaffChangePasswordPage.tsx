@@ -8,16 +8,20 @@ import { icons } from "@/assets/images/Icon";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/fields/passwordField";
 import { changePasswordSchema, ChangePasswordFormData } from "@/validations/common/changePassword";
-
-// Mock data - in real app this would come from API
-const mockStaffData = {
-  displayName: "Dokter Indah",
-  nim: "-",
-  role: "staff",
-};
+import { useStaffStore } from "@/store/staffStore";
+import { useEffect } from "react";
 
 export default function StaffChangePasswordPage() {
   const { idUser } = useParams<{ idUser: string }>();
+
+  const { selectedStaff, loadStaffDetail, resetDetail } = useStaffStore();
+
+  useEffect(() => {
+    if (idUser) {
+      loadStaffDetail(idUser);
+    }
+    return () => resetDetail();
+  }, [idUser, loadStaffDetail, resetDetail]);
 
   const {
     control,
@@ -37,7 +41,7 @@ export default function StaffChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[
           { label: "Staff", to: ROUTES.staff },
@@ -56,13 +60,13 @@ export default function StaffChangePasswordPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-800">
-                  {mockStaffData.displayName}
+                  {selectedStaff?.display_name || "-"}
                 </h2>
                 <p className="text-sm text-gray-500">
-                  NIM: {mockStaffData.nim}
+                  NIM: {selectedStaff?.code || "-"}
                 </p>
                 <p className="text-sm text-gray-500 capitalize">
-                  Role: {mockStaffData.role}
+                  Role: {selectedStaff?.role || "-"}
                 </p>
               </div>
             </div>
