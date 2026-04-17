@@ -4,23 +4,10 @@ import { ROUTES } from "@/utils/routes";
 import { useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { icons } from "@/assets/images/Icon";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/fields/passwordField";
-
-// Schema for change password form
-const changePasswordSchema = z
-  .object({
-    password: z.string().min(1, "Password harus diisi").min(8, "Password minimal 8 karakter"),
-    confirmPassword: z.string().min(1, "Konfirmasi Password harus diisi"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Password tidak cocok",
-    path: ["confirmPassword"],
-  });
-
-type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+import { changePasswordSchema, ChangePasswordFormData } from "@/validations/common/changePassword";
 
 // Mock data - in real app this would come from API
 const mockPpdsData = {

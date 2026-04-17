@@ -3,26 +3,13 @@ import { ROUTES } from "@/utils/routes";
 import { useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { InputField } from "@/components/fields/inputField";
 import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { SingleSelect } from "@/components/fields/singleSelect";
 import { SwitchField } from "@/components/fields/switchField";
 import { icons } from "@/assets/images/Icon";
 import type { BasicSelectOpt } from "@/types";
-
-// Schema for Stase form
-const staseSchema = z.object({
-  user: z.string().min(1, "User harus dipilih"),
-  stase: z.string().min(1, "Stase harus dipilih"),
-  stage: z.string().min(1, "Stage harus dipilih"),
-  semester: z.string().min(1, "Semester harus dipilih"),
-  date: z.date().min(1, "Date harus diisi"),
-  notes: z.string().optional(),
-  mengulangStase: z.boolean(),
-});
-
-type StaseFormData = z.infer<typeof staseSchema>;
+import { staseSchema, createInitialStaseValues, StaseFormData } from "@/validations/stase/stase";
 
 // Options
 const userOptions: BasicSelectOpt<string>[] = [
@@ -75,22 +62,11 @@ const mockStaseData = {
   mengulangStase: false,
 };
 
-// Initial values for create mode
-const createInitialValues: StaseFormData = {
-  user: "",
-  stase: "",
-  stage: "",
-  semester: "",
-  date: undefined as unknown as Date,
-  notes: "",
-  mengulangStase: false,
-};
-
 export default function StaseFormPage() {
   const { idUser } = useParams<{ idUser: string }>();
 
   const isEditMode = !!idUser;
-  const initialValues = isEditMode ? mockStaseData : createInitialValues;
+  const initialValues = isEditMode ? mockStaseData : createInitialStaseValues;
 
   const {
     control,

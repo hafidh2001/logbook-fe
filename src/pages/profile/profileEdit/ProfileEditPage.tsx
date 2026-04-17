@@ -2,22 +2,10 @@ import { Topbar } from "@/components/ui/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { InputField } from "@/components/fields/inputField";
 import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { icons } from "@/assets/images/Icon";
-
-// Schema for profile edit form
-const profileEditSchema = z.object({
-  displayName: z.string().min(1, "Display Name harus diisi"),
-  email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  dateOfBirth: z.date().optional().nullable(),
-  code: z.string().optional(),
-});
-
-type ProfileEditFormData = z.infer<typeof profileEditSchema>;
+import { profileEditSchema, ProfileEditFormData } from "@/validations/user/profile";
 
 // Mock data - in real app this would come from API
 const mockProfileData = {

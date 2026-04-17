@@ -3,27 +3,12 @@ import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { InputField } from "@/components/fields/inputField";
 import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import dayjs from "dayjs";
-
-// Schema for Staff edit form
-const staffSchema = z.object({
-  displayName: z.string().min(1, "Display Name harus diisi"),
-  username: z.string().min(1, "Username harus diisi"),
-  email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
-  phone: z.string().min(1, "Phone harus diisi"),
-  dateOfBirth: z.date().optional().nullable(),
-  code: z.string().optional(),
-  address: z.string().optional(),
-  role: z.string(),
-  logbookCount: z.string(),
-});
-
-type StaffFormData = z.infer<typeof staffSchema>;
+import { staffSchema, StaffFormData } from "@/validations/staff/staff";
 
 // Mock data - in real app this would come from API
 const mockStaffData = {

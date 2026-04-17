@@ -1,6 +1,5 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import logbook from "@/assets/images/logbook.png";
 import { LoginIcon } from "@/assets/images/LoginIcon";
@@ -11,14 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { icons } from "@/assets/images/Icon";
 import { InputField } from "@/components/fields/inputField";
 import { PasswordField } from "@/components/fields/passwordField";
-
-const loginSchema = z.object({
-  username: z.string().min(1, "Username harus diisi"),
-  password: z.string().min(1, "Password harus diisi"),
-  rememberMe: z.boolean().optional(),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { loginSchema, LoginFormData } from "@/validations/auth/login";
 
 export const LoginPage = () => {
   const navigate = useNavigate();

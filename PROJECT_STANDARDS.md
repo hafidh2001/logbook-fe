@@ -38,9 +38,10 @@ CP-Antrean-Truck is a mobile-first React application for warehouse staff to mana
 10. [Authentication & Encryption](#10-authentication--encryption)
 11. [API Integration Standards](#11-api-integration-and-loading-state-standards)
 12. [Form Standards (React Hook Form + Zod)](#12-form-standards)
-13. [Environment Configuration](#13-environment-configuration)
-14. [Common Pitfalls to Avoid](#14-common-pitfalls-to-avoid)
-15. [BaseTable Cell Pattern Standards](#15-basetable-cell-pattern-standards)
+13. [Validation Schema Standards](#13-validation-schema-standards)
+14. [Environment Configuration](#14-environment-configuration)
+15. [Common Pitfalls to Avoid](#15-common-pitfalls-to-avoid)
+16. [BaseTable Cell Pattern Standards](#16-basetable-cell-pattern-standards)
 
 ## 1. Project Structure
 
@@ -55,6 +56,7 @@ src/
 ├── hooks/              # Custom React hooks
 ├── constants/          # App constants
 ├── components/         # Reusable UI components
+├── validations/         # Zod validation schemas
 └── assets/             # Static assets (images, icons, fonts)
 ```
 
@@ -164,6 +166,53 @@ import ExamplePage from '@/pages/example/example/ExamplePage';
 7. **Is it a reusable React hook?** → `/hooks`
 8. **Is it a constant value?** → `/constants`
 9. **Is it a reusable UI component?** → `/components`
+10. **Is it a form validation schema?** → `/validations`
+
+#### `/validations`
+- Zod validation schemas for forms
+- Organized by module/feature (auth, user, staff, ppds, stase, common)
+- Each schema file exports both schema and type
+- Example: `validations/auth/login.ts`, `validations/common/changePassword.ts`
+
+```typescript
+// /validations/auth/login.ts
+import { z } from "zod";
+
+export const loginSchema = z.object({
+  username: z.string().min(1, "Username harus diisi"),
+  password: z.string().min(1, "Password harus diisi"),
+  rememberMe: z.boolean().optional(),
+});
+
+export type LoginFormData = z.infer<typeof loginSchema>;
+```
+
+**Folder Structure:**
+```
+/validations
+├── auth/
+│   └── login.ts
+├── common/
+│   └── changePassword.ts
+├── user/
+│   └── profile.ts
+├── staff/
+│   └── staff.ts
+├── ppds/
+│   └── ppds.ts
+└── stase/
+    └── stase.ts
+```
+
+**Import Pattern:**
+```typescript
+// ✅ Good - import directly from schema file
+import { loginSchema, LoginFormData } from "@/validations/auth/login";
+import { changePasswordSchema, ChangePasswordFormData } from "@/validations/common/changePassword";
+
+// ❌ Bad - define schema inline in page
+const loginSchema = z.object({ ... });
+```
 
 #### `/src/assets/images`
 - Menyimpan file SVG atau image yang perlu dikonversi menjadi komponen JSX
@@ -683,7 +732,7 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
 ### Overview
 All forms in the project must use:
 - **React Hook Form** for form state management
-- **Zod** for validation schema
+- **Zod** for validation schema (stored in `/validations`)
 - **Shadcn UI components** for form UI (Input, Button, Checkbox, etc.)
 
 This ensures type-safe, consistent form handling and unified UI across the application.
@@ -708,79 +757,95 @@ All form UI components are located in `/src/components/ui/`:
 | FormMessage | `form.tsx` | Error message display |
 
 ### Schema Definition
-Define validation schemas using Zod at the top of the form component file:
+**IMPORTANT:** All validation schemas MUST be defined in `/validations` folder, NOT inline in page components. See [Validation Schema Standards](#13-validation-schema-standards) for details.
 
 ```typescript
-import { z } from "zod";
+// ✅ Good - Import from /validations
+import { loginSchema, LoginFormData } from "@/validations/auth/login";
 
-const loginSchema = z.object({
-  username: z.string().min(1, "Username harus diisi"),
-  password: z.string().min(1, "Password harus diisi").min(6, "Password minimal 6 karakter"),
-  rememberMe: z.boolean().optional(),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+// ❌ Bad - Define schema inline in page
+const loginSchema = z.object({ ... });
 ```
 
-### Form Component Pattern (Shadcn)
+### Form Component Pattern (Shadcn + Global Fields)
 
 ```typescript
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  FormField,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-
-const formSchema = z.object({
-  field1: z.string().min(1, "Field 1 harus diisi"),
-  field2: z.string().min(1, "Field 2 harus diisi"),
-});
-
-type FormData = z.infer<typeof formSchema>;
+import { InputField } from "@/components/fields/inputField";
+import { PasswordField } from "@/components/fields/passwordField";
+import { loginSchema, LoginFormData } from "@/validations/auth/login";
 
 export const MyFormPage = () => {
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors, isLoading },
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
-      field1: "",
-      field2: "",
+      username: "",
+      password: "",
+      rememberMe: false,
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     // TODO: Implement submit logic
     console.log("Form submitted:", data);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* Form field with Shadcn */}
-      <FormField error={errors.field1?.message}>
-        <FormLabel htmlFor="field1">Field 1</FormLabel>
-        <FormControl>
-          <Input id="field1" placeholder="Enter value" {...register("field1")} />
-        </FormControl>
-        <FormMessage />
-      </FormField>
+      {/* Username field with start icon */}
+      <Controller
+        name="username"
+        control={control}
+        render={({ field }) => (
+          <InputField
+            {...field}
+            label="Username"
+            placeholder="Masukkan username"
+            startIcon={<icons.User className="h-5 w-5 text-gray-400" />}
+            errorMessage={errors.username?.message}
+          />
+        )}
+      />
+
+      {/* Password field with lock icon and toggle */}
+      <Controller
+        name="password"
+        control={control}
+        render={({ field }) => (
+          <PasswordField
+            {...field}
+            label="Password"
+            placeholder="Masukkan password"
+            startIcon={<icons.Lock className="h-5 w-5 text-gray-400" />}
+            errorMessage={errors.password?.message}
+          />
+        )}
+      />
 
       {/* Checkbox field */}
-      <FormField className="flex items-center gap-2">
-        <Checkbox id="rememberMe" {...register("rememberMe")} />
-        <FormLabel htmlFor="rememberMe" className="font-normal">
-          Remember me
-        </FormLabel>
-      </FormField>
+      <Controller
+        name="rememberMe"
+        control={control}
+        render={({ field }) => (
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="rememberMe"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+            />
+            <label htmlFor="rememberMe" className="text-sm text-gray-600">
+              Remember me
+            </label>
+          </div>
+        )}
+      />
 
       {/* Submit button */}
       <Button type="submit" disabled={isLoading}>
@@ -793,14 +858,15 @@ export const MyFormPage = () => {
 
 ### Best Practices
 1. **Use Shadcn components**: Always use `Input`, `Button`, `Checkbox` from shadcn instead of native HTML elements
-2. **Use Form components**: Wrap fields with `FormField`, `FormLabel`, `FormControl`, `FormMessage`
-3. **Define schema at module level**: Place Zod schema outside the component for reusability
-4. **Use type inference**: Use `z.infer<typeof schema>` to derive TypeScript types
-5. **Provide default values**: Initialize form with appropriate default values
-6. **Display validation errors**: Use `<FormMessage />` to show error messages
-7. **Handle loading state**: Disable submit button and show loading indicator via `isLoading`
-8. **Use descriptive error messages**: Write error messages in Indonesian for consistency
-9. **Pass form data as object**: Function parameters should accept the entire form data object, not individual fields
+2. **Use global field components**: Use `InputField`, `PasswordField` from `@/components/fields/`
+3. **Use Controller from react-hook-form**: For controlled components that don't work with `register`
+4. **Import schema from /validations**: Never define schemas inline in pages
+5. **Use type inference**: Use `z.infer<typeof schema>` to derive TypeScript types (already exported from /validations)
+6. **Provide default values**: Initialize form with appropriate default values
+7. **Display validation errors**: Use `errorMessage` prop on field components
+8. **Handle loading state**: Disable submit button and show loading indicator via `isLoading`
+9. **Use descriptive error messages**: Write error messages in Indonesian for consistency
+10. **Pass form data as object**: Function parameters should accept the entire form data object, not individual fields
 
 ### Clean Architecture - Function Parameters
 Functions that receive form data should accept the **entire form object**, not individual fields. This ensures:
@@ -842,13 +908,153 @@ await api.createUser({
 
 ### Error Styling
 ```typescript
-// Apply error border color
-className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0062A3] focus:border-transparent ${
-  errors.fieldName ? "border-red-500" : "border-gray-300"
-}`}
+// Apply error border color via errorMessage prop
+<InputField
+  {...field}
+  errorMessage={errors.fieldName?.message}
+/>
 ```
 
-## 13. Environment Configuration
+## 13. Validation Schema Standards
+
+### Overview
+All form validation schemas must be centralized in the `/validations` folder. This ensures:
+- **Reusability**: Same schema can be used across multiple pages/features
+- **Maintainability**: Changes to validation rules only need to be made in one place
+- **Type Safety**: TypeScript types are co-located with their schemas
+- **Clean Architecture**: Pages only contain UI logic, validation logic is separated
+
+### Folder Structure
+```
+/validations
+├── auth/                    # Authentication-related schemas
+│   ├── index.ts
+│   └── login.ts
+├── common/                  # Shared schemas (e.g., change password)
+│   ├── index.ts
+│   └── changePassword.ts
+├── user/                    # User/profile-related schemas
+│   ├── index.ts
+│   └── profile.ts
+├── staff/                   # Staff-related schemas
+│   ├── index.ts
+│   └── staff.ts
+├── ppds/                    # PPDS-related schemas
+│   ├── index.ts
+│   └── ppds.ts
+├── stase/                   # Stase-related schemas
+│   ├── index.ts
+│   └── stase.ts
+└── index.ts                 # Re-exports all schemas and types
+```
+
+### Schema File Template
+Each schema file should follow this pattern:
+
+```typescript
+// /validations/[module]/[schemaName].ts
+import { z } from "zod";
+
+// Schema definition
+export const [schemaName]Schema = z.object({
+  field1: z.string().min(1, "Field 1 harus diisi"),
+  field2: z.string().min(1, "Field 2 harus diisi").email("Email tidak valid"),
+  optionalField: z.string().optional(),
+});
+
+// Type inference (co-located with schema)
+export type [SchemaName]FormData = z.infer<typeof [schemaName]Schema>;
+```
+
+### Example: Login Schema
+```typescript
+// /validations/auth/login.ts
+import { z } from "zod";
+
+export const loginSchema = z.object({
+  username: z.string().min(1, "Username harus diisi"),
+  password: z.string().min(1, "Password harus diisi"),
+  rememberMe: z.boolean().optional(),
+});
+
+export type LoginFormData = z.infer<typeof loginSchema>;
+```
+
+### Example: Change Password Schema
+```typescript
+// /validations/common/changePassword.ts
+import { z } from "zod";
+
+export const changePasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(1, "Password harus diisi")
+      .min(8, "Password minimal 8 karakter"),
+    confirmPassword: z.string().min(1, "Konfirmasi Password harus diisi"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password tidak cocok",
+    path: ["confirmPassword"],
+  });
+
+export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+```
+
+### Example: Staff Schema
+```typescript
+// /validations/staff/staff.ts
+import { z } from "zod";
+
+export const staffSchema = z.object({
+  displayName: z.string().min(1, "Display Name harus diisi"),
+  username: z.string().min(1, "Username harus diisi"),
+  email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
+  phone: z.string().min(1, "Phone harus diisi"),
+  dateOfBirth: z.date().optional().nullable(),
+  code: z.string().optional(),
+  address: z.string().optional(),
+  role: z.string(),
+  logbookCount: z.string(),
+});
+
+export type StaffFormData = z.infer<typeof staffSchema>;
+```
+
+### Using with React Hook Form
+```typescript
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, LoginFormData } from "@/validations/auth/login";
+import { InputField } from "@/components/fields/inputField";
+import { PasswordField } from "@/components/fields/passwordField";
+
+export const LoginPage = () => {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
+
+  // ... rest of component
+};
+```
+
+### Key Principles
+1. **Centralize all schemas**: Never define schemas inline in page components
+2. **Co-locate types**: Export `type FormData = z.infer<typeof schema>` in the same file
+3. **Organize by feature**: Group related schemas in subfolders (auth, common, staff, etc.)
+4. **Use index files**: Re-export from index files for clean imports
+5. **Reuse common schemas**: If multiple pages need the same validation, put it in `/validations/common/`
+
+## 14. Environment Configuration
 
 ### Required Environment Variables
 All environment variables must be prefixed with `VITE_` to be accessible in the frontend:
@@ -884,7 +1090,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 const apiToken = import.meta.env.VITE_API_TOKEN;
 ```
 
-## 15. BaseTable Cell Pattern Standards
+## 16. BaseTable Cell Pattern Standards
 
 ### Overview
 All pages using `BaseTable` component must follow this cell rendering pattern for consistency across the codebase.
@@ -1033,7 +1239,7 @@ const columns: ColumnDef<TData>[] = [
 3. **Consistent styling** - Follow the same pattern for similar field types
 4. **Handle null explicitly** - Check nullable fields before rendering
 
-## 14. Common Pitfalls to Avoid
+## 15. Common Pitfalls to Avoid
 
 ### ❌ DON'T: Hardcode sensitive data
 ```typescript

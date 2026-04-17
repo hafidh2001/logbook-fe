@@ -3,29 +3,13 @@ import { ROUTES } from "@/utils/routes";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { InputField } from "@/components/fields/inputField";
 import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { SingleSelect } from "@/components/fields/singleSelect";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import type { BasicSelectOpt } from "@/types";
-
-// Schema for PPDS edit form
-const ppdsSchema = z.object({
-  displayName: z.string().min(1, "Display Name harus diisi"),
-  username: z.string().min(1, "Username harus diisi"),
-  phone: z.string().min(1, "Phone harus diisi"),
-  email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
-  nim: z.string().optional(),
-  dateOfBirth: z.date().optional().nullable(),
-  address: z.string().optional(),
-  status: z.string().min(1, "Status harus dipilih"),
-  inactiveAt: z.date().optional().nullable(),
-  inactiveNotes: z.string().optional(),
-});
-
-type PpdsFormData = z.infer<typeof ppdsSchema>;
+import { ppdsSchema, PpdsFormData } from "@/validations/ppds/ppds";
 
 // Status options
 const statusOptions: BasicSelectOpt<string>[] = [
