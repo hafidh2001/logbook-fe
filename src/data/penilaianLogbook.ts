@@ -66,6 +66,10 @@ export const mockPenilaianLogbookStatusList = [
     afektif: 90,
     total: 81.667,
     status: "scored",
+    staff: [
+      { id: 1, role: "Pembimbing 1", name: "DIANTI STAFF", status: "pending" },
+      { id: 2, role: "Penguji 1", name: "dr. Test 1", status: "verified" },
+    ],
   },
   {
     id: 2,
