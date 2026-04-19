@@ -2,7 +2,6 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import logbook from "@/assets/images/logbook.png";
-import { LoginIcon } from "@/assets/images/LoginIcon";
 import { useAuthStore } from "@/store/authStore";
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { icons } from "@/assets/images/Icon";
 import { InputField } from "@/components/fields/inputField";
 import { PasswordField } from "@/components/fields/passwordField";
 import { loginSchema, LoginFormData } from "@/validations/auth/login";
+import { LeftColumn } from "./_components/LeftColumn";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -40,18 +40,7 @@ export const LoginPage = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left Column - Image Section (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-b from-[#0062A3] to-[#003A6B] flex-col items-center justify-center p-12">
-        <div className="flex flex-col items-center justify-center h-full">
-          {/* Logo */}
-          <div className="mb-6">
-            <img src={logbook} alt="Logo" className="w-80 h-auto" />
-          </div>
-          {/* Login Icon */}
-          <div className="mt-4">
-            <LoginIcon className="w-96 h-auto" />
-          </div>
-        </div>
-      </div>
+      <LeftColumn />
 
       {/* Right Column - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
