@@ -2,10 +2,10 @@ import { Topbar } from "@/components/layout/Topbar";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
-import { icons } from "@/assets/images/Icon";
-import { Button } from "@/components/ui/button";
 import { useProfileStore } from "@/store/profileStore";
 import { useEffect } from "react";
+import { Header } from "./_components/Header";
+import { InfoDetail } from "./_components/InfoDetail";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -32,81 +32,15 @@ export default function ProfilePage() {
             className="mb-4"
             contentClassName="sm:flex justify-between items-center"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
-                  <icons.User className="h-11 w-11 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    {profile?.displayName || "-"}
-                  </h2>
-                  <p className="text-sm text-gray-500 capitalize">
-                    Role: {profile?.role || "-"}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 sm:mt-0">
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleEditProfile}
-                className="w-full sm:w-auto"
-              >
-                <icons.Pencil className="h-4 w-4 mr-1" />
-                Edit Profile
-              </Button>
-            </div>
+            <Header
+              profile={profile}
+              onEdit={handleEditProfile}
+            />
           </CardWrapper>
 
           {/* Card 2 - Info Detail */}
           <CardWrapper title="Info Detail" className="mb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Row 1 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-36">Nama</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {profile?.nama ?? "-"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-36">Email</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {profile?.email || "-"}
-                </span>
-              </div>
-              {/* Row 2 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-36">
-                  Telephone Number
-                </span>
-                <span className="text-sm font-medium text-gray-800">
-                  {profile?.telephoneNumber || "-"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-36">Code</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {profile?.code || "-"}
-                </span>
-              </div>
-              {/* Row 3 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-36">
-                  Tanggal Lahir
-                </span>
-                <span className="text-sm font-medium text-gray-800">
-                  {profile?.tanggalLahir || "-"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-36">Address</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {profile?.address || "-"}
-                </span>
-              </div>
-            </div>
+            <InfoDetail profile={profile} />
           </CardWrapper>
         </div>
       </div>
