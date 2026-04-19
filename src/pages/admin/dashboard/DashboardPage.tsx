@@ -1,5 +1,5 @@
-import { Topbar } from "@/components/ui/Topbar";
-import { CardWrapper } from "@/components/ui/cardWrapper";
+import { Topbar } from "@/components/layout/Topbar";
+import { CardWrapper } from "@/components/card/cardWrapper";
 import { DashboardIcon } from "@/assets/images/DashboardIcon";
 import { icons } from "@/assets/images/Icon";
 import { useDashboardStore } from "@/store/dashboardStore";

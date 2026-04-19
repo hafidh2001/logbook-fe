@@ -1,5 +1,5 @@
-import { Topbar } from "@/components/ui/Topbar";
-import { CardWrapper } from "@/components/ui/cardWrapper";
+import { Topbar } from "@/components/layout/Topbar";
+import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRekapStore } from "@/store/rekapStore";

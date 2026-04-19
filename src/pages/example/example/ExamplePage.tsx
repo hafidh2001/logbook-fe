@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/card/card";
 import { BaseTable } from "@/components/basetable/BaseTable";
 import { BaseTableSpan } from "@/components/baseTableSpan/BaseTableSpan";
 import { ConfirmationModal } from "@/components/confirmationModal";

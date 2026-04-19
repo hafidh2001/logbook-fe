@@ -1,5 +1,5 @@
-import { Topbar } from "@/components/ui/Topbar";
-import { CardWrapper } from "@/components/ui/cardWrapper";
+import { Topbar } from "@/components/layout/Topbar";
+import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
@@ -9,7 +9,7 @@ import {
 } from "@/components/basetable/BaseTable";
 import { useEffect } from "react";
 import { useRekapStore } from "@/store/rekapStore";
-import { LoadingPage } from "@/components/ui/Loading";
+import { LoadingPage } from "@/components/layout/Loading";
 
 interface LogbookItem {
   date: string;

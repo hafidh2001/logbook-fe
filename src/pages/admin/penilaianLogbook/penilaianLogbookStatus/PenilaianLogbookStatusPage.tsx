@@ -1,4 +1,4 @@
-import { Topbar } from "@/components/ui/Topbar";
+import { Topbar } from "@/components/layout/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate, useParams } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";

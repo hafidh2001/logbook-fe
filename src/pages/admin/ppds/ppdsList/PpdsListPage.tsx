@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Topbar } from "@/components/ui/Topbar";
+import { Topbar } from "@/components/layout/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
