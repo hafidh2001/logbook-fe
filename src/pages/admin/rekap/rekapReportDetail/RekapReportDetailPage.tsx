@@ -10,6 +10,9 @@ import {
 import { useEffect } from "react";
 import { useRekapStore } from "@/store/rekapStore";
 import { LoadingPage } from "@/components/layout/Loading";
+import { StatusBadge } from "./_components/StatusBadge";
+import { Summary } from "./_components/Summary";
+import { ActivityBreakdown } from "./_components/ActivityBreakdown";
 
 interface LogbookItem {
   date: string;
@@ -18,40 +21,6 @@ interface LogbookItem {
   stase: string;
   status: "pending" | "verified";
 }
-
-const StatusBadge = ({ status }: { status: string | null }) => {
-  if (!status) {
-    return (
-      <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-md">
-        -
-      </span>
-    );
-  }
-
-  if (status === "verified") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-md">
-        <icons.Check className="h-3 w-3" />
-        Terverifikasi
-      </span>
-    );
-  }
-
-  if (status === "pending") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-md">
-        <icons.Clock className="h-3 w-3" />
-        Menunggu
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-md">
-      {status}
-    </span>
-  );
-};
 
 export default function RekapReportDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
@@ -130,55 +99,12 @@ export default function RekapReportDetailPage() {
             <div className="max-w-5xl mx-auto">
               {/* Card 1 - Summary */}
               <CardWrapper title="Summary" className="mb-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500 w-28">Period</span>
-                    <span className="text-sm font-medium text-gray-800">
-                      {rekapReportDetail?.card_summary.period ?? "-"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500 w-28">
-                      Total Logbooks
-                    </span>
-                    <span className="text-sm font-medium text-gray-800">
-                      {rekapReportDetail?.card_summary.total_logbooks ?? "-"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500 w-28">Semester</span>
-                    <span className="text-sm font-medium text-gray-800">
-                      {rekapReportDetail?.card_summary.semester ?? "-"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500 w-28">Status</span>
-                    <span className="text-sm font-medium text-gray-800">
-                      {rekapReportDetail?.card_summary.status ?? "-"}
-                    </span>
-                  </div>
-                </div>
+                <Summary data={rekapReportDetail} />
               </CardWrapper>
 
               {/* Card 2 - Activity Breakdown */}
               <CardWrapper title="Activity Breakdown" className="mb-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {rekapReportDetail?.activity_breakdown.map(
-                    (item: { count: number; label: string }, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
-                      >
-                        <div className="w-10 h-10 flex items-center justify-center bg-blue-100 text-blue-600 font-bold rounded-lg">
-                          {item.count}
-                        </div>
-                        <span className="text-sm font-medium text-gray-700">
-                          {item.label}
-                        </span>
-                      </div>
-                    ),
-                  )}
-                </div>
+                <ActivityBreakdown items={rekapReportDetail?.activity_breakdown ?? []} />
               </CardWrapper>
 
               {/* Table Section */}

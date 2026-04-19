@@ -5,6 +5,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useRekapStore } from "@/store/rekapStore";
 import { icons } from "@/assets/images/Icon";
 import { useEffect } from "react";
+import { Identitas } from "./_components/Identitas";
+import { Kegiatan } from "./_components/Kegiatan";
+import { SkorCatatan } from "./_components/SkorCatatan";
 
 export default function RekapPenilaianDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
@@ -20,16 +23,6 @@ export default function RekapPenilaianDetailPage() {
   }, [idUser, loadRekapPenilaianDetail, resetDetail]);
 
   const penilaian = rekapPenilaianDetail;
-
-  const formatDisplayText = (value: string | null | undefined): string => {
-    if (value === null || value === undefined || value === "") return "-";
-    return value;
-  };
-
-  const formatNumber = (value: number | null | undefined): string => {
-    if (value === null || value === undefined) return "-";
-    return String(value);
-  };
 
   const handleBack = () => {
     navigate(ROUTES.rekapPenilaian);
@@ -79,131 +72,17 @@ export default function RekapPenilaianDetailPage() {
         <div className="max-w-4xl mx-auto">
           {/* Card 1 - Identitas */}
           <CardWrapper title="Identitas" className="mb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Row 1 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Date Logbook</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.date_logbook)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">PPDS</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.ppds)}
-                </span>
-              </div>
-              {/* Row 2 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">NIM</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.nim)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Inisial Code</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.inisial_code)}
-                </span>
-              </div>
-              {/* Row 3 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Semester</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.semester)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Stase</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.stage)}
-                </span>
-              </div>
-              {/* Row 4 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">PIN</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.pin)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Staff</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.staff)}
-                </span>
-              </div>
-            </div>
+            <Identitas data={penilaian} />
           </CardWrapper>
 
           {/* Card 2 - Kegiatan */}
           <CardWrapper title="Kegiatan" className="mb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Row 1 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Action</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.action)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Peran</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.peran)}
-                </span>
-              </div>
-              {/* Row 2 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Category</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.category)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Title</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.title)}
-                </span>
-              </div>
-            </div>
+            <Kegiatan data={penilaian} />
           </CardWrapper>
 
           {/* Card 3 - Skor & Catatan */}
           <CardWrapper title="Skor & Catatan" className="mb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Row 1 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Psikomotor</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatNumber(penilaian.psikomotor)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Knowledge</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatNumber(penilaian.knowledge)}
-                </span>
-              </div>
-              {/* Row 2 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Afektif</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatNumber(penilaian.afektif)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 w-28">Total</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatNumber(penilaian.total)}
-                </span>
-              </div>
-              {/* Row 3 - Notes (full width) */}
-              <div className="sm:col-span-2 flex items-start gap-2">
-                <span className="text-sm text-gray-500 w-28">Notes</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {formatDisplayText(penilaian.notes)}
-                </span>
-              </div>
-            </div>
+            <SkorCatatan data={penilaian} />
           </CardWrapper>
 
           {/* Back Button */}
