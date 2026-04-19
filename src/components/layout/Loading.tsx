@@ -25,9 +25,11 @@ interface LoadingPageProps {
 
 export const LoadingPage = ({ text = "Memuat data..." }: LoadingPageProps) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px]">
-      <Loading size="lg" className="mb-4" />
-      <p className="text-gray-500 text-sm">{text}</p>
+    <div className="h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center">
+        <Loading size="lg" className="mb-4" />
+        <p className="text-gray-500 text-sm">{text}</p>
+      </div>
     </div>
   );
 };
