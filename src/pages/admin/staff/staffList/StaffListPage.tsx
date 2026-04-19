@@ -9,14 +9,7 @@ import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { ConfirmationModal } from "@/components/confirmationModal";
 import type { Staff } from "@/services/staffApi";
 
 export default function StaffListPage() {
@@ -222,33 +215,26 @@ export default function StaffListPage() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      <Dialog
-        open={deleteModal.open}
-        onOpenChange={(open) =>
-          setDeleteModal({ open, item: deleteModal.item })
+      <ConfirmationModal
+        isShown={deleteModal.open}
+        toggle={(open) => setDeleteModal({ open: open ?? !deleteModal.open, item: deleteModal.item })}
+        title="Hapus Data"
+        description={
+          <>
+            Apakah Anda yakin ingin menghapus data{" "}
+            <span className="font-semibold">
+              {deleteModal.item?.display_name}
+            </span>
+            ? Tindakan ini tidak dapat dibatalkan.
+          </>
         }
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Hapus Data</DialogTitle>
-            <DialogDescription>
-              Apakah Anda yakin ingin menghapus data{" "}
-              <span className="font-semibold">
-                {deleteModal.item?.display_name}
-              </span>
-              ? Tindakan ini tidak dapat dibatalkan.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleDeleteCancel}>
-              Batal
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
-              Hapus
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        confirmText="Hapus"
+        cancelText="Batal"
+        confirmVariant="destructive"
+        cancelVariant="outline"
+      />
     </div>
   );
 }

@@ -503,7 +503,6 @@ This project uses JWT tokens stored in cookies for authentication.
 /store/authStore.ts         # Auth state management
 /components/auth/ProtectedRoute.tsx  # Route guard for protected pages
 /components/auth/GuestRoute.tsx      # Route guard for guest pages (login)
-/components/ui/LogoutModal.tsx      # Logout confirmation modal
 /data/auth.ts               # Mock user data for development
 ```
 

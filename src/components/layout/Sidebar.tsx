@@ -5,7 +5,7 @@ import { ROUTES } from "@/utils/routes";
 import logbook from "@/assets/images/logbook.png";
 import { navItems } from "@/data/sidebar";
 import { useAuthStore } from "@/store/authStore";
-import { LogoutModal } from "@/components/ui/LogoutModal";
+import { ConfirmationModal } from "@/components/confirmationModal";
 
 export const Sidebar = () => {
   const [openMenus, setOpenMenus] = useState<string[]>(["Rekap"]);
@@ -222,10 +222,17 @@ export const Sidebar = () => {
       )}
 
       {/* Logout Modal */}
-      <LogoutModal
-        isOpen={showLogoutModal}
-        onClose={() => setShowLogoutModal(false)}
+      <ConfirmationModal
+        isShown={showLogoutModal}
+        toggle={(open) => setShowLogoutModal(open ?? !showLogoutModal)}
+        title="Keluar"
+        description="Apakah Anda yakin ingin keluar dari aplikasi?"
         onConfirm={handleLogout}
+        onCancel={() => setShowLogoutModal(false)}
+        confirmText="Keluar"
+        cancelText="Batal"
+        confirmVariant="destructive"
+        cancelVariant="outline"
       />
     </>
   );
