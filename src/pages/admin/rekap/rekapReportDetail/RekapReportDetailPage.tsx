@@ -85,54 +85,51 @@ export default function RekapReportDetailPage() {
         ]}
         onExport={handleExport}
       />
-      <div className="flex-1 px-4 sm:px-6 py-4 overflow-hidden">
-        <div className="h-full flex flex-col">
+      <div className="flex-1 px-4 sm:px-6 py-4 overflow-auto min-h-0">
+        <div className="max-w-5xl mx-auto">
           {/* Header Title */}
-          <div className="mb-4 flex-shrink-0">
+          <div className="mb-4 flex-shrink-0 max-w-5xl">
             <h1 className="text-2xl font-bold text-gray-800">
               Detail Rekap Report - {rekapReportDetail?.ppds_name ?? "-"}
             </h1>
           </div>
 
-          {/* Content - scrollable area */}
-          <div className="flex-1 min-h-0 overflow-auto">
-            <div className="max-w-5xl mx-auto">
-              {/* Card 1 - Summary */}
-              <CardWrapper title="Summary" className="mb-4">
-                <Summary data={rekapReportDetail} />
-              </CardWrapper>
+          {/* Card 1 - Summary */}
+          <CardWrapper title="Summary" className="mb-4">
+            <Summary data={rekapReportDetail} />
+          </CardWrapper>
 
-              {/* Card 2 - Activity Breakdown */}
-              <CardWrapper title="Activity Breakdown" className="mb-4">
-                <ActivityBreakdown items={rekapReportDetail?.activity_breakdown ?? []} />
-              </CardWrapper>
+          {/* Card 2 - Activity Breakdown */}
+          <CardWrapper title="Activity Breakdown" className="mb-4">
+            <ActivityBreakdown
+              items={rekapReportDetail?.activity_breakdown ?? []}
+            />
+          </CardWrapper>
 
-              {/* Table Section */}
-              <div className="min-h-[300px] flex flex-col bg-white rounded-lg border overflow-hidden">
-                <BaseTable
-                  data={rekapReportDetail?.logbook_table.items ?? []}
-                  columns={columns}
-                  pagination={{
-                    enabled: true,
-                    initialPageSize: 10,
-                  }}
-                  isShowNumbering
-                  noDataText="No logbook data available"
-                  className="flex-1"
-                />
-              </div>
+          {/* Table Section */}
+          <div className="min-h-[300px] flex flex-col bg-white rounded-lg border overflow-hidden">
+            <BaseTable
+              data={rekapReportDetail?.logbook_table.items ?? []}
+              columns={columns}
+              pagination={{
+                enabled: true,
+                initialPageSize: 10,
+              }}
+              isShowNumbering
+              noDataText="No logbook data available"
+              className="flex-1"
+            />
+          </div>
 
-              {/* Back Button */}
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={() => window.history.back()}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <icons.ArrowLeft className="h-4 w-4" />
-                  Kembali
-                </button>
-              </div>
-            </div>
+          {/* Back Button */}
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => window.history.back()}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <icons.ArrowLeft className="h-4 w-4" />
+              Kembali
+            </button>
           </div>
         </div>
       </div>
