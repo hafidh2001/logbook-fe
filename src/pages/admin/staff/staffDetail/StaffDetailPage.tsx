@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
+import { LoadingPage } from "@/components/layout/Loading";
 import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -16,7 +17,7 @@ export default function StaffDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
 
-  const { selectedStaff, loadStaffDetail, updateStaff, deleteStaff, resetDetail } = useStaffStore();
+  const { selectedStaff, isLoadingDetail, loadStaffDetail, updateStaff, deleteStaff, resetDetail } = useStaffStore();
 
   useEffect(() => {
     if (idUser) {
@@ -57,7 +58,9 @@ export default function StaffDetailPage() {
     }
   };
 
-  return (
+  return isLoadingDetail ? (
+    <LoadingPage />
+  ) : (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[

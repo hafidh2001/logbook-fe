@@ -8,15 +8,15 @@ interface LogbookByStatusItem {
 }
 
 interface LogbookByStatusChartProps {
-  data: LogbookByStatusItem[];
+  data: LogbookByStatusItem[] | null;
 }
 
 export const LogbookByStatusChart = ({ data }: LogbookByStatusChartProps) => {
   const chartData: ChartData<"bar", number[], string> = {
-    labels: data.map((item) => item.status),
+    labels: data?.map((item) => item.status) ?? [],
     datasets: [
       {
-        data: data.map((item) => item.count),
+        data: data?.map((item) => item.count) ?? [],
         backgroundColor: ["#81C784", "#E57373", "#64B5F6", "#FFD54F"],
         borderRadius: 6,
       },

@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
+import { LoadingPage } from "@/components/layout/Loading";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams } from "react-router-dom";
@@ -15,7 +16,7 @@ export default function StaffLogbookDetailPage() {
     idLogbook: string;
   }>();
 
-  const { staffLogbook, staffLogbookDetail, loadStaffLogbook, loadStaffLogbookDetail, resetDetail } = useLogbookStore();
+  const { staffLogbook, staffLogbookDetail, isLoadingDetail, loadStaffLogbook, loadStaffLogbookDetail, resetDetail } = useLogbookStore();
 
   useEffect(() => {
     if (idUser) {
@@ -30,7 +31,9 @@ export default function StaffLogbookDetailPage() {
     }
   }, [idUser, idLogbook, loadStaffLogbookDetail]);
 
-  return (
+  return isLoadingDetail ? (
+    <LoadingPage />
+  ) : (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[

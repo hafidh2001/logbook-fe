@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
+import { LoadingPage } from "@/components/layout/Loading";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
@@ -28,7 +29,7 @@ export default function RekapPenilaianDetailPage() {
     navigate(ROUTES.rekapPenilaian);
   };
 
-  if (!penilaian && !isLoadingDetail) {
+  if (!penilaian) {
     return (
       <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
         <Topbar
@@ -55,11 +56,9 @@ export default function RekapPenilaianDetailPage() {
     );
   }
 
-  if (!penilaian) {
-    return null;
-  }
-
-  return (
+  return isLoadingDetail ? (
+    <LoadingPage />
+  ) : (
     <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[

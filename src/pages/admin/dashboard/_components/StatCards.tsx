@@ -12,7 +12,7 @@ interface StatCardsData {
 }
 
 interface StatCardsProps {
-  data: StatCardsData;
+  data: StatCardsData | null;
 }
 
 export const StatCards = ({ data }: StatCardsProps) => {
@@ -27,15 +27,15 @@ export const StatCards = ({ data }: StatCardsProps) => {
         </div>
         <div className="flex items-baseline gap-1 justify-center">
           <span className="text-xl font-bold text-gray-800">
-            {data.active_ppds_count}
+            {data?.active_ppds_count ?? 0}
           </span>
           <span className="text-xs text-gray-500">
-            of {data.total_ppds}
+            of {data?.total_ppds ?? 0}
           </span>
         </div>
         <p className="text-xs text-gray-500 mt-1 text-center">Active PPDS</p>
         <p className="text-xs text-blue-600 mt-2 cursor-pointer hover:underline truncate text-center">
-          {data.inactive_ppds_count} Inactive PPDS
+          {data?.inactive_ppds_count ?? 0} Inactive PPDS
         </p>
       </div>
 
@@ -47,7 +47,7 @@ export const StatCards = ({ data }: StatCardsProps) => {
           </div>
         </div>
         <span className="text-xl font-bold text-gray-800 block text-center">
-          {data.activity_count}
+          {data?.activity_count ?? 0}
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Activity</p>
       </div>
@@ -60,7 +60,7 @@ export const StatCards = ({ data }: StatCardsProps) => {
           </div>
         </div>
         <span className="text-xl font-bold text-gray-800 block text-center">
-          {data.staff_pengajar_count}
+          {data?.staff_pengajar_count ?? 0}
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Staff Pengajar</p>
       </div>
@@ -73,7 +73,7 @@ export const StatCards = ({ data }: StatCardsProps) => {
           </div>
         </div>
         <span className="text-xl font-bold text-gray-800 block text-center">
-          {data.stage_count}
+          {data?.stage_count ?? 0}
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Stage</p>
       </div>
@@ -86,11 +86,11 @@ export const StatCards = ({ data }: StatCardsProps) => {
           </div>
         </div>
         <span className="text-xl font-bold text-gray-800 block text-center">
-          {data.logbook_count}
+          {data?.logbook_count ?? 0}
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Logbook</p>
         <p className="text-xs text-blue-600 mt-2 cursor-pointer hover:underline truncate text-center">
-          {data.unverified_logbook_count} Unverified
+          {data?.unverified_logbook_count ?? 0} Unverified
         </p>
       </div>
     </div>

@@ -1,4 +1,3 @@
-import { icons } from "@/assets/images/Icon";
 import { LucideIcon } from "lucide-react";
 
 interface StatusCardProps {

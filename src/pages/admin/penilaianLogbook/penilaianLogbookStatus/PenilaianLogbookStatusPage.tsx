@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
+import { LoadingPage } from "@/components/layout/Loading";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate, useParams } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
@@ -10,7 +11,7 @@ export default function PenilaianLogbookStatusPage() {
   const { idLogbookCategory } = useParams<{ idLogbookCategory: string }>();
   const navigate = useNavigate();
 
-  const { penilaianList, loadPenilaianList, reset } = usePenilaianLogbookStore();
+  const { penilaianList, isLoading, loadPenilaianList, reset } = usePenilaianLogbookStore();
 
   useEffect(() => {
     loadPenilaianList();
@@ -19,7 +20,9 @@ export default function PenilaianLogbookStatusPage() {
 
   const data = penilaianList.find((item) => item.id === Number(idLogbookCategory));
 
-  return (
+  return isLoading ? (
+    <LoadingPage />
+  ) : (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[

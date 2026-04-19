@@ -8,15 +8,15 @@ interface PPDSPerStageItem {
 }
 
 interface PPDSPerStageProps {
-  data: PPDSPerStageItem[];
+  data: PPDSPerStageItem[] | null;
 }
 
 export const PPDSPerStage = ({ data }: PPDSPerStageProps) => {
   const chartData: ChartData<"doughnut", number[], string> = {
-    labels: data.map((item) => item.stage),
+    labels: data?.map((item) => item.stage) ?? [],
     datasets: [
       {
-        data: data.map((item) => item.count),
+        data: data?.map((item) => item.count) ?? [],
         backgroundColor: ["#6C63FF", "#81C784", "#64B5F6"],
         borderWidth: 0,
       },

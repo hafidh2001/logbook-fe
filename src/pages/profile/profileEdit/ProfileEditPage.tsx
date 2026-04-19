@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
+import { LoadingPage } from "@/components/layout/Loading";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -12,7 +13,7 @@ import { useEffect } from "react";
 
 export default function ProfileEditPage() {
   const navigate = useNavigate();
-  const { profile, loadProfile, updateProfile, reset } = useProfileStore();
+  const { profile, isLoading, loadProfile, updateProfile, reset } = useProfileStore();
 
   useEffect(() => {
     loadProfile();
@@ -49,7 +50,9 @@ export default function ProfileEditPage() {
     }
   };
 
-  return (
+  return isLoading ? (
+    <LoadingPage />
+  ) : (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[

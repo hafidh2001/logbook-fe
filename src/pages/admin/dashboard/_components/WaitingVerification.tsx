@@ -8,7 +8,7 @@ interface WaitingVerificationItem {
 }
 
 interface WaitingVerificationProps {
-  items: WaitingVerificationItem[];
+  items: WaitingVerificationItem[] | null;
 }
 
 export const WaitingVerification = ({ items }: WaitingVerificationProps) => {
@@ -16,7 +16,7 @@ export const WaitingVerification = ({ items }: WaitingVerificationProps) => {
     <CardWrapper title="Menunggu Verifikasi">
       <div className="max-h-80 overflow-y-auto">
         <div className="space-y-3">
-          {items.map((item, index) => (
+          {items?.map((item, index) => (
             <div
               key={index}
               className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"

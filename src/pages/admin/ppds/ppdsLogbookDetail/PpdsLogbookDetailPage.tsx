@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
+import { LoadingPage } from "@/components/layout/Loading";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams, useLocation } from "react-router-dom";
@@ -16,7 +17,7 @@ export default function PpdsLogbookDetailPage() {
   }>();
   const location = useLocation();
 
-  const { ppdsLogbook, ppdsLogbookDetail, loadPpdsLogbook, loadPpdsLogbookDetail, resetDetail } = useLogbookStore();
+  const { ppdsLogbook, ppdsLogbookDetail, isLoadingDetail, loadPpdsLogbook, loadPpdsLogbookDetail, resetDetail } = useLogbookStore();
 
   useEffect(() => {
     if (idUser) {
@@ -41,7 +42,9 @@ export default function PpdsLogbookDetailPage() {
     ? ROUTES.ppdsInactiveLogbook(idUser || "")
     : ROUTES.ppdsLogbook(idUser || "");
 
-  return (
+  return isLoadingDetail ? (
+    <LoadingPage />
+  ) : (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[

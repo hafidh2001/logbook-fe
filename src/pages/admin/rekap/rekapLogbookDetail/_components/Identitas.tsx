@@ -1,5 +1,3 @@
-import { StatusBadge } from "./StatusBadge";
-
 interface RekapLogbookDetail {
   ppds?: string | null;
   semester?: string | null;

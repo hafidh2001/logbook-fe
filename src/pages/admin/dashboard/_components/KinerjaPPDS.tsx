@@ -8,7 +8,7 @@ interface KinerjaPPDSItem {
 }
 
 interface KinerjaPPDSProps {
-  items: KinerjaPPDSItem[];
+  items: KinerjaPPDSItem[] | null;
 }
 
 export const KinerjaPPDS = ({ items }: KinerjaPPDSProps) => {
@@ -16,7 +16,7 @@ export const KinerjaPPDS = ({ items }: KinerjaPPDSProps) => {
     <CardWrapper title="Kinerja PPDS">
       <div className="max-h-80 overflow-y-auto">
         <div className="space-y-3">
-          {items.map((item, index) => (
+          {items?.map((item, index) => (
             <div
               key={index}
               className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"

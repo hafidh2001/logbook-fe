@@ -8,15 +8,15 @@ interface PPDSBaruChartItem {
 }
 
 interface PPDSBaruChartProps {
-  data: PPDSBaruChartItem[];
+  data: PPDSBaruChartItem[] | null;
 }
 
 export const PPDSBaruChart = ({ data }: PPDSBaruChartProps) => {
   const chartData: ChartData<"line", number[], string> = {
-    labels: data.map((item) => item.year),
+    labels: data?.map((item) => item.year) ?? [],
     datasets: [
       {
-        data: data.map((item) => item.count),
+        data: data?.map((item) => item.count) ?? [],
         borderColor: "#14B8A6",
         backgroundColor: "rgba(20, 184, 166, 0.1)",
         fill: true,

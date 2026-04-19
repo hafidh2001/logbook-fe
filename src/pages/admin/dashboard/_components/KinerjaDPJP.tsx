@@ -9,7 +9,7 @@ interface KinerjaDPJPItem {
 }
 
 interface KinerjaDPJPProps {
-  items: KinerjaDPJPItem[];
+  items: KinerjaDPJPItem[] | null;
 }
 
 export const KinerjaDPJP = ({ items }: KinerjaDPJPProps) => {
@@ -17,7 +17,7 @@ export const KinerjaDPJP = ({ items }: KinerjaDPJPProps) => {
     <CardWrapper title="Kinerja DPJP">
       <div className="max-h-80 overflow-y-auto">
         <div className="space-y-3">
-          {items.map((item, index) => (
+          {items?.map((item, index) => (
             <div
               key={index}
               className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"

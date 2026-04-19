@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
+import { LoadingPage } from "@/components/layout/Loading";
 import { ROUTES } from "@/utils/routes";
 import { useParams, useLocation } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
@@ -17,7 +18,7 @@ export default function PenilaianLogbookDetailPage() {
   }>();
   const location = useLocation();
 
-  const { penilaianLogbookDetail, loadPenilaianLogbookDetail, resetDetail } = usePenilaianLogbookStore();
+  const { penilaianLogbookDetail, isLoadingDetail, loadPenilaianLogbookDetail, resetDetail } = usePenilaianLogbookStore();
 
   useEffect(() => {
     if (idLogbook) {
@@ -28,7 +29,9 @@ export default function PenilaianLogbookDetailPage() {
 
   const isScored = location.pathname.includes("/scored-logbook/");
 
-  return (
+  return isLoadingDetail ? (
+    <LoadingPage />
+  ) :(
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[

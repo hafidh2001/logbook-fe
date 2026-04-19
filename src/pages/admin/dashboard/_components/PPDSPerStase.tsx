@@ -8,15 +8,15 @@ interface PPDSPerStaseItem {
 }
 
 interface PPDSPerStaseProps {
-  data: PPDSPerStaseItem[];
+  data: PPDSPerStaseItem[] | null;
 }
 
 export const PPDSPerStase = ({ data }: PPDSPerStaseProps) => {
   const chartData: ChartData<"doughnut", number[], string> = {
-    labels: data.map((item) => item.stase),
+    labels: data?.map((item) => item.stase) ?? [],
     datasets: [
       {
-        data: data.map((item) => item.count),
+        data: data?.map((item) => item.count) ?? [],
         backgroundColor: ["#FF6B6B", "#4ECDC4", "#45B7D1"],
         borderWidth: 0,
       },

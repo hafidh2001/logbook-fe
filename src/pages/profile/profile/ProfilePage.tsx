@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
+import { LoadingPage } from "@/components/layout/Loading";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
@@ -10,18 +11,24 @@ import { InfoDetail } from "./_components/InfoDetail";
 export default function ProfilePage() {
   const navigate = useNavigate();
 
-  const { profile, loadProfile, reset } = useProfileStore();
+  const { profile, isLoading, loadProfile, reset } = useProfileStore();
 
   useEffect(() => {
     loadProfile();
     return () => reset();
   }, [loadProfile, reset]);
 
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
   const handleEditProfile = () => {
     navigate(ROUTES.profileEdit);
   };
 
-  return (
+  return isLoading ? (
+    <LoadingPage />
+  ) : (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar breadcrumbs={[{ label: "Profil" }]} />
       <div className="flex-1 px-4 sm:px-6 py-4">

@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
+import { LoadingPage } from "@/components/layout/Loading";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -29,7 +30,7 @@ export default function PpdsDetailPage() {
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
 
-  const { selectedPpds, loadPpdsDetail, updatePpds, deletePpds, resetDetail } = usePpdsStore();
+  const { selectedPpds, isLoadingDetail, loadPpdsDetail, updatePpds, deletePpds, resetDetail } = usePpdsStore();
 
   useEffect(() => {
     if (idUser) {
@@ -77,7 +78,9 @@ export default function PpdsDetailPage() {
     }
   };
 
-  return (
+  return isLoadingDetail ? (
+    <LoadingPage />
+  ) : (
     <div className="min- h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[

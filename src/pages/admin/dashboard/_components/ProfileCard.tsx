@@ -1,8 +1,8 @@
 import { DashboardIcon } from "@/assets/images/DashboardIcon";
 
 interface ProfileCardProps {
-  teamName: string;
-  year: string;
+  teamName: string | null;
+  year: string | null;
 }
 
 export const ProfileCard = ({ teamName, year }: ProfileCardProps) => {
@@ -13,10 +13,10 @@ export const ProfileCard = ({ teamName, year }: ProfileCardProps) => {
       </div>
       <div>
         <h2 className="text-xl font-bold text-gray-800">
-          {teamName}
+          {teamName ?? "-"}
         </h2>
         <p className="text-sm text-gray-500 mt-1">
-          Tahun Ajaran {year}
+          Tahun Ajaran {year ?? "-"}
         </p>
       </div>
     </div>
