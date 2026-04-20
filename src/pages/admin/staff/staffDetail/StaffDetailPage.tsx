@@ -17,7 +17,14 @@ export default function StaffDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
 
-  const { selectedStaff, isLoadingDetail, loadStaffDetail, updateStaff, deleteStaff, resetDetail } = useStaffStore();
+  const {
+    selectedStaff,
+    isLoadingDetail,
+    loadStaffDetail,
+    updateStaff,
+    deleteStaff,
+    resetDetail,
+  } = useStaffStore();
 
   useEffect(() => {
     if (idUser) {
@@ -37,7 +44,9 @@ export default function StaffDetailPage() {
       username: selectedStaff?.username || "",
       email: selectedStaff?.email || "",
       phone: selectedStaff?.phone || "",
-      dateOfBirth: selectedStaff?.date_of_birth ? dayjs(selectedStaff.date_of_birth, "DD MMMM YYYY").toDate() : null,
+      dateOfBirth: selectedStaff?.date_of_birth
+        ? dayjs(selectedStaff.date_of_birth, "DD MMMM YYYY").toDate()
+        : null,
       code: selectedStaff?.code || "",
       address: selectedStaff?.address || "",
       role: selectedStaff?.role || "staff",
@@ -58,9 +67,11 @@ export default function StaffDetailPage() {
     }
   };
 
-  return isLoadingDetail ? (
-    <LoadingPage />
-  ) : (
+  if (isLoadingDetail) {
+    return <LoadingPage />;
+  }
+
+  return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[
@@ -75,7 +86,6 @@ export default function StaffDetailPage() {
           {/* Edit Form - 2 Column Layout */}
           <div className="bg-white rounded-lg border p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-
               {/* Row 1: Display Name* | Username* */}
               <Controller
                 name="displayName"
@@ -228,7 +238,6 @@ export default function StaffDetailPage() {
                   <icons.ArrowUpRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
-
             </div>
           </div>
 
