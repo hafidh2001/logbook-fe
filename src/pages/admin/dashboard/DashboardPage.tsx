@@ -16,16 +16,23 @@ import { KinerjaDPJP } from "./_components/KinerjaDPJP";
 import { KinerjaPPDS } from "./_components/KinerjaPPDS";
 
 export default function DashboardPage() {
-  const { dashboardData: data, isLoading, loadDashboard, reset } = useDashboardStore();
+  const {
+    dashboardData: data,
+    isLoading,
+    loadDashboard,
+    reset,
+  } = useDashboardStore();
 
   useEffect(() => {
     loadDashboard();
     return () => reset();
   }, [loadDashboard, reset]);
 
-  return isLoading ? (
-    <LoadingPage />
-  ) : (
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
+  return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar breadcrumbs={[{ label: "Dashboard" }]} />
       <div className="flex-1 px-4 sm:px-6 py-4 overflow-auto">
@@ -34,7 +41,10 @@ export default function DashboardPage() {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Profile Card - 30% */}
             <div className="lg:w-[30%] bg-white rounded-lg border overflow-hidden flex justify-center items-center">
-              <ProfileCard teamName={data?.team_name ?? null} year={data?.year ?? null} />
+              <ProfileCard
+                teamName={data?.team_name ?? null}
+                year={data?.year ?? null}
+              />
             </div>
 
             {/* Stat Cards Grid - 70% */}
