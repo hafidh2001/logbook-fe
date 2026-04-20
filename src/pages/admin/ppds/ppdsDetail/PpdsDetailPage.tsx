@@ -78,9 +78,11 @@ export default function PpdsDetailPage() {
     }
   };
 
-  return isLoadingDetail ? (
-    <LoadingPage />
-  ) : (
+  if (isLoadingDetail) {
+    return <LoadingPage />;
+  }
+
+  return (
     <div className="min- h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[
