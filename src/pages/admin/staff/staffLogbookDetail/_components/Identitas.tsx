@@ -1,33 +1,29 @@
-interface Participant {
-  displayName?: string;
-  code?: string | null;
+import { CardWrapper } from "@/components/card/cardWrapper";
+
+interface Props {
+  data: any;
 }
 
-interface IdentitasProps {
-  participant: Participant | null;
-}
-
-const formatDisplayText = (value: string | null | undefined): string => {
-  if (value === null || value === undefined || value === "") return "-";
-  return value;
-};
-
-export const Identitas = ({ participant }: IdentitasProps) => {
+export const Identitas = ({ data }: Props) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <CardWrapper
+      title="Identitas"
+      className="mb-4"
+      contentClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+    >
       {/* Row 1 */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Nama</span>
         <span className="text-sm font-medium text-gray-800">
-          {formatDisplayText(participant?.displayName)}
+          {data?.displayName ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Code</span>
         <span className="text-sm font-medium text-gray-800">
-          {formatDisplayText(participant?.code)}
+          {data?.code ?? "-"}
         </span>
       </div>
-    </div>
+    </CardWrapper>
   );
 };

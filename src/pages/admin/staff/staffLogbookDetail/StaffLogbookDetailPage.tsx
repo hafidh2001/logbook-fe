@@ -16,7 +16,14 @@ export default function StaffLogbookDetailPage() {
     idLogbook: string;
   }>();
 
-  const { staffLogbook, staffLogbookDetail, isLoadingDetail, loadStaffLogbook, loadStaffLogbookDetail, resetDetail } = useLogbookStore();
+  const {
+    staffLogbook,
+    staffLogbookDetail,
+    isLoadingDetail,
+    loadStaffLogbook,
+    loadStaffLogbookDetail,
+    resetDetail,
+  } = useLogbookStore();
 
   useEffect(() => {
     if (idUser) {
@@ -31,34 +38,30 @@ export default function StaffLogbookDetailPage() {
     }
   }, [idUser, idLogbook, loadStaffLogbookDetail]);
 
-  return isLoadingDetail ? (
-    <LoadingPage />
-  ) : (
+  if (isLoadingDetail) {
+    return <LoadingPage />;
+  }
+
+  return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[
           { label: "Staff", to: ROUTES.staff },
           { label: "Detail", to: ROUTES.staffDetail(String(idUser)) },
           { label: "Logbook", to: ROUTES.staffLogbook(String(idUser)) },
-          { label: "Detail", to: undefined },
+          { label: "Detail" },
         ]}
       />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Card 1 - Identitas */}
-          <CardWrapper title="Identitas" className="mb-4">
-            <Identitas participant={staffLogbook?.participant ?? null} />
-          </CardWrapper>
+          <Identitas data={staffLogbook?.participant ?? null} />
 
           {/* Card 2 - Kegiatan */}
-          <CardWrapper title="Kegiatan" className="mb-4">
-            <Kegiatan detail={staffLogbookDetail} />
-          </CardWrapper>
+          <Kegiatan data={staffLogbookDetail} />
 
           {/* Card 3 - PPDS */}
-          <CardWrapper title="PPDS" className="mb-4">
-            <PPDS detail={staffLogbookDetail} />
-          </CardWrapper>
+          <PPDS data={staffLogbookDetail} />
 
           {/* Back Button */}
           <div className="mt-4 flex justify-end">
