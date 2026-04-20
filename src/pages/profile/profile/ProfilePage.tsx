@@ -1,6 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
 import { LoadingPage } from "@/components/layout/Loading";
-import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { useProfileStore } from "@/store/profileStore";
