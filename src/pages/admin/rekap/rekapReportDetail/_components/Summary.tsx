@@ -1,21 +1,15 @@
-interface CardSummary {
-  period?: string | null;
-  total_logbooks?: number | null;
-  semester?: string | null;
-  status?: string | null;
+import { CardWrapper } from "@/components/card/cardWrapper";
+
+interface Props {
+  data: any;
 }
 
-interface RekapReportDetail {
-  card_summary?: CardSummary | null;
-}
-
-interface SummaryProps {
-  data: RekapReportDetail | null;
-}
-
-export const Summary = ({ data }: SummaryProps) => {
+export const Summary = ({ data }: Props) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <CardWrapper
+      title="Summary"
+      contentClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+    >
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-28">Period</span>
         <span className="text-sm font-medium text-gray-800">
@@ -23,9 +17,7 @@ export const Summary = ({ data }: SummaryProps) => {
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500 w-28">
-          Total Logbooks
-        </span>
+        <span className="text-sm text-gray-500 w-28">Total Logbooks</span>
         <span className="text-sm font-medium text-gray-800">
           {data?.card_summary?.total_logbooks ?? "-"}
         </span>
@@ -42,6 +34,6 @@ export const Summary = ({ data }: SummaryProps) => {
           {data?.card_summary?.status ?? "-"}
         </span>
       </div>
-    </div>
+    </CardWrapper>
   );
 };

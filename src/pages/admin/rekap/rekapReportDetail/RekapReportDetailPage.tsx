@@ -26,7 +26,7 @@ export default function RekapReportDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
 
   const {
-    rekapReportDetail,
+    rekapReportDetail: data,
     isLoadingDetail,
     loadRekapReportDetail,
     resetDetail,
@@ -73,9 +73,11 @@ export default function RekapReportDetailPage() {
     },
   ];
 
-  return isLoadingDetail ? (
-    <LoadingPage />
-  ) : (
+  if (isLoadingDetail) {
+    return <LoadingPage />;
+  }
+
+  return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[
@@ -86,30 +88,24 @@ export default function RekapReportDetailPage() {
         onExport={handleExport}
       />
       <div className="flex-1 px-4 sm:px-6 py-4 overflow-auto min-h-0">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto flex flex-col gap-4">
           {/* Header Title */}
-          <div className="mb-4 flex-shrink-0 max-w-5xl">
+          <div className="flex-shrink-0 max-w-5xl">
             <h1 className="text-2xl font-bold text-gray-800">
-              Detail Rekap Report - {rekapReportDetail?.ppds_name ?? "-"}
+              Detail Rekap Report - {data?.ppds_name ?? "-"}
             </h1>
           </div>
 
           {/* Card 1 - Summary */}
-          <CardWrapper title="Summary" className="mb-4">
-            <Summary data={rekapReportDetail} />
-          </CardWrapper>
+          <Summary data={data} />
 
           {/* Card 2 - Activity Breakdown */}
-          <CardWrapper title="Activity Breakdown" className="mb-4">
-            <ActivityBreakdown
-              items={rekapReportDetail?.activity_breakdown ?? []}
-            />
-          </CardWrapper>
+          <ActivityBreakdown data={data?.activity_breakdown ?? []} />
 
           {/* Table Section */}
           <div className="min-h-[300px] flex flex-col bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={rekapReportDetail?.logbook_table.items ?? []}
+              data={data?.logbook_table.items ?? []}
               columns={columns}
               pagination={{
                 enabled: true,
@@ -122,7 +118,7 @@ export default function RekapReportDetailPage() {
           </div>
 
           {/* Back Button */}
-          <div className="mt-4 flex justify-end">
+          <div className="flex justify-end">
             <button
               onClick={() => window.history.back()}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

@@ -1,10 +1,10 @@
 import { icons } from "@/assets/images/Icon";
 
-interface StatusBadgeProps {
+interface Props {
   status: string | null;
 }
 
-export const StatusBadge = ({ status }: StatusBadgeProps) => {
+export const StatusBadge = ({ status }: Props) => {
   if (!status) {
     return (
       <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-md">

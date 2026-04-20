@@ -1,16 +1,16 @@
-interface ActivityItem {
-  count: number;
-  label: string;
+import { CardWrapper } from "@/components/card/cardWrapper";
+
+interface Props {
+  data: any[];
 }
 
-interface ActivityBreakdownProps {
-  items: ActivityItem[];
-}
-
-export const ActivityBreakdown = ({ items }: ActivityBreakdownProps) => {
+export const ActivityBreakdown = ({ data }: Props) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
-      {items.map((item, index) => (
+    <CardWrapper
+      title="Activity Breakdown"
+      contentClassName="flex flex-col sm:flex-row gap-4"
+    >
+      {data.map((item, index) => (
         <div
           key={index}
           className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
@@ -23,6 +23,6 @@ export const ActivityBreakdown = ({ items }: ActivityBreakdownProps) => {
           </span>
         </div>
       ))}
-    </div>
+    </CardWrapper>
   );
 };
