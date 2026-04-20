@@ -18,37 +18,24 @@ export default function ProfilePage() {
     return () => reset();
   }, [loadProfile, reset]);
 
-  if (isLoading) {
-    return <LoadingPage />;
-  }
-
   const handleEditProfile = () => {
     navigate(ROUTES.profileEdit);
   };
 
-  return isLoading ? (
-    <LoadingPage />
-  ) : (
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
+  return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar breadcrumbs={[{ label: "Profil" }]} />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Card 1 - Profile Header */}
-          <CardWrapper
-            title="Profil"
-            className="mb-4"
-            contentClassName="sm:flex justify-between items-center"
-          >
-            <Header
-              profile={profile}
-              onEdit={handleEditProfile}
-            />
-          </CardWrapper>
+          <Header data={profile} onEdit={handleEditProfile} />
 
           {/* Card 2 - Info Detail */}
-          <CardWrapper title="Info Detail" className="mb-4">
-            <InfoDetail profile={profile} />
-          </CardWrapper>
+          <InfoDetail data={profile} />
         </div>
       </div>
     </div>

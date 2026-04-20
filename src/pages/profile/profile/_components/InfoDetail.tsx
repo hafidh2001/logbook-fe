@@ -1,62 +1,55 @@
-interface Profile {
-  nama?: string;
-  email?: string;
-  telephoneNumber?: string;
-  code?: string;
-  tanggalLahir?: string | null;
-  address?: string;
+import { CardWrapper } from "@/components/card/cardWrapper";
+
+interface Props {
+  data: any;
 }
 
-interface InfoDetailProps {
-  profile: Profile | null;
-}
-
-export const InfoDetail = ({ profile }: InfoDetailProps) => {
+export const InfoDetail = ({ data }: Props) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <CardWrapper
+      title="Info Detail"
+      className="mb-4"
+      contentClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+    >
       {/* Row 1 */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Nama</span>
         <span className="text-sm font-medium text-gray-800">
-          {profile?.nama ?? "-"}
+          {data?.nama ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Email</span>
         <span className="text-sm font-medium text-gray-800">
-          {profile?.email || "-"}
+          {data?.email || "-"}
         </span>
       </div>
       {/* Row 2 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500 w-36">
-          Telephone Number
-        </span>
+        <span className="text-sm text-gray-500 w-36">Telephone Number</span>
         <span className="text-sm font-medium text-gray-800">
-          {profile?.telephoneNumber || "-"}
+          {data?.telephoneNumber || "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Code</span>
         <span className="text-sm font-medium text-gray-800">
-          {profile?.code || "-"}
+          {data?.code || "-"}
         </span>
       </div>
       {/* Row 3 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500 w-36">
-          Tanggal Lahir
-        </span>
+        <span className="text-sm text-gray-500 w-36">Tanggal Lahir</span>
         <span className="text-sm font-medium text-gray-800">
-          {profile?.tanggalLahir || "-"}
+          {data?.tanggalLahir || "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Address</span>
         <span className="text-sm font-medium text-gray-800">
-          {profile?.address || "-"}
+          {data?.address || "-"}
         </span>
       </div>
-    </div>
+    </CardWrapper>
   );
 };
