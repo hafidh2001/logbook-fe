@@ -20,7 +20,8 @@ export default function StaseListPage() {
 
   const navigate = useNavigate();
 
-  const { staseList, isLoading, loadStaseList, deleteStase, reset } = useStaseStore();
+  const { staseList, isLoading, loadStaseList, deleteStase, reset } =
+    useStaseStore();
 
   useEffect(() => {
     loadStaseList();
@@ -189,15 +190,19 @@ export default function StaseListPage() {
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isShown={deleteModal.open}
-        toggle={(open) => setDeleteModal({ open: open ?? !deleteModal.open, item: deleteModal.item })}
+        toggle={(open) =>
+          setDeleteModal({
+            open: open ?? !deleteModal.open,
+            item: deleteModal.item,
+          })
+        }
         title="Hapus Data"
         description={
           <>
             Apakah Anda yakin ingin menghapus data stase{" "}
-            <span className="font-semibold">
-              {deleteModal.item?.stase}
-            </span>{" "}
-            untuk user <span className="font-semibold">{deleteModal.item?.user}</span>?
+            <span className="font-semibold">{deleteModal.item?.stase}</span>{" "}
+            untuk user{" "}
+            <span className="font-semibold">{deleteModal.item?.user}</span>?
             Tindakan ini tidak dapat dibatalkan.
           </>
         }

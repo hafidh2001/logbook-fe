@@ -27,7 +27,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
-      <Topbar breadcrumbs={[{ label: "Profil" }]} />
+      <Topbar breadcrumbs={[{ label: "Profil", to: ROUTES.profile }]} />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Card 1 - Profile Header */}

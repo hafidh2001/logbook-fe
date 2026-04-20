@@ -115,7 +115,7 @@ export default function StaseFormPage() {
       <Topbar
         breadcrumbs={[
           { label: "Stase", to: ROUTES.stase },
-          { label: isEditMode ? "Detail" : "Tambah Stase", to: undefined },
+          { label: isEditMode ? "Detail" : "Tambah Stase"},
         ]}
         onSave={handleSubmit(onSubmit)}
         onDelete={isEditMode ? handleDelete : undefined}
