@@ -1,5 +1,5 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
-import { StatusBadge } from "./StatusBadge";
+import { StatusBadge } from "@/components/statusBadge";
 
 interface Props {
   data: any;
@@ -16,7 +16,7 @@ export const PPDS = ({ data }: Props) => {
       <span className="text-sm font-medium text-gray-800">
         {data?.ppds ?? "-"}
       </span>
-      <StatusBadge status={data?.verifiedStatus ?? null} type="ppds" />
+      <StatusBadge status={data?.verifiedStatus ?? null} />
     </CardWrapper>
   );
 };

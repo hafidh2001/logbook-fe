@@ -1,5 +1,5 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
-import { StatusBadge } from "./StatusBadge";
+import { StatusBadge } from "@/components/statusBadge";
 
 interface Props {
   data: any;

@@ -1,5 +1,5 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
-import { StatusBadge } from "./StatusBadge";
+import { StatusBadge } from "@/components/statusBadge";
 
 interface Props {
   data: any;
@@ -15,7 +15,7 @@ export const Staff = ({ data }: Props) => {
       <span className="text-sm font-medium text-gray-800">
         {data?.staffPengajar ?? "-"}
       </span>
-      <StatusBadge status={data?.verifiedStatus ?? null} type="staff" />
+      <StatusBadge status={data?.verifiedStatus ?? null} />
     </CardWrapper>
   );
 };

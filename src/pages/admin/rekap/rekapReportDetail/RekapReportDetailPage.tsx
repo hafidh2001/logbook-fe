@@ -1,5 +1,4 @@
 import { Topbar } from "@/components/layout/Topbar";
-import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
@@ -10,9 +9,9 @@ import {
 import { useEffect } from "react";
 import { useRekapStore } from "@/store/rekapStore";
 import { LoadingPage } from "@/components/layout/Loading";
-import { StatusBadge } from "./_components/StatusBadge";
 import { Summary } from "./_components/Summary";
 import { ActivityBreakdown } from "./_components/ActivityBreakdown";
+import { StatusBadge } from "@/components/statusBadge";
 
 interface LogbookItem {
   date: string;

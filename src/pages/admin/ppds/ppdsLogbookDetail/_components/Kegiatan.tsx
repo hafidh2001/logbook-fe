@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import { StatusBadge } from "./StatusBadge";
 import { CardWrapper } from "@/components/card/cardWrapper";
+import { StatusBadge } from "@/components/statusBadge";
 
 interface Props {
   data: any;
@@ -34,7 +34,7 @@ export const Kegiatan = ({ data }: Props) => {
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Verified Status</span>
-        <StatusBadge status={data?.verifiedStatus ?? null} type="verified" />
+        <StatusBadge status={data?.verifiedStatus ?? null} />
       </div>
       {/* Row 3 - Hospital (full width) */}
       <div className="sm:col-span-2 flex items-center gap-2">
