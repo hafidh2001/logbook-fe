@@ -1,18 +1,12 @@
 import { icons } from "@/assets/images/Icon";
 
-interface PenilaianLogbookDetail {
-  ppds?: string | null;
-  code?: string | null;
-  semester?: string | null;
+interface Props {
+  data: any;
 }
 
-interface HeaderProps {
-  data: PenilaianLogbookDetail | null;
-}
-
-export const Header = ({ data }: HeaderProps) => {
+export const Header = ({ data }: Props) => {
   return (
-    <div className="bg-white rounded-lg border overflow-hidden mb-4">
+    <div className="bg-white rounded-lg border overflow-hidden">
       <div className="p-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
@@ -23,9 +17,7 @@ export const Header = ({ data }: HeaderProps) => {
               {data?.ppds ?? "-"}
             </h2>
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-sm text-gray-500">
-                {data?.code ?? "-"}
-              </span>
+              <span className="text-sm text-gray-500">{data?.code ?? "-"}</span>
               <span className="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded">
                 {data?.semester ?? "-"}
               </span>

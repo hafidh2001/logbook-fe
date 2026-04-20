@@ -20,9 +20,11 @@ export default function PenilaianLogbookStatusPage() {
 
   const data = penilaianList.find((item) => item.id === Number(idLogbookCategory));
 
-  return isLoading ? (
-    <LoadingPage />
-  ) : (
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
+  return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[
