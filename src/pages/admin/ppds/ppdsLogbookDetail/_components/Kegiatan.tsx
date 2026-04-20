@@ -10,7 +10,7 @@ export const Kegiatan = ({ data }: Props) => {
   return (
     <CardWrapper
       title="Kegiatan"
-      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+      contentClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
     >
       {/* Row 1 */}
       <div className="flex items-center gap-2">
