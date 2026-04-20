@@ -1,6 +1,5 @@
 import { Topbar } from "@/components/layout/Topbar";
 import { LoadingPage } from "@/components/layout/Loading";
-import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
 import { useParams } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
