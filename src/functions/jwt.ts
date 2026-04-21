@@ -1,6 +1,6 @@
 import * as jose from "jose";
 import { RoleEnum } from "@/types";
-import type { TAuthUser } from "@/types/auth/login";
+import type { TAuthUser } from "@/types/auth/auth";
 
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";

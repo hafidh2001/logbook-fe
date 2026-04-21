@@ -1,5 +1,9 @@
 import axios from "axios";
-import type { ILoginRequest, TAuthUser } from "@/types/auth/login";
+import type {
+  ILoginRequest,
+  IProfilePayload,
+  TAuthUser,
+} from "@/types/auth/auth";
 import type { ApiResponse } from "@/types";
 
 // API Configuration from environment variables
@@ -26,21 +30,47 @@ export const authApi = {
   /**
    * Login user
    */
-  async login(credentials: ILoginRequest): Promise<TAuthUser> {
+  async login(credentials: ILoginRequest): Promise<ApiResponse<TAuthUser>> {
     try {
-      const { data: responseData } = await apiClient.post<ApiResponse<TAuthUser>>(
-        "Login",
-        credentials,
-      );
+      const { data: responseData } = await apiClient.post("Login", credentials);
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Login gagal");
       }
 
-      return responseData.data;
+      return responseData;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const responseData = error.response?.data as ApiResponse<TAuthUser>;
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Update profile
+   */
+  async updateProfile(
+    data: IProfilePayload,
+  ): Promise<ApiResponse<{ user_id: number }>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "UpdateProfile",
+        data,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Update gagal");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
         if (responseData?.message) {
           throw new Error(responseData.message);
         }

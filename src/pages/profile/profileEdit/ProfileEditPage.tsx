@@ -1,5 +1,5 @@
+import dayjs from "dayjs";
 import { Topbar } from "@/components/layout/Topbar";
-import { LoadingPage } from "@/components/layout/Loading";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -7,18 +7,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { InputField } from "@/components/fields/inputField";
 import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { icons } from "@/assets/images/Icon";
-import { profileEditSchema, ProfileEditFormData } from "@/validations/user/profile";
-import { useProfileStore } from "@/store/profileStore";
-import { useEffect } from "react";
+import {
+  profileEditSchema,
+  ProfileEditFormData,
+} from "@/validations/user/profile";
+import { useAuthStore } from "@/store/authStore";
+import { showToast } from "@/utils/toast";
 
 export default function ProfileEditPage() {
   const navigate = useNavigate();
-  const { profile, isLoading, loadProfile, updateProfile, reset } = useProfileStore();
-
-  useEffect(() => {
-    loadProfile();
-    return () => reset();
-  }, [loadProfile, reset]);
+  const {
+    user,
+    updateProfile,
+    isLoading,
+  } = useAuthStore();
 
   const {
     control,
@@ -27,32 +29,42 @@ export default function ProfileEditPage() {
   } = useForm<ProfileEditFormData>({
     resolver: zodResolver(profileEditSchema),
     defaultValues: {
-      displayName: profile?.displayName || "",
-      email: profile?.email || "",
-      phone: profile?.telephoneNumber || "",
-      address: profile?.address || "",
-      dateOfBirth: profile?.tanggalLahir ? new Date(profile.tanggalLahir) : null,
-      code: profile?.code || "",
+      display_name: user?.display_name ?? "",
+      email: user?.email ?? "",
+      phone: user?.phone ?? "",
+      address: user?.address ?? "",
+      date_of_birth: user?.date_of_birth ? new Date(user.date_of_birth) : null,
+      code: user?.code ?? "",
     },
   });
 
   const onSubmit = async (data: ProfileEditFormData) => {
-    const success = await updateProfile({
-      displayName: data.displayName,
-      email: data.email,
-      telephoneNumber: data.phone,
-      address: data.address,
-      tanggalLahir: data.dateOfBirth?.toISOString() || null,
-      code: data.code,
-    });
+    const payload = {
+      display_name: data.display_name ?? null,
+      email: data.email ?? null,
+      phone: data.phone ?? null,
+      address: data.address ?? null,
+      date_of_birth: data.date_of_birth
+        ? dayjs(data.date_of_birth).format("YYYY-MM-DD")
+        : null,
+      code: data.code ?? null,
+    };
+
+    const success = await updateProfile({ ...payload, user_id: user?.id ?? 0 });
+
     if (success) {
+      const successMessage = useAuthStore.getState().success;
+      showToast(successMessage ?? "Data berhasil diupdate!", "success", {
+        duration: 3000,
+      });
       navigate(ROUTES.profile);
+    } else {
+      const errorMessage = useAuthStore.getState().error;
+      showToast(errorMessage ?? "Data gagal diupdate!", "error", {
+        duration: 4000,
+      });
     }
   };
-
-  if (isLoading) {
-    <LoadingPage />;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
@@ -62,102 +74,101 @@ export default function ProfileEditPage() {
           { label: "Edit Profil" },
         ]}
         onSave={handleSubmit(onSubmit)}
+        isLoading={isLoading}
       />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Edit Profile Form - 2 Column Layout */}
           <div className="bg-white rounded-lg border p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+              {/* Row 1: Display Name* | Email */}
+              <Controller
+                name="display_name"
+                control={control}
+                render={({ field }) => (
+                  <InputField
+                    label="Display Name"
+                    required
+                    errorMessage={errors.display_name?.message}
+                    {...field}
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Masukkan nama lengkap..."
+                  />
+                )}
+              />
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <InputField
+                    label="Email"
+                    type="email"
+                    errorMessage={errors.email?.message}
+                    {...field}
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Masukkan email..."
+                  />
+                )}
+              />
 
-                {/* Row 1: Display Name* | Email */}
-                <Controller
-                  name="displayName"
-                  control={control}
-                  render={({ field }) => (
-                    <InputField
-                      label="Display Name"
-                      required
-                      errorMessage={errors.displayName?.message}
-                      {...field}
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      placeholder="Masukkan nama lengkap..."
-                    />
-                  )}
-                />
-                <Controller
-                  name="email"
-                  control={control}
-                  render={({ field }) => (
-                    <InputField
-                      label="Email"
-                      type="email"
-                      errorMessage={errors.email?.message}
-                      {...field}
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      placeholder="Masukkan email..."
-                    />
-                  )}
-                />
+              {/* Row 2: Phone | Address */}
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => (
+                  <InputField
+                    label="Phone"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Masukkan nomor telepon..."
+                  />
+                )}
+              />
+              <Controller
+                name="address"
+                control={control}
+                render={({ field }) => (
+                  <InputField
+                    label="Address"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Masukkan alamat..."
+                  />
+                )}
+              />
 
-                {/* Row 2: Phone | Address */}
-                <Controller
-                  name="phone"
-                  control={control}
-                  render={({ field }) => (
-                    <InputField
-                      label="Phone"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      placeholder="Masukkan nomor telepon..."
-                    />
-                  )}
-                />
-                <Controller
-                  name="address"
-                  control={control}
-                  render={({ field }) => (
-                    <InputField
-                      label="Address"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      placeholder="Masukkan alamat..."
-                    />
-                  )}
-                />
-
-                {/* Row 3: Date Of Birth | Code */}
-                <Controller
-                  name="dateOfBirth"
-                  control={control}
-                  render={({ field }) => (
-                    <CalendarSelect
-                      label="Date Of Birth"
-                      {...field}
-                      value={field.value ?? undefined}
-                      onChange={field.onChange}
-                      placeholder="Pilih tanggal lahir..."
-                    />
-                  )}
-                />
-                <Controller
-                  name="code"
-                  control={control}
-                  render={({ field }) => (
-                    <InputField
-                      label="Code"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      placeholder="Masukkan code..."
-                    />
-                  )}
-                />
-
-              </div>
+              {/* Row 3: Date Of Birth | Code */}
+              <Controller
+                name="date_of_birth"
+                control={control}
+                render={({ field }) => (
+                  <CalendarSelect
+                    label="Date Of Birth"
+                    {...field}
+                    value={field.value ?? undefined}
+                    onChange={field.onChange}
+                    placeholder="Pilih tanggal lahir..."
+                  />
+                )}
+              />
+              <Controller
+                name="code"
+                control={control}
+                render={({ field }) => (
+                  <InputField
+                    label="Code"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Masukkan code..."
+                  />
+                )}
+              />
+            </div>
           </div>
 
           {/* Back Button */}

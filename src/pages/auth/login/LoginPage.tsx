@@ -34,11 +34,14 @@ export const LoginPage = () => {
     const success = await login(data);
 
     if (success) {
-      showToast("Login berhasil", "success", { duration: 3000 });
+      const successMessage = useAuthStore.getState().success;
+      showToast(successMessage ?? "Login berhasil", "success", {
+        duration: 3000,
+      });
       navigate(ROUTES.dashboard);
     } else {
       const errorMessage = useAuthStore.getState().error;
-      showToast(errorMessage || "Login gagal", "error", { duration: 4000 });
+      showToast(errorMessage ?? "Login gagal", "error", { duration: 4000 });
     }
   };
 
@@ -141,7 +144,8 @@ export const LoginPage = () => {
 
           {/* Footer Text */}
           <p className="text-center text-xs sm:text-sm text-gray-400 mt-8">
-            &copy; {new Date().getFullYear()} Logbook PPDS. Hak cipta dilindungi.
+            &copy; {new Date().getFullYear()} Logbook PPDS. Hak cipta
+            dilindungi.
           </p>
         </div>
       </div>

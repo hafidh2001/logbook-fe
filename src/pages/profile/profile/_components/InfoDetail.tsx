@@ -1,5 +1,5 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
-import type { TAuthUser } from "@/types/auth/login";
+import type { TAuthUser } from "@/types/auth/auth";
 import dayjs from "dayjs";
 
 interface Props {

@@ -11,4 +11,5 @@ export interface ITopbarProps {
   onSave?: () => void;
   onDelete?: () => void;
   searchPlaceholder?: string;
+  isLoading?: boolean;
 }

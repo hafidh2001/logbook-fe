@@ -12,6 +12,7 @@ export const Topbar = ({
   onSave,
   onDelete,
   searchPlaceholder = "Search...",
+  isLoading = false,
 }: ITopbarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -63,7 +64,7 @@ export const Topbar = ({
 
         {/* Export */}
         {hasExport && (
-          <Button variant="secondary" onClick={onExport}>
+          <Button variant="secondary" onClick={onExport} disabled={isLoading}>
             <icons.FileDown size={16} />
             <span className="hidden sm:inline">Export</span>
           </Button>
@@ -71,7 +72,7 @@ export const Topbar = ({
 
         {/* Save */}
         {hasSave && (
-          <Button variant="default" onClick={onSave}>
+          <Button variant="default" onClick={onSave} disabled={isLoading}>
             <icons.Save size={16} />
             <span className="inline">Save</span>
           </Button>
@@ -79,7 +80,7 @@ export const Topbar = ({
 
         {/* Delete */}
         {hasDelete && (
-          <Button variant="destructive" onClick={onDelete}>
+          <Button variant="destructive" onClick={onDelete} disabled={isLoading}>
             <icons.Trash size={16} />
             <span className="inline">Delete</span>
           </Button>

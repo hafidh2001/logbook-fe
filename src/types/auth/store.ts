@@ -1,5 +1,5 @@
 import { Nullable } from "@/types";
-import type { TAuthUser } from "./login";
+import type { ILoginRequest, IProfilePayload, TAuthUser } from "./auth";
 
 export interface AuthState {
   user: TAuthUser;
@@ -7,19 +7,15 @@ export interface AuthState {
   isLoading: boolean;
   isInitialized: boolean;
   error: Nullable<string>;
+  success: Nullable<string>;
 }
 
 export interface AuthActions {
   init: () => Promise<void>;
-  login: (credentials: LoginCredentials) => Promise<boolean>;
+  login: (credentials: ILoginRequest) => Promise<boolean>;
+  updateProfile: (data: IProfilePayload) => Promise<boolean>;
   logout: () => Promise<void>;
   reset: () => void;
 }
-
-export type LoginCredentials = {
-  username: string;
-  password: string;
-  rememberMe?: boolean;
-};
 
 export type AuthStore = AuthState & AuthActions;
