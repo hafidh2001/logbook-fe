@@ -1,5 +1,6 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
 import type { TAuthUser } from "@/types/auth/login";
+import dayjs from "dayjs";
 
 interface Props {
   data: TAuthUser;
@@ -22,33 +23,33 @@ export const InfoDetail = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Email</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.email || "-"}
+          {data?.email ?? "-"}
         </span>
       </div>
       {/* Row 2 */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Telephone Number</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.phone || "-"}
+          {data?.phone ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Code</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.code || "-"}
+          {data?.code ?? "-"}
         </span>
       </div>
       {/* Row 3 */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Tanggal Lahir</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.date_of_birth || "-"}
+          {data?.date_of_birth ? dayjs(data.date_of_birth).format("DD MMMM YYYY") : "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Address</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.address || "-"}
+          {data?.address ?? "-"}
         </span>
       </div>
     </CardWrapper>

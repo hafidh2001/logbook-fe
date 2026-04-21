@@ -21,10 +21,10 @@ export const Header = ({ data, onEdit }: Props) => {
         </div>
         <div>
           <h2 className="text-lg font-semibold text-gray-800">
-            {data?.display_name || "-"}
+            {data?.display_name ?? "-"}
           </h2>
           <p className="text-sm text-gray-500 capitalize">
-            Role: {data?.role_name || "-"}
+            Role: {data?.role_name ?? "-"}
           </p>
         </div>
       </div>
