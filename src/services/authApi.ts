@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { ILoginRequest, TAuthUser } from "@/types/auth/login";
+import type { ApiResponse } from "@/types";
 
 // API Configuration from environment variables
 const API_URL = import.meta.env.VITE_API_URL;
@@ -27,22 +28,19 @@ export const authApi = {
    */
   async login(credentials: ILoginRequest): Promise<TAuthUser> {
     try {
-      const response = await apiClient.post<TAuthUser>(
+      const { data: responseData } = await apiClient.post<ApiResponse<TAuthUser>>(
         "Login",
         credentials,
       );
 
-      // Check if API returned an error response
-      const responseData = response.data as { success?: boolean; message?: string; role_name?: string };
-      if (responseData.success === false) {
+      if (responseData.status === false) {
         throw new Error(responseData.message || "Login gagal");
       }
 
-      return response.data;
+      return responseData.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        // Check response data for error message even in HTTP errors
-        const responseData = error.response?.data as { message?: string; success?: boolean };
+        const responseData = error.response?.data as ApiResponse<TAuthUser>;
         if (responseData?.message) {
           throw new Error(responseData.message);
         }

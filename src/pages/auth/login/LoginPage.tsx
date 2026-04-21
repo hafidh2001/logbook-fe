@@ -37,7 +37,8 @@ export const LoginPage = () => {
       showToast("Login berhasil", "success", { duration: 3000 });
       navigate(ROUTES.dashboard);
     } else {
-      showToast(error || "Login gagal", "error", { duration: 4000 });
+      const errorMessage = useAuthStore.getState().error;
+      showToast(errorMessage || "Login gagal", "error", { duration: 4000 });
     }
   };
 
