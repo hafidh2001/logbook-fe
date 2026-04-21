@@ -11,6 +11,7 @@ import { InputField } from "@/components/fields/inputField";
 import { PasswordField } from "@/components/fields/passwordField";
 import { loginSchema, LoginFormData } from "@/validations/auth/login";
 import { LeftColumn } from "./_components/LeftColumn";
+import { showToast } from "@/utils/toast";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -33,7 +34,10 @@ export const LoginPage = () => {
     const success = await login(data);
 
     if (success) {
+      showToast("Login berhasil", "success", { duration: 3000 });
       navigate(ROUTES.dashboard);
+    } else {
+      showToast(error || "Login gagal", "error", { duration: 4000 });
     }
   };
 

@@ -33,7 +33,7 @@ export const ProtectedRoute = ({
   }
 
   // Check role authorization if roles are specified
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && user && !allowedRoles.includes(user.role_name)) {
     return <Navigate to={ROUTES.login} replace />;
   }
 

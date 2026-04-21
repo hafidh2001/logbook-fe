@@ -438,7 +438,7 @@ function App() {
         <Route
           path={ROUTES.profile}
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <ProfilePage />
               </AdminLayout>
@@ -448,7 +448,7 @@ function App() {
         <Route
           path={ROUTES.profileEdit}
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <ProfileEditPage />
               </AdminLayout>

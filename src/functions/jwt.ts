@@ -55,10 +55,12 @@ export const jwtService = {
 
   /**
    * Set tokens in cookies
+   * @param rememberMe - if true, keep user logged in for 7 days, otherwise 1 day
    */
-  setTokens: (accessToken: string, refreshToken: string): void => {
+  setTokens: (accessToken: string, refreshToken: string, rememberMe: boolean = false): void => {
     setCookie(ACCESS_TOKEN_KEY, accessToken, 0.0104); // ~15 minutes
-    setCookie(REFRESH_TOKEN_KEY, refreshToken, 7); // 7 days
+    const refreshExpiry = rememberMe ? 7 : 1; // 7 days if remember me, 1 day otherwise
+    setCookie(REFRESH_TOKEN_KEY, refreshToken, refreshExpiry);
   },
 
   /**

@@ -1,42 +1,10 @@
 import { create } from "zustand";
+import { authApi } from "@/services/authApi";
+import { jwtService } from "@/functions/jwt";
 import { RoleEnum } from "@/types";
-import { mockUsers, type MockUser } from "@/data/auth";
-import { jwtService, type JWTPayload } from "@/functions/jwt";
+import type { AuthStore } from "@/types/auth/store";
 
-export type AuthUser = {
-  userId: string;
-  username: string;
-  name: string;
-  role: RoleEnum;
-};
-
-type AuthState = {
-  user: AuthUser | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  isInitialized: boolean;
-  error: string | null;
-};
-
-type LoginCredentials = {
-  username: string;
-  password: string;
-};
-
-type AuthActions = {
-  init: () => Promise<void>;
-  login: (credentials: LoginCredentials) => Promise<boolean>;
-  logout: () => Promise<void>;
-  reset: () => void;
-};
-
-const findMockUser = (username: string, password: string): MockUser | undefined => {
-  return mockUsers.find(
-    (user) => user.username === username && user.password === password
-  );
-};
-
-export const useAuthStore = create<AuthState & AuthActions>((set) => ({
+export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
@@ -46,69 +14,67 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   init: async () => {
     set({ isLoading: true });
 
-    const payload = await jwtService.getCurrentUser();
+    try {
+      const payload = await jwtService.getCurrentUser();
 
-    if (payload) {
+      if (payload) {
+        set({
+          isLoading: false,
+          isInitialized: true,
+        });
+      } else {
+        set({
+          isLoading: false,
+          isInitialized: true,
+        });
+      }
+    } catch {
       set({
-        user: {
-          userId: payload.user_id,
-          username: payload.username,
-          name: payload.name,
-          role: payload.role,
-        },
-        isAuthenticated: true,
         isLoading: false,
         isInitialized: true,
-        error: null,
-      });
-    } else {
-      set({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        isInitialized: true,
-        error: null,
       });
     }
   },
 
-  login: async (credentials: LoginCredentials) => {
+  login: async (credentials) => {
     set({ isLoading: true, error: null });
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const userData = await authApi.login(credentials);
 
-    const mockUser = findMockUser(credentials.username, credentials.password);
+      // Check if user has INSTITUTION role
+      if (userData.role_name !== RoleEnum.INSTITUTION) {
+        set({
+          isLoading: false,
+          error: "Akses terbatas, role anda tidak memiliki izin untuk mengakses website",
+        });
+        return false;
+      }
 
-    if (!mockUser) {
-      set({ isLoading: false, error: "Username atau password salah" });
+      // Generate JWT tokens from user data
+      const jwtPayload = {
+        user_id: String(userData.id),
+        username: userData.username || "",
+        name: userData.displayName,
+        role: userData.role_name,
+      };
+
+      const { accessToken, refreshToken } = await jwtService.generateTokens(jwtPayload);
+      jwtService.setTokens(accessToken, refreshToken, credentials.rememberMe);
+
+      set({
+        user: userData,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+      set({ isLoading: false, error: message });
       return false;
     }
-
-    // Generate JWT tokens
-    const payload: JWTPayload = {
-      user_id: `user_${Date.now()}`,
-      username: mockUser.username,
-      name: mockUser.name,
-      role: mockUser.role,
-    };
-
-    const { accessToken, refreshToken } = await jwtService.generateTokens(payload);
-    jwtService.setTokens(accessToken, refreshToken);
-
-    set({
-      user: {
-        userId: payload.user_id,
-        username: payload.username,
-        name: payload.name,
-        role: payload.role,
-      },
-      isAuthenticated: true,
-      isLoading: false,
-      error: null,
-    });
-
-    return true;
   },
 
   logout: async () => {
