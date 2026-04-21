@@ -3,9 +3,10 @@ import { authApi } from "@/services/authApi";
 import { jwtService } from "@/functions/jwt";
 import { RoleEnum } from "@/types";
 import type { AuthStore } from "@/types/auth/store";
+import { TAuthUser } from "@/types/auth/login";
 
 export const useAuthStore = create<AuthStore>((set) => ({
-  user: null,
+  user: {} as TAuthUser,
   isAuthenticated: false,
   isLoading: false,
   isInitialized: false,
@@ -18,7 +19,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const payload = await jwtService.getCurrentUser();
 
       if (payload) {
+        const userData = jwtService.getUserData();
         set({
+          user: userData,
+          isAuthenticated: true,
           isLoading: false,
           isInitialized: true,
         });
@@ -55,12 +59,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const jwtPayload = {
         user_id: String(userData.id),
         username: userData.username || "",
-        name: userData.displayName,
+        name: userData.display_name,
         role: userData.role_name,
       };
 
       const { accessToken, refreshToken } = await jwtService.generateTokens(jwtPayload);
-      jwtService.setTokens(accessToken, refreshToken, credentials.rememberMe);
+      jwtService.setTokens(accessToken, refreshToken, userData, credentials.rememberMe);
 
       set({
         user: userData,
@@ -80,7 +84,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   logout: async () => {
     jwtService.clearTokens();
     set({
-      user: null,
+      user: {} as TAuthUser,
       isAuthenticated: false,
       error: null,
     });
@@ -89,7 +93,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   reset: () => {
     jwtService.clearTokens();
     set({
-      user: null,
+      user: {} as TAuthUser,
       isAuthenticated: false,
       isLoading: false,
       isInitialized: false,

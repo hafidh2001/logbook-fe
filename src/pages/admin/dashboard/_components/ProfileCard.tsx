@@ -1,11 +1,11 @@
 import { DashboardIcon } from "@/assets/images/DashboardIcon";
+import { useAuthStore } from "@/store/authStore";
+import dayjs from "dayjs";
 
-interface ProfileCardProps {
-  teamName: string | null;
-  year: string | null;
-}
+export const ProfileCard = () => {
+  const { user } = useAuthStore();
+  const year = dayjs().year();
 
-export const ProfileCard = ({ teamName, year }: ProfileCardProps) => {
   return (
     <div className="p-6 flex items-center gap-6">
       <div className="flex-shrink-0">
@@ -13,10 +13,10 @@ export const ProfileCard = ({ teamName, year }: ProfileCardProps) => {
       </div>
       <div>
         <h2 className="text-xl font-bold text-gray-800">
-          {teamName ?? "-"}
+          {user?.client_name ?? "-"}
         </h2>
         <p className="text-sm text-gray-500 mt-1">
-          Tahun Ajaran {year ?? "-"}
+          Tahun Ajaran {year-1}/{year}
         </p>
       </div>
     </div>

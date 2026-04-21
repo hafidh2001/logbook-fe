@@ -2,7 +2,7 @@ import { Nullable } from "@/types";
 import type { TAuthUser } from "./login";
 
 export interface AuthState {
-  user: Nullable<TAuthUser>;
+  user: TAuthUser;
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitialized: boolean;

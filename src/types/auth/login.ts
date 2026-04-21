@@ -2,7 +2,7 @@ import { Nullable, RoleEnum } from "@/types";
 
 export type TAuthUser = {
     id: number;
-    displayName: string;
+    display_name: string;
     username: Nullable<string>;
     email: Nullable<string>;
     id_role: number;

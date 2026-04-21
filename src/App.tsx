@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { ROUTES } from "@/utils/routes";
 import { AdminLayout } from "@/components/layout/AdminLayout";
@@ -43,7 +43,8 @@ import {
 import PenilaianLogbookDetailPage from "@/pages/admin/penilaianLogbook/penilaianLogbookDetail/PenilaianLogbookDetailPage";
 
 function App() {
-  const { init, isInitialized } = useAuthStore();
+  const { isInitialized } = useAuthStore();
+  const init = useCallback(() => useAuthStore.getState().init(), []);
 
   useEffect(() => {
     init();

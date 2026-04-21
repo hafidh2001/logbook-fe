@@ -1,7 +1,8 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
+import type { TAuthUser } from "@/types/auth/login";
 
 interface Props {
-  data: any;
+  data: TAuthUser;
 }
 
 export const InfoDetail = ({ data }: Props) => {
@@ -15,7 +16,7 @@ export const InfoDetail = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Nama</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.nama ?? "-"}
+          {data?.display_name ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -28,7 +29,7 @@ export const InfoDetail = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Telephone Number</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.telephoneNumber || "-"}
+          {data?.phone || "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -41,7 +42,7 @@ export const InfoDetail = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-36">Tanggal Lahir</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.tanggalLahir || "-"}
+          {data?.date_of_birth || "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">

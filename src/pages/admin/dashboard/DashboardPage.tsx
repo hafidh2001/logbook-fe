@@ -41,10 +41,7 @@ export default function DashboardPage() {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Profile Card - 30% */}
             <div className="lg:w-[30%] bg-white rounded-lg border overflow-hidden flex justify-center items-center">
-              <ProfileCard
-                teamName={data?.team_name ?? null}
-                year={data?.year ?? null}
-              />
+              <ProfileCard />
             </div>
 
             {/* Stat Cards Grid - 70% */}

@@ -1,8 +1,10 @@
 import * as jose from "jose";
 import { RoleEnum } from "@/types";
+import type { TAuthUser } from "@/types/auth/login";
 
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
+const USER_DATA_KEY = "user_data";
 const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || "logbook-secret-key-change-in-production";
 const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY = "7d";
@@ -54,13 +56,15 @@ export const jwtService = {
   },
 
   /**
-   * Set tokens in cookies
+   * Set tokens and user data in cookies
    * @param rememberMe - if true, keep user logged in for 7 days, otherwise 1 day
    */
-  setTokens: (accessToken: string, refreshToken: string, rememberMe: boolean = false): void => {
+  setTokens: (accessToken: string, refreshToken: string, userData: TAuthUser, rememberMe: boolean = false): void => {
     setCookie(ACCESS_TOKEN_KEY, accessToken, 0.0104); // ~15 minutes
     const refreshExpiry = rememberMe ? 7 : 1; // 7 days if remember me, 1 day otherwise
     setCookie(REFRESH_TOKEN_KEY, refreshToken, refreshExpiry);
+    // Store user data as JSON cookie
+    setCookie(USER_DATA_KEY, encodeURIComponent(JSON.stringify(userData)), refreshExpiry);
   },
 
   /**
@@ -71,6 +75,19 @@ export const jwtService = {
       accessToken: getCookie(ACCESS_TOKEN_KEY),
       refreshToken: getCookie(REFRESH_TOKEN_KEY),
     };
+  },
+
+  /**
+   * Get user data from cookies
+   */
+  getUserData: (): TAuthUser => {
+    const userDataCookie = getCookie(USER_DATA_KEY);
+    if (!userDataCookie) return {} as TAuthUser;
+    try {
+      return JSON.parse(decodeURIComponent(userDataCookie)) as TAuthUser;
+    } catch {
+      return {} as TAuthUser;
+    }
   },
 
   /**
@@ -104,6 +121,7 @@ export const jwtService = {
   clearTokens: (): void => {
     deleteCookie(ACCESS_TOKEN_KEY);
     deleteCookie(REFRESH_TOKEN_KEY);
+    deleteCookie(USER_DATA_KEY);
   },
 
   /**
@@ -122,11 +140,14 @@ export const jwtService = {
       return false;
     }
 
+    // Get existing user data
+    const userData = jwtService.getUserData();
+
     // Generate new tokens
     const { accessToken, refreshToken: newRefreshToken } =
       await jwtService.generateTokens(payload);
 
-    jwtService.setTokens(accessToken, newRefreshToken);
+    jwtService.setTokens(accessToken, newRefreshToken, userData!);
 
     return true;
   },
