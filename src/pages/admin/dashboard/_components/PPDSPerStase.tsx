@@ -1,4 +1,4 @@
-import { DoughnutChart } from "@/components/chart/doughnutChart";
+import { PieChart } from "@/components/chart/pieChart";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import type { ChartData } from "chart.js";
 
@@ -12,7 +12,7 @@ interface PPDSPerStaseProps {
 }
 
 export const PPDSPerStase = ({ data }: PPDSPerStaseProps) => {
-  const chartData: ChartData<"doughnut", number[], string> = {
+  const chartData: ChartData<"pie", number[], string> = {
     labels: data?.map((item) => item.stase) ?? [],
     datasets: [
       {
@@ -27,7 +27,7 @@ export const PPDSPerStase = ({ data }: PPDSPerStaseProps) => {
     <CardWrapper title="PPDS Per Stase">
       <div className="h-72 flex items-center justify-center">
         <div className="w-full sm:w-[270px]">
-          <DoughnutChart
+          <PieChart
             data={chartData}
             options={{
               responsive: true,

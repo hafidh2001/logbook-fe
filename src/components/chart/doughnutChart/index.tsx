@@ -22,7 +22,7 @@ ChartJS.register(ChartDataLabels, ArcElement, Title, Tooltip, Legend);
 
 ChartJS.defaults.font.family = "Plus Jakarta Sans";
 ChartJS.defaults.color = "#000";
-ChartJS.defaults.font.size = 9;
+ChartJS.defaults.font.size = 14;
 
 type Props = {
   data: ChartData<"doughnut", number[], string>;
@@ -64,7 +64,7 @@ export const DoughnutChart: FC<Props> = ({
           color: "#000",
           font: {
             family: "Plus Jakarta Sans",
-            size: 9,
+            size: 14,
           },
         }}
       />

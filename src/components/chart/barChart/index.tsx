@@ -21,7 +21,7 @@ ChartJS.register(BarElement, Title, Tooltip, Legend);
 
 ChartJS.defaults.font.family = "Plus Jakarta Sans";
 ChartJS.defaults.color = "#000";
-ChartJS.defaults.font.size = 9;
+ChartJS.defaults.font.size = 14;
 
 type Props = {
   data: ChartData<"bar", number[], string>;
@@ -58,7 +58,7 @@ export const BarChart: FC<Props> = ({
         color: "#000",
         font: {
           family: "Plus Jakarta Sans",
-          size: 9,
+          size: 14,
         },
         ...options,
       }}
