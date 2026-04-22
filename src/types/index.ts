@@ -15,6 +15,14 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+export interface ApiPaginationResponse<T> extends ApiResponse<T> {
+  total: number;
+  pagination: {
+    page: number;
+    limit: number;
+  };
+}
+
 // Global enums used across modules
 export enum RoleEnum {
   PPDS = "ppds",
