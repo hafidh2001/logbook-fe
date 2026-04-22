@@ -1,75 +1,42 @@
 import { FilterPanel } from "@/components/filterPanel";
 import type { FilterFieldConfig, FilterProps } from "@/components/filterPanel";
-
-const filterFields: FilterFieldConfig[] = [
-  {
-    key: "nama",
-    label: "Nama",
-    type: "input",
-    placeholder: "Cari nama...",
-  },
-  {
-    key: "stage",
-    label: "Stage",
-    type: "select",
-    options: [
-      { value: "", label: "Semua Stage" },
-      { value: "Radiologi", label: "Radiologi" },
-      { value: "Stase Rekon I", label: "Stase Rekon I" },
-      { value: "Stase Rekon II", label: "Stase Rekon II" },
-      { value: "ICU", label: "ICU" },
-      { value: "OK", label: "OK" },
-    ],
-  },
-  {
-    key: "status",
-    label: "Status",
-    type: "select",
-    options: [
-      { value: "", label: "Semua Status" },
-      { value: "aktif", label: "Aktif" },
-      { value: "nonaktif", label: "Nonaktif" },
-    ],
-  },
-  {
-    key: "jenisKelamin",
-    label: "Jenis Kelamin",
-    type: "select",
-    options: [
-      { value: "", label: "Semua" },
-      { value: "laki-laki", label: "Laki-laki" },
-      { value: "perempuan", label: "Perempuan" },
-    ],
-  },
-  {
-    key: "stase",
-    label: "Stase",
-    type: "multiSelect",
-    options: [
-      { value: "radiologi", label: "Radiologi" },
-      { value: "rekon1", label: "Stase Rekon I" },
-      { value: "rekon2", label: "Stase Rekon II" },
-      { value: "icu", label: "ICU" },
-      { value: "ok", label: "OK" },
-    ],
-  },
-  {
-    key: "tanggalLahir",
-    label: "Tanggal Lahir",
-    type: "calendar",
-  },
-  {
-    key: "bulanMasuk",
-    label: "Bulan Masuk",
-    type: "monthYear",
-  },
-  {
-    key: "isVerified",
-    label: "Terverifikasi",
-    type: "checkbox",
-  },
-];
+import { useEffect } from "react";
+import { useMasterStore } from "@/store/masterStore";
+import { useAuthStore } from "@/store/authStore";
 
 export const Filter = (props: Omit<FilterProps, "fields">) => {
+  const { ppdsOptions, staseOptions, fetchPPDSOptions, fetchStaseOptions } = useMasterStore();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (user?.id_client) {
+      fetchPPDSOptions({ id_client: user.id_client });
+      fetchStaseOptions({ id_client: user.id_client });
+    }
+  }, [user?.id_client, fetchPPDSOptions, fetchStaseOptions]);
+
+  const filterFields: FilterFieldConfig[] = [
+    {
+      key: "ppds",
+      label: "PPDS",
+      type: "select",
+      options: ppdsOptions,
+      placeholder: "Pilih PPDS...",
+    },
+    {
+      key: "stase",
+      label: "Stase",
+      type: "select",
+      options: staseOptions,
+      placeholder: "Pilih Stase...",
+    },
+    {
+      key: "nim",
+      label: "NIM",
+      type: "input",
+      placeholder: "Masukkan NIM...",
+    },
+  ];
+
   return <FilterPanel fields={filterFields} {...props} />;
 };

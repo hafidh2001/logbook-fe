@@ -62,8 +62,8 @@ export type SimpleColumnDef<T, COL extends Exclude<keyof T, symbol | number>> =
 
 // Meta type for pagination
 export type TableMeta = {
-  page: number;
-  offset: number;
+  page?: number;
+  offset?: number;
   pageCount?: number;
 };
 
@@ -79,6 +79,7 @@ interface BaseTableProps<
     initialPageIndex?: number;
     initialPageSize?: number;
     mode?: "client" | "server";
+    pageCount?: number;
   };
   isShowNumbering?: boolean;
   renderExpansion?: (row: Row<T>) => ReactElement;
@@ -119,32 +120,34 @@ export const BaseTable = <
     return 1;
   }, [searchParams]);
 
-  // Initialize pagination state - derive from URL
+  // Initialize pagination state - when server mode, prefer meta values
   const getInitialPagination = useCallback(() => {
-    if (opt.meta) {
+    // Server mode: use meta if available, otherwise derive from initial values
+    if (isServerPagination) {
       return {
-        pageIndex: (opt.meta.page ?? 1) - 1,
-        pageSize: opt.meta.offset ?? 10,
+        pageIndex: (opt.meta?.page ?? opt.pagination?.initialPageIndex ?? 1) - 1,
+        pageSize: opt.meta?.offset ?? opt.pagination?.initialPageSize ?? 10,
       };
     }
+    // Client mode: derive from URL
     const urlPage = getPageFromUrl();
     return {
       pageIndex: urlPage - 1,
       pageSize: opt.pagination?.initialPageSize || 10,
     };
-  }, [opt.meta, opt.pagination?.initialPageSize, getPageFromUrl]);
+  }, [isServerPagination, opt.meta, opt.pagination?.initialPageIndex, opt.pagination?.initialPageSize, getPageFromUrl]);
 
   const [pagination, setPagination] = useState(getInitialPagination);
 
   // Sync pagination when meta changes (for server-side pagination)
   useEffect(() => {
-    if (opt.meta) {
+    if (isServerPagination) {
       setPagination({
-        pageIndex: (opt.meta.page ?? 1) - 1,
-        pageSize: opt.meta.offset ?? 10,
+        pageIndex: (opt.meta?.page ?? 1) - 1,
+        pageSize: opt.meta?.offset ?? opt.pagination?.initialPageSize ?? 10,
       });
     }
-  }, [opt.meta?.page, opt.meta?.offset]);
+  }, [isServerPagination, opt.meta?.page, opt.meta?.offset, opt.pagination?.initialPageSize]);
 
   // Sync pagination changes to URL search params - FIXED: use ref to track previous pageIndex
   const prevPageIndexRef = useRef<number>(pagination.pageIndex);
@@ -264,20 +267,18 @@ export const BaseTable = <
         minSize: 50,
         maxSize: 50,
         cell: (context) => {
-          // For server-side with meta, use meta offset
-          if (opt.meta?.offset !== undefined) {
-            const rowNumber = (opt.meta.page - 1) * opt.meta.offset + context.row.index + 1;
+          // For server-side: use meta if available, otherwise derive from pagination config
+          if (isServerPagination) {
+            const page = opt.meta?.page ?? (pagination.pageIndex + 1);
+            const pageSize = opt.meta?.offset ?? pagination.pageSize;
+            const rowNumber = (page - 1) * pageSize + context.row.index + 1;
             return <span className="text-sm font-medium">{rowNumber}</span>;
           }
           // For client-side: derive page directly from URL searchParams
-          // This avoids stale closure issues with table state
           const currentPage = getPageFromUrlFn();
-          const pageIndex = currentPage - 1; // Convert to 0-based
+          const pageIndex = currentPage - 1;
           const pageSize = pagination.pageSize;
-          // context.row.index is the ORIGINAL data index, not position in page
-          // We need to compute position within page manually
-          const positionInPage = context.row.index - (pageIndex * pageSize);
-          const rowNumber = pageIndex * pageSize + positionInPage + 1;
+          const rowNumber = pageIndex * pageSize + context.row.index + 1;
           // console.log('[DEBUG] cell render:', {
           //   currentPage,
           //   pageIndex,
@@ -354,7 +355,7 @@ export const BaseTable = <
       // @ts-ignore
       return row.id?.toString() || index.toString();
     },
-    pageCount: isServerPagination ? (opt.meta?.pageCount || -1) : undefined,
+    pageCount: isServerPagination ? (opt.pagination?.pageCount || -1) : undefined,
   });
 
   useEffect(() => {

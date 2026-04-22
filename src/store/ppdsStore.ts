@@ -1,51 +1,66 @@
 import { create } from "zustand";
-import { TPpds } from "@/types/ppds";
+import type { PpdsStore, PpdsData } from "@/types/ppds/store";
+import type { TPpds } from "@/types/ppds";
 import { ppdsApi } from "@/services/ppdsApi";
+import { useAuthStore } from "@/store/authStore";
 
-interface PpdsState {
-  ppdsList: TPpds[];
-  selectedPpds: TPpds | null;
-  isLoading: boolean;
-  isLoadingDetail: boolean;
-  error: string | null;
-  hasInitialized: boolean;
-}
-
-interface PpdsActions {
-  loadPpdsList: () => Promise<void>;
-  loadPpdsDetail: (id: string) => Promise<void>;
-  createPpds: (data: Partial<TPpds>) => Promise<boolean>;
-  updatePpds: (id: string, data: Partial<TPpds>) => Promise<boolean>;
-  deletePpds: (id: string) => Promise<boolean>;
-  reset: () => void;
-  resetDetail: () => void;
-}
-
-type PpdsStore = PpdsState & PpdsActions;
-
-const initialState: PpdsState = {
-  ppdsList: [],
-  selectedPpds: null,
+const initialState = {
+  ppdsData: {
+    list: [] as TPpds[],
+    pagination: {
+      page: 1,
+      limit: 10,
+      total: 0,
+    },
+  },
+  selectedPpds: null as TPpds | null,
   isLoading: false,
   isLoadingDetail: false,
-  error: null,
+  error: null as string | null,
   hasInitialized: false,
 };
 
 export const usePpdsStore = create<PpdsStore>((set) => ({
   ...initialState,
 
-  loadPpdsList: async () => {
+  loadPpdsList: async (params) => {
+    const { user } = useAuthStore.getState();
+
     set({ isLoading: true, error: null });
+
     try {
-      const data = await ppdsApi.getPpdsList();
-      set({ ppdsList: data, isLoading: false, hasInitialized: true });
+      const response = await ppdsApi.getPpdsList({
+        id_client: user?.id_client ?? 0,
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 10,
+        ppds: params?.ppds ?? null,
+        stase: params?.stase ?? null,
+        nim: params?.nim ?? null,
+      });
+
+      const ppdsData: PpdsData = {
+        list: response.data,
+        pagination: {
+          page: response.pagination.page,
+          limit: response.pagination.limit,
+          total: response.total,
+        },
+      };
+
+      set({
+        ppdsData,
+        isLoading: false,
+        hasInitialized: true,
+      });
+
+      return ppdsData;
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Failed to load PPDS list",
         isLoading: false,
         hasInitialized: true,
       });
+      throw error;
     }
   },
 
@@ -96,9 +111,11 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       await ppdsApi.deletePpds(id);
-      // Remove from list locally
       set((state) => ({
-        ppdsList: state.ppdsList.filter((ppds) => ppds.id !== Number(id)),
+        ppdsData: {
+          ...state.ppdsData,
+          list: state.ppdsData.list.filter((ppds) => ppds.id !== Number(id)),
+        },
         isLoading: false,
       }));
       return true;

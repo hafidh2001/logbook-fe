@@ -152,7 +152,9 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount }: FilterPr
   const handleRemoveChip = (key: string) => {
     const field = fields.find((f) => f.key === key);
     if (field) {
-      handleFilterChange(key, getDefaultValue(field.type));
+      const newFilters = { ...filters, [key]: getDefaultValue(field.type) };
+      setFilters(newFilters);
+      onSearch(newFilters);
     }
   };
 
@@ -318,6 +320,7 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount }: FilterPr
         <SheetContent
           side="right"
           className="flex flex-col h-full w-full sm:max-w-md"
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <SheetHeader className="flex-shrink-0">
             <SheetTitle>Filter</SheetTitle>
