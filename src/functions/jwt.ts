@@ -10,7 +10,7 @@ const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY = "7d";
 
 export type JWTPayload = {
-  user_id: string;
+  id_user: string;
   username: string;
   name: string;
   role: RoleEnum;

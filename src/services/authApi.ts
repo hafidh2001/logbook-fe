@@ -56,7 +56,7 @@ export const authApi = {
    */
   async updateProfile(
     data: IProfilePayload,
-  ): Promise<ApiResponse<{ user_id: number }>> {
+  ): Promise<ApiResponse<{ id_user: number }>> {
     try {
       const { data: responseData } = await apiClient.post(
         "UpdateProfile",

@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       // Generate JWT tokens from user data
       const jwtPayload = {
-        user_id: String(userData.id),
+        id_user: String(userData.id),
         username: userData.username || "",
         name: userData.display_name,
         role: userData.role_name,

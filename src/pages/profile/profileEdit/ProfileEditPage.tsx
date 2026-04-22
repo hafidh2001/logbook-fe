@@ -50,7 +50,7 @@ export default function ProfileEditPage() {
       code: data.code ?? null,
     };
 
-    const success = await updateProfile({ ...payload, user_id: user?.id ?? 0 });
+    const success = await updateProfile({ ...payload, id_user: user?.id ?? 0 });
 
     if (success) {
       const successMessage = useAuthStore.getState().success;

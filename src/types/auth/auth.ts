@@ -41,7 +41,7 @@ export interface ILoginRequest {
 }
 
 export interface IProfilePayload {
-  user_id: number;
+  id_user: number;
   display_name: string;
   email: string;
   phone: string | null;
