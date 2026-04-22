@@ -3,7 +3,7 @@ import type {
   ILoginRequest,
   IProfilePayload,
   TAuthUser,
-} from "@/types/auth/auth";
+} from "@/types/auth";
 import type { ApiResponse } from "@/types";
 
 // API Configuration from environment variables

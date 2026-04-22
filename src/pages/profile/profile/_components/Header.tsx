@@ -1,7 +1,7 @@
 import { icons } from "@/assets/images/Icon";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { Button } from "@/components/ui/button";
-import type { TAuthUser } from "@/types/auth/auth";
+import type { TAuthUser } from "@/types/auth";
 
 interface Props {
   data: TAuthUser;

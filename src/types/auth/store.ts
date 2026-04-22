@@ -1,5 +1,5 @@
 import { Nullable } from "@/types";
-import type { ILoginRequest, IProfilePayload, TAuthUser } from "./auth";
+import type { ILoginRequest, IProfilePayload, TAuthUser } from ".";
 
 export interface AuthState {
   user: TAuthUser;

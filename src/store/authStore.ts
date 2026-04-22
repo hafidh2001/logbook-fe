@@ -3,7 +3,7 @@ import { authApi } from "@/services/authApi";
 import { jwtService } from "@/functions/jwt";
 import { RoleEnum } from "@/types";
 import type { AuthState, AuthStore } from "@/types/auth/store";
-import { TAuthUser } from "@/types/auth/auth";
+import { TAuthUser } from "@/types/auth";
 
 const initialState: AuthState = {
   user: {} as TAuthUser,
