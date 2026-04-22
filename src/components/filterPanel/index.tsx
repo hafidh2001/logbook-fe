@@ -32,7 +32,7 @@ export type FilterFieldConfig = {
   key: string;
   label: string;
   type: FilterFieldType;
-  options?: BasicSelectOpt<string>[];
+  options?: BasicSelectOpt<string | number>[];
   placeholder?: string;
 };
 
