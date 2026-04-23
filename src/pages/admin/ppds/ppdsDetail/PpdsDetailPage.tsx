@@ -9,17 +9,14 @@ import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { SingleSelect } from "@/components/fields/singleSelect";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
-import type { BasicSelectOpt } from "@/types";
-import { ppdsSchema, PpdsFormData } from "@/validations/ppds/ppds";
+import { showToast } from "@/utils/toast";
+import { ConfirmationModal } from "@/components/confirmationModal";
+import useModal from "@/hooks/useModal";
+import { ppdsSchema, TPpdsSchema } from "@/validations/ppds/ppds";
 import { usePpdsStore } from "@/store/ppdsStore";
+import { useMasterStore } from "@/store/masterStore";
 import { useEffect } from "react";
 import dayjs from "dayjs";
-
-// Status options
-const statusOptions: BasicSelectOpt<string>[] = [
-  { value: "aktif", label: "Aktif" },
-  { value: "nonaktif", label: "Nonaktif" },
-];
 
 export default function PpdsDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
@@ -30,52 +27,111 @@ export default function PpdsDetailPage() {
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
 
-  const { selectedPpds, isLoadingDetail, loadPpdsDetail, updatePpds, deletePpds, resetDetail } = usePpdsStore();
+  const {
+    selectedPpds,
+    isLoadingDetail,
+    isLoading,
+    loadPpdsDetail,
+    updatePpds,
+    deletePpds,
+    reset,
+  } = usePpdsStore();
+
+  const { statusOptions, fetchStatusOptions } = useMasterStore();
+
+  const { isShown: isShowDelete, toggle: toggleDelete } = useModal();
+
+  useEffect(() => {
+    fetchStatusOptions();
+  }, [fetchStatusOptions]);
 
   useEffect(() => {
     if (idUser) {
-      loadPpdsDetail(idUser);
+      loadPpdsDetail(Number(idUser));
     }
-    return () => resetDetail();
-  }, [idUser, loadPpdsDetail, resetDetail]);
+    return () => reset();
+  }, [idUser, loadPpdsDetail, reset]);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<PpdsFormData>({
+    reset: resetForm,
+  } = useForm<TPpdsSchema>({
     resolver: zodResolver(ppdsSchema),
-    defaultValues: {
-      displayName: selectedPpds?.displayName || "",
-      username: selectedPpds?.username || "",
-      phone: selectedPpds?.phone || "",
-      email: selectedPpds?.email || "",
-      nim: selectedPpds?.nim || "",
-      dateOfBirth: selectedPpds?.dateOfBirth ? dayjs(selectedPpds.dateOfBirth).toDate() : null,
-      address: selectedPpds?.address || "",
-      status: "aktif",
-      inactiveAt: null,
-      inactiveNotes: "",
-    },
   });
 
-  const onSubmit = async (data: PpdsFormData) => {
+  useEffect(() => {
+    if (selectedPpds) {
+      resetForm({
+        display_name: selectedPpds.display_name ?? "",
+        username: selectedPpds.username ?? "",
+        email: selectedPpds.email ?? "",
+        phone: selectedPpds.phone ?? "",
+        address: selectedPpds.address ?? "",
+        date_of_birth: selectedPpds.date_of_birth
+          ? dayjs(selectedPpds.date_of_birth).toDate()
+          : null,
+        nim: selectedPpds.nim ?? "",
+        role_name: selectedPpds.role_name ?? "",
+        stase_name: selectedPpds.stase_name ?? "",
+        total_logbook: selectedPpds.total_logbook
+          ? `${selectedPpds.total_logbook} items`
+          : "0",
+        status: selectedPpds.status ?? "",
+        inactive_at: selectedPpds.inactive_at
+          ? dayjs(selectedPpds.inactive_at).toDate()
+          : null,
+        inactive_notes: selectedPpds.inactive_notes ?? "",
+        reactivate_date: selectedPpds.reactivate_date
+          ? dayjs(selectedPpds.reactivate_date).toDate()
+          : null,
+      });
+    }
+  }, [selectedPpds, resetForm]);
+
+  const onSubmit = async (data: TPpdsSchema) => {
     if (idUser) {
-      const { dateOfBirth, inactiveAt, ...rest } = data;
-      const updateData = {
-        ...rest,
-        dateOfBirth: dateOfBirth ? dayjs(dateOfBirth).format("YYYY-MM-DD") : undefined,
-        inactiveAt: inactiveAt ? dayjs(inactiveAt).format("YYYY-MM-DD") : undefined,
+      // Transform form data to API payload (Date -> string)
+      const payload = {
+        ...data,
+        date_of_birth: data.date_of_birth
+          ? dayjs(data.date_of_birth).format("YYYY-MM-DD")
+          : null,
+        inactive_at: data.inactive_at
+          ? dayjs(data.inactive_at).format("YYYY-MM-DD")
+          : null,
       };
-      await updatePpds(idUser, updateData);
+      const success = await updatePpds({ id_user: Number(idUser), ...payload });
+      if (success) {
+        showToast("Data berhasil diperbarui", "success");
+        navigate(ppdsListRoute);
+      } else {
+        const errorMessage = usePpdsStore.getState().error;
+        showToast(errorMessage ?? "Data gagal diperbarui!", "error", {
+          duration: 4000,
+        });
+      }
     }
   };
 
   const handleDelete = async () => {
     if (idUser) {
-      await deletePpds(idUser);
-      navigate(ppdsListRoute);
+      const success = await deletePpds(Number(idUser));
+      if (success) {
+        const successMessage = usePpdsStore.getState().success;
+        showToast(successMessage ?? "Data berhasil dihapus!", "success", {
+          duration: 3000,
+        });
+        navigate(ppdsListRoute);
+      } else {
+        const errorMessage = usePpdsStore.getState().error;
+        showToast(errorMessage ?? "Gagal menghapus data", "error", {
+          duration: 4000,
+        });
+      }
     }
+    toggleDelete(false);
   };
 
   if (isLoadingDetail) {
@@ -90,25 +146,25 @@ export default function PpdsDetailPage() {
           { label: "Detail", to: undefined },
         ]}
         onSave={handleSubmit(onSubmit)}
-        onDelete={handleDelete}
+        onDelete={() => toggleDelete(true)}
+        isLoading={isLoading}
       />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Edit Form - 2 Column Layout */}
           <div className="bg-white rounded-lg border p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-
               {/* Row 1: Display Name* | Username* */}
               <Controller
-                name="displayName"
+                name="display_name"
                 control={control}
                 render={({ field }) => (
                   <InputField
                     label="Display Name"
                     required
-                    errorMessage={errors.displayName?.message}
+                    errorMessage={errors.display_name?.message}
                     {...field}
-                    value={field.value || ""}
+                    value={field.value ?? ""}
                     onChange={field.onChange}
                     placeholder="Masukkan nama lengkap..."
                   />
@@ -123,7 +179,7 @@ export default function PpdsDetailPage() {
                     required
                     errorMessage={errors.username?.message}
                     {...field}
-                    value={field.value || ""}
+                    value={field.value ?? ""}
                     onChange={field.onChange}
                     placeholder="Masukkan username..."
                   />
@@ -140,7 +196,7 @@ export default function PpdsDetailPage() {
                     required
                     errorMessage={errors.phone?.message}
                     {...field}
-                    value={field.value || ""}
+                    value={field.value ?? ""}
                     onChange={field.onChange}
                     placeholder="Masukkan nomor telepon..."
                   />
@@ -156,7 +212,7 @@ export default function PpdsDetailPage() {
                     type="email"
                     errorMessage={errors.email?.message}
                     {...field}
-                    value={field.value || ""}
+                    value={field.value ?? ""}
                     onChange={field.onChange}
                     placeholder="Masukkan email..."
                   />
@@ -171,14 +227,14 @@ export default function PpdsDetailPage() {
                   <InputField
                     label="NIM"
                     {...field}
-                    value={field.value || ""}
+                    value={field.value ?? ""}
                     onChange={field.onChange}
                     placeholder="Masukkan NIM..."
                   />
                 )}
               />
               <Controller
-                name="dateOfBirth"
+                name="date_of_birth"
                 control={control}
                 render={({ field }) => (
                   <CalendarSelect
@@ -200,7 +256,7 @@ export default function PpdsDetailPage() {
                     <InputField
                       label="Address"
                       {...field}
-                      value={field.value || ""}
+                      value={field.value ?? ""}
                       onChange={field.onChange}
                       placeholder="Masukkan alamat..."
                     />
@@ -210,21 +266,37 @@ export default function PpdsDetailPage() {
 
               {/* Row 5: Stase (disabled) | Role (disabled) */}
               <div className="flex flex-col gap-1">
-                <InputField
-                  label="Stase"
-                  value={selectedPpds?.stage || "-"}
-                  disabled
-                  placeholder="Stase PPDS..."
+                <Controller
+                  name="stase_name"
+                  control={control}
+                  render={({ field }) => (
+                    <InputField
+                      label="Stase"
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      placeholder="Stase PPDS..."
+                      disabled
+                    />
+                  )}
                 />
                 <span className="text-xs text-gray-500 -mt-1">
                   Stase PPDS ditambahkan pada menu Stase
                 </span>
               </div>
-              <InputField
-                label="Role"
-                value={selectedPpds?.role || "ppds"}
-                disabled
-                placeholder="Role..."
+              <Controller
+                name="role_name"
+                control={control}
+                render={({ field }) => (
+                  <InputField
+                    label="Role"
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    placeholder="Role..."
+                    disabled
+                  />
+                )}
               />
 
               {/* Row 6: Status* | Inactive At */}
@@ -240,8 +312,14 @@ export default function PpdsDetailPage() {
                       {...field}
                       errorMessage={errors.status?.message}
                       options={statusOptions}
-                      value={statusOptions.find(opt => opt.value === field.value) || null}
-                      onChange={(option) => field.onChange(option?.value as string)}
+                      value={
+                        statusOptions.find(
+                          (opt) => opt.value === field.value,
+                        ) || null
+                      }
+                      onChange={(option) =>
+                        field.onChange(option?.value as string)
+                      }
                       isSearchable={false}
                       isClearable={false}
                     />
@@ -249,7 +327,7 @@ export default function PpdsDetailPage() {
                 )}
               />
               <Controller
-                name="inactiveAt"
+                name="inactive_at"
                 control={control}
                 render={({ field }) => (
                   <CalendarSelect
@@ -264,7 +342,7 @@ export default function PpdsDetailPage() {
 
               {/* Row 7: Inactive Notes | Reactivate Date (disabled) */}
               <Controller
-                name="inactiveNotes"
+                name="inactive_notes"
                 control={control}
                 render={({ field }) => (
                   <InputField
@@ -276,28 +354,50 @@ export default function PpdsDetailPage() {
                   />
                 )}
               />
-              <InputField
-                label="Reactivate Date"
-                value=""
-                disabled
-                placeholder="Tanggal reactivate akan muncul setelah dinonaktifkan..."
+              <Controller
+                name="reactivate_date"
+                control={control}
+                render={({ field }) => (
+                  <CalendarSelect
+                    label="Reactivate Date"
+                    {...field}
+                    value={field.value ?? undefined}
+                    onChange={field.onChange}
+                    placeholder="Tanggal reactivate akan muncul setelah dinonaktifkan..."
+                    isDisabled
+                  />
+                )}
               />
 
               {/* Row 8: Logbook (full width, read-only + button) */}
               <div className="sm:col-span-2">
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
-                    <InputField
-                      label="Logbook"
-                      value={String(selectedPpds?.logbook || 0)}
-                      disabled
-                      placeholder="Jumlah logbook..."
+                    <Controller
+                      name="total_logbook"
+                      control={control}
+                      render={({ field }) => (
+                        <InputField
+                          label="Logbook"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          placeholder="Jumlah logbook..."
+                          disabled
+                        />
+                      )}
                     />
                   </div>
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => navigate(isInactive ? ROUTES.ppdsInactiveLogbook(String(idUser)) : ROUTES.ppdsLogbook(String(idUser)))}
+                    onClick={() =>
+                      navigate(
+                        isInactive
+                          ? ROUTES.ppdsInactiveLogbook(String(idUser))
+                          : ROUTES.ppdsLogbook(String(idUser)),
+                      )
+                    }
                     className="flex-shrink-0 mb-0.5"
                   >
                     Detail
@@ -305,7 +405,6 @@ export default function PpdsDetailPage() {
                   </Button>
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -321,6 +420,26 @@ export default function PpdsDetailPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        isShown={isShowDelete}
+        toggle={toggleDelete}
+        title="Hapus Data"
+        description={
+          <>
+            Apakah Anda yakin ingin menghapus data{" "}
+            <span className="font-semibold">
+              {selectedPpds?.display_name}
+            </span>
+            ? Tindakan ini tidak dapat dibatalkan.
+          </>
+        }
+        onConfirm={handleDelete}
+        confirmText="Hapus"
+        cancelText="Batal"
+        confirmVariant="destructive"
+        cancelVariant="outline"
+      />
     </div>
   );
 }

@@ -1,19 +1,23 @@
 import { z } from "zod";
 
 export const ppdsSchema = z.object({
-  displayName: z.string().min(1, "Display Name harus diisi"),
+  display_name: z.string().min(1, "Display Name harus diisi"),
   username: z.string().min(1, "Username harus diisi"),
-  phone: z.string().min(1, "Phone harus diisi"),
   email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
-  nim: z.string().optional(),
-  dateOfBirth: z.date().optional().nullable(),
-  address: z.string().optional(),
-  status: z.string().min(1, "Status harus dipilih"),
-  inactiveAt: z.date().optional().nullable(),
-  inactiveNotes: z.string().optional(),
+  phone: z.string().min(1, "Phone harus diisi"),
+  address: z.string().optional().nullable(),
+  date_of_birth: z.date().optional().nullable(),
+  nim: z.string().optional().nullable(),
+  role_name: z.string().optional().nullable(),
+  stase_name: z.string().optional().nullable(),
+  total_logbook: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
+  inactive_at: z.date().optional().nullable(),
+  inactive_notes: z.string().optional().nullable(),
+  reactivate_date: z.date().optional().nullable(),
 });
 
-export type PpdsFormData = z.infer<typeof ppdsSchema>;
+export type TPpdsSchema = z.infer<typeof ppdsSchema>;
 
 // Schema for PPDS create form
 export const ppdsCreateSchema = z

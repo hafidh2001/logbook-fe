@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { PpdsStore, PpdsData } from "@/types/ppds/store";
-import type { TPpds } from "@/types/ppds";
+import type { TPpds, TPpdsDetail, IPpdsPayload } from "@/types/ppds";
 import { ppdsApi } from "@/services/ppdsApi";
 import { useAuthStore } from "@/store/authStore";
 
@@ -14,7 +14,7 @@ const initialState = {
       pageCount: 1,
     },
   },
-  selectedPpds: null as TPpds | null,
+  selectedPpds: null as TPpdsDetail | null,
   isLoading: false,
   isLoadingDetail: false,
   error: null as string | null,
@@ -68,11 +68,11 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
     }
   },
 
-  loadPpdsDetail: async (id: string) => {
+  loadPpdsDetail: async (id_user: number) => {
     set({ isLoadingDetail: true, error: null, selectedPpds: null });
     try {
-      const data = await ppdsApi.getPpdsById(id);
-      set({ selectedPpds: data || null, isLoadingDetail: false });
+      const response = await ppdsApi.getPpdsById(id_user);
+      set({ selectedPpds: response.data || null, isLoadingDetail: false });
     } catch (error) {
       set({
         error:
@@ -97,11 +97,14 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
     }
   },
 
-  updatePpds: async (id: string, data: Partial<TPpds>) => {
-    set({ isLoading: true, error: null });
+  updatePpds: async (data: IPpdsPayload) => {
+    set({ isLoading: true, error: null, success: null });
     try {
-      await ppdsApi.updatePpds(id, data);
-      set({ isLoading: false });
+      const response = await ppdsApi.updatePpds(data);
+      set({
+        isLoading: false,
+        success: response.message ?? "Data berhasil diperbarui",
+      });
       return true;
     } catch (error) {
       set({
@@ -135,7 +138,4 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
   },
 
   reset: () => set(initialState),
-
-  resetDetail: () =>
-    set({ selectedPpds: null, isLoadingDetail: false, error: null }),
 }));

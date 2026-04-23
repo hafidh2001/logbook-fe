@@ -1,5 +1,10 @@
 import { Nullable } from "@/types";
-import type { TPpds, IPpdsListParams } from "./index";
+import type {
+  TPpds,
+  IPpdsListParams,
+  TPpdsDetail,
+  IPpdsPayload,
+} from "./index";
 
 export interface PpdsData {
   list: TPpds[];
@@ -13,7 +18,7 @@ export interface PpdsData {
 
 export interface PpdsState {
   ppdsData: PpdsData;
-  selectedPpds: TPpds | null;
+  selectedPpds: TPpdsDetail | null;
   isLoading: boolean;
   isLoadingDetail: boolean;
   error: Nullable<string>;
@@ -23,12 +28,11 @@ export interface PpdsState {
 
 export interface PpdsActions {
   loadPpdsList: (params?: Partial<IPpdsListParams>) => Promise<PpdsData>;
-  loadPpdsDetail: (id: string) => Promise<void>;
+  loadPpdsDetail: (id_user: number) => Promise<void>;
   createPpds: (data: Partial<TPpds>) => Promise<boolean>;
-  updatePpds: (id: string, data: Partial<TPpds>) => Promise<boolean>;
+  updatePpds: (data: IPpdsPayload) => Promise<boolean>;
   deletePpds: (id_user: number) => Promise<boolean>;
   reset: () => void;
-  resetDetail: () => void;
 }
 
 export type PpdsStore = PpdsState & PpdsActions;
