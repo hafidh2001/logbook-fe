@@ -30,3 +30,9 @@ export enum RoleEnum {
   INSTITUTION = "institution",
   PATIENTS = "patients",
 }
+
+export enum StatusEnum {
+  ACTIVE = "Active",
+  INACTIVE = "Inactive",
+  LULUS = "Lulus",
+}
