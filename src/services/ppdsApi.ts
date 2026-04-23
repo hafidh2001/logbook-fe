@@ -1,13 +1,13 @@
 import axios from "axios";
 import type { TPpds, IPpdsListParams } from "@/types/ppds";
-import type { ApiPaginationResponse } from "@/types";
+import type { ApiPaginationResponse, ApiResponse } from "@/types";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
 if (!API_URL || !API_TOKEN) {
   throw new Error(
-    "API configuration is missing. Please check environment variables."
+    "API configuration is missing. Please check environment variables.",
   );
 }
 
@@ -21,12 +21,12 @@ const apiClient = axios.create({
 
 export const ppdsApi = {
   async getPpdsList(
-    params: IPpdsListParams
+    params: IPpdsListParams,
   ): Promise<ApiPaginationResponse<TPpds[]>> {
     try {
       const { data: responseData } = await apiClient.post(
         "GetListPPDS",
-        params
+        params,
       );
 
       if (responseData.status === false) {
@@ -69,15 +69,17 @@ export const ppdsApi = {
     }
   },
 
-  async deletePpds(id: string): Promise<void> {
+  async deletePpds(id_user: number): Promise<ApiResponse<{ id_user: number }>> {
     try {
       const { data: responseData } = await apiClient.post("DeletePPDS", {
-        id: Number(id),
+        id_user,
       });
 
       if (responseData.status === false) {
-        throw new Error(responseData.message || "Failed to delete PPDS");
+        throw new Error(responseData.message || "Failed to delete");
       }
+
+      return responseData;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const responseData = error.response?.data;
@@ -92,10 +94,7 @@ export const ppdsApi = {
 
   async createPpds(data: Partial<TPpds>): Promise<TPpds> {
     try {
-      const { data: responseData } = await apiClient.post(
-        "CreatePPDS",
-        data
-      );
+      const { data: responseData } = await apiClient.post("CreatePPDS", data);
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Failed to create PPDS");

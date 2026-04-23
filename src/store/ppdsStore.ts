@@ -11,12 +11,14 @@ const initialState = {
       page: 1,
       limit: 10,
       total: 0,
+      pageCount: 1,
     },
   },
   selectedPpds: null as TPpds | null,
   isLoading: false,
   isLoadingDetail: false,
   error: null as string | null,
+  success: null as string | null,
   hasInitialized: false,
 };
 
@@ -44,6 +46,7 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
           page: response.pagination.page,
           limit: response.pagination.limit,
           total: response.total,
+          pageCount: Math.ceil(response.total / response.pagination.limit) || 1,
         },
       };
 
@@ -56,7 +59,8 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
       return ppdsData;
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to load PPDS list",
+        error:
+          error instanceof Error ? error.message : "Failed to load PPDS list",
         isLoading: false,
         hasInitialized: true,
       });
@@ -71,7 +75,8 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
       set({ selectedPpds: data || null, isLoadingDetail: false });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to load PPDS detail",
+        error:
+          error instanceof Error ? error.message : "Failed to load PPDS detail",
         isLoadingDetail: false,
       });
     }
@@ -107,16 +112,17 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
     }
   },
 
-  deletePpds: async (id: string) => {
-    set({ isLoading: true, error: null });
+  deletePpds: async (id_user: number) => {
+    set({ isLoading: true, error: null, success: null });
     try {
-      await ppdsApi.deletePpds(id);
+      const response = await ppdsApi.deletePpds(id_user);
       set((state) => ({
         ppdsData: {
           ...state.ppdsData,
-          list: state.ppdsData.list.filter((ppds) => ppds.id !== Number(id)),
+          list: state.ppdsData.list.filter((ppds) => ppds.id !== id_user),
         },
         isLoading: false,
+        success: response.message ?? null,
       }));
       return true;
     } catch (error) {
@@ -130,5 +136,6 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
 
   reset: () => set(initialState),
 
-  resetDetail: () => set({ selectedPpds: null, isLoadingDetail: false, error: null }),
+  resetDetail: () =>
+    set({ selectedPpds: null, isLoadingDetail: false, error: null }),
 }));

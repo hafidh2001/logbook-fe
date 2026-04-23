@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Topbar } from "@/components/layout/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +16,9 @@ import { ConfirmationModal } from "@/components/confirmationModal";
 import { usePpdsStore } from "@/store/ppdsStore";
 import usePagination from "@/hooks/usePagination";
 import useFilter from "@/hooks/useFilter";
+import useModal from "@/hooks/useModal";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
+import { showToast } from "@/utils/toast";
 
 export default function PpdsListPage() {
   const { width } = useWindowDimensions();
@@ -41,12 +43,8 @@ export default function PpdsListPage() {
     onFilterChange: () => setPage(1),
   });
 
-  // Total and pageCount from store
-  const total = ppdsData.pagination.total;
-  const pageCount = Math.ceil(total / limit) || 1;
-
-  // Runs when URL or filter changes
   useEffect(() => {
+    // Runs when URL or filter changes
     loadPpdsList({
       page,
       limit,
@@ -55,10 +53,9 @@ export default function PpdsListPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, filterParams]);
 
-  // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
-  // This ensures each page starts with a clean default state and must fetch
-  // its own fresh data, preventing data contamination between pages.
   useEffect(() => {
+    // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
+    // This ensures each page starts with a clean default state and must fetch
     return () => {
       reset();
     };
@@ -85,26 +82,6 @@ export default function PpdsListPage() {
   const handleRowClick = (row: Row<TPpds>) => {
     navigate(ROUTES.ppdsDetail(String(row.original.id)));
   };
-
-  const handleDelete = (item: TPpds) => {
-    setDeleteModal({ open: true, item });
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (deleteModal.item) {
-      await deletePpds(String(deleteModal.item.id));
-    }
-    setDeleteModal({ open: false, item: null });
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteModal({ open: false, item: null });
-  };
-
-  const [deleteModal, setDeleteModal] = useState<{
-    open: boolean;
-    item: TPpds | null;
-  }>({ open: false, item: null });
 
   const columns: ColumnDef<TPpds>[] = [
     {
@@ -176,6 +153,8 @@ export default function PpdsListPage() {
       header: "Action",
       size: sm ? 350 : 180,
       cell: ({ row: { original } }) => {
+        const { isShown: isShowDelete, toggle: toggleDelete } = useModal();
+
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
           navigate(ROUTES.ppdsDetail(String(original.id)));
@@ -184,41 +163,79 @@ export default function PpdsListPage() {
           e.stopPropagation();
           navigate(ROUTES.ppdsChangePassword(String(original.id)));
         };
-        const handleDeleteClick = (e: React.MouseEvent) => {
-          e.stopPropagation();
-          handleDelete(original);
+
+        const handleDelete = async () => {
+          if (original.id) {
+            const success = await deletePpds(original.id);
+            if (success) {
+              const successMessage = usePpdsStore.getState().success;
+              showToast(successMessage ?? "Data berhasil dihapus!", "success", {
+                duration: 3000,
+              });
+            } else {
+              const errorMessage = usePpdsStore.getState().error;
+              showToast(errorMessage ?? "Gagal menghapus data", "error", {
+                duration: 4000,
+              });
+            }
+          }
+          toggleDelete(false);
         };
 
         return (
-          <div className="flex items-center justify-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleView}
-              className="bg-blue-600 text-white hover:bg-blue-700"
-            >
-              <icons.Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">View</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleChangePassword}
-              className="bg-yellow-500 text-white hover:bg-yellow-600"
-            >
-              <icons.Lock className="h-4 w-4" />
-              <span className="hidden sm:inline">Password</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDeleteClick}
-              className="bg-red-600 text-white hover:bg-red-700"
-            >
-              <icons.Trash className="h-4 w-4" />
-              <span className="hidden sm:inline">Delete</span>
-            </Button>
-          </div>
+          <>
+            <ConfirmationModal
+              isShown={isShowDelete}
+              toggle={toggleDelete}
+              title="Hapus Data"
+              description={
+                <>
+                  Apakah Anda yakin ingin menghapus data{" "}
+                  <span className="font-semibold">
+                    {original?.display_name}
+                  </span>
+                  ? Tindakan ini tidak dapat dibatalkan.
+                </>
+              }
+              onConfirm={handleDelete}
+              confirmText="Hapus"
+              cancelText="Batal"
+              confirmVariant="destructive"
+              cancelVariant="outline"
+            />
+            <div className="flex items-center justify-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleView}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                <icons.Eye className="h-4 w-4" />
+                <span className="hidden sm:inline">View</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleChangePassword}
+                className="bg-yellow-500 text-white hover:bg-yellow-600"
+              >
+                <icons.Lock className="h-4 w-4" />
+                <span className="hidden sm:inline">Password</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleDelete();
+                }}
+                className="bg-red-600 text-white hover:bg-red-700"
+              >
+                <icons.Trash className="h-4 w-4" />
+                <span className="hidden sm:inline">Delete</span>
+              </Button>
+            </div>
+          </>
         );
       },
     },
@@ -248,7 +265,7 @@ export default function PpdsListPage() {
                 mode: "server",
                 initialPageIndex: 0,
                 initialPageSize: DEFAULT_PAGE_SIZE,
-                pageCount,
+                pageCount: ppdsData.pagination.pageCount,
               }}
               onPaginationChange={handlePaginationChange}
               onRowClick={handleRowClick}
@@ -258,32 +275,6 @@ export default function PpdsListPage() {
           </div>
         </div>
       </div>
-
-      <ConfirmationModal
-        isShown={deleteModal.open}
-        toggle={(open) =>
-          setDeleteModal({
-            open: open ?? !deleteModal.open,
-            item: deleteModal.item,
-          })
-        }
-        title="Hapus Data"
-        description={
-          <>
-            Apakah Anda yakin ingin menghapus data{" "}
-            <span className="font-semibold">
-              {deleteModal.item?.display_name}
-            </span>
-            ? Tindakan ini tidak dapat dibatalkan.
-          </>
-        }
-        onConfirm={handleDeleteConfirm}
-        onCancel={handleDeleteCancel}
-        confirmText="Hapus"
-        cancelText="Batal"
-        confirmVariant="destructive"
-        cancelVariant="outline"
-      />
     </div>
   );
 }

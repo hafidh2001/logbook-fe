@@ -7,6 +7,7 @@ export interface PpdsData {
     page: number;
     limit: number;
     total: number;
+    pageCount: number;
   };
 }
 
@@ -16,6 +17,7 @@ export interface PpdsState {
   isLoading: boolean;
   isLoadingDetail: boolean;
   error: Nullable<string>;
+  success: Nullable<string>;
   hasInitialized: boolean;
 }
 
@@ -24,7 +26,7 @@ export interface PpdsActions {
   loadPpdsDetail: (id: string) => Promise<void>;
   createPpds: (data: Partial<TPpds>) => Promise<boolean>;
   updatePpds: (id: string, data: Partial<TPpds>) => Promise<boolean>;
-  deletePpds: (id: string) => Promise<boolean>;
+  deletePpds: (id_user: number) => Promise<boolean>;
   reset: () => void;
   resetDetail: () => void;
 }
