@@ -26,3 +26,6 @@ build
 coverage
 .nyc_output
 *.log
+
+# BACKUP DB
+*.php
