@@ -119,14 +119,7 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
     set({ isLoading: true, error: null, success: null });
     try {
       const response = await ppdsApi.deletePpds(id_user);
-      set((state) => ({
-        ppdsData: {
-          ...state.ppdsData,
-          list: state.ppdsData.list.filter((ppds) => ppds.id !== id_user),
-        },
-        isLoading: false,
-        success: response.message ?? null,
-      }));
+      set({ isLoading: false, success: response.message ?? null });
       return true;
     } catch (error) {
       set({

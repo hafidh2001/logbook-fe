@@ -172,6 +172,8 @@ export default function PpdsListPage() {
               showToast(successMessage ?? "Data berhasil dihapus!", "success", {
                 duration: 3000,
               });
+              // Re-fetch to get fresh data with correct pagination
+              loadPpdsList({ page, limit, ...filterParams });
             } else {
               const errorMessage = usePpdsStore.getState().error;
               showToast(errorMessage ?? "Gagal menghapus data", "error", {
