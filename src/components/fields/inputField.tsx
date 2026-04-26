@@ -23,7 +23,7 @@ export const InputField = forwardRef<HTMLInputElement, Props>(({
   labelClassName,
   label,
   required,
-  maxMenuHeight = 37,
+  maxMenuHeight = 40,
   errorMessage,
   startIcon,
   endIcon,
@@ -34,7 +34,7 @@ export const InputField = forwardRef<HTMLInputElement, Props>(({
   }, [onChange]);
 
   const inputClassName = cn(
-    "bg-[#fff] rounded-md ring-0 shadow-2xs active:border-2 outline-none focus:border-2 focus:outline-none focus:border-primary focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none border-[#ccc] hover:border-[#999999]",
+    "bg-[#fff] rounded-md ring-0 shadow-2xs active:border-2 outline-none focus:border-2 focus:outline-none focus:border-primary focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none border-[#ccc] hover:border-[#999999] h-10",
     errorMessage && "border-red-500",
     startIcon && "pl-10",
     endIcon && "pr-10"

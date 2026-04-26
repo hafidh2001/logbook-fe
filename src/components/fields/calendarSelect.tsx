@@ -78,7 +78,7 @@ export const CalendarSelect = forwardRef<HTMLInputElement, Props>(({
   );
 
   const inputClassName = useMemo(() => cn(
-    "pr-10 rounded-md box-border disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 min-h-[38px] bg-white focus-visible:border-2 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-0 focus:border-2 focus:border-primary focus:outline-none focus:ring-0",
+    "pr-10 rounded-md box-border disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 h-10 bg-white focus-visible:border-2 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-0 focus:border-2 focus:border-primary focus:outline-none focus:ring-0",
     openPopover && !isDisabled && "border-2 border-primary",
     errorMessage && "border-red-500"
   ), [openPopover, isDisabled, errorMessage]);

@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { useCallback, useMemo, forwardRef } from "react";
 import Select, { type Props as ReactSelectProps } from "react-select";
 import { BasicSelectOpt } from "@/types";
+import useWindowDimensions from "@/hooks/useWindowDimension";
 
 interface Props extends Omit<ReactSelectProps, "isMulti" | "disabled" | "value" | "onChange"> {
   value?: BasicSelectOpt<string | number>[];
@@ -33,6 +34,10 @@ export const MultipleSelect = forwardRef<Select, Props>(({
   disabled,
   ...rest
 }, ref) => {
+  const { width } = useWindowDimensions();
+  const md = width >= 768;
+  const fontSize = md ? "14px" : "16px";
+
   const handleChange = useCallback((e: BasicSelectOpt<string | number>[]) => {
     onChange?.(e);
   }, [onChange]);
@@ -85,12 +90,15 @@ export const MultipleSelect = forwardRef<Select, Props>(({
           }),
           multiValueLabel: (base) => ({
             ...base,
+            fontSize,
           }),
           control: (base, state) => ({
             ...base,
             borderRadius: "6px",
             cursor: state.isDisabled ? "not-allowed" : "pointer",
             borderColor: errorMessage ? "#ef4444" : base.borderColor,
+            minHeight: "40px",
+            fontSize,
           }),
           menu: (base) => ({
             ...base,
@@ -104,6 +112,7 @@ export const MultipleSelect = forwardRef<Select, Props>(({
           option: (base, state) => ({
             ...base,
             cursor: state.isDisabled ? "not-allowed" : "pointer",
+            fontSize,
           }),
           dropdownIndicator: (base) => ({
             ...base,
@@ -112,6 +121,14 @@ export const MultipleSelect = forwardRef<Select, Props>(({
           clearIndicator: (base) => ({
             ...base,
             padding: "8px",
+          }),
+          placeholder: (base) => ({
+            ...base,
+            fontSize,
+          }),
+          input: (base) => ({
+            ...base,
+            fontSize,
           }),
         }}
         {...(rest as any)}
