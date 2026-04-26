@@ -12,6 +12,7 @@ const initialState = {
   ppdsOptions: [] as BasicSelectOpt<number>[],
   staffOptions: [] as BasicSelectOpt<number>[],
   staseOptions: [] as BasicSelectOpt<number>[],
+  activityOptions: [] as BasicSelectOpt<number>[],
   userStatusOptions: [] as BasicSelectOpt<string>[],
   logbookStatusOptions: [] as BasicSelectOpt<string>[],
   isLoading: false,
@@ -74,6 +75,24 @@ export const useMasterStore = create<MasterStore>((set) => ({
         };
       });
       set({ staseOptions: arr, isLoading: false });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan";
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  fetchActivityOptions: async (params) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await masterApi.getMasterActivity({ ...params });
+      const arr = response.data.map((item) => {
+        return {
+          label: item.name,
+          value: item.id,
+        };
+      });
+      set({ activityOptions: arr, isLoading: false });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Terjadi kesalahan";
