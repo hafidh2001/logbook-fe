@@ -34,7 +34,7 @@ export const InputField = forwardRef<HTMLInputElement, Props>(({
   }, [onChange]);
 
   const inputClassName = cn(
-    "bg-[#fff] rounded-md ring-0 shadow-2xs active:border-2 outline-none focus:border-2 focus:outline-none focus:border-primary focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none border-[#ccc] hover:border-[#999999] h-10",
+    "bg-white rounded-md border border-input ring-0 shadow-2xs outline-none focus:border-2 focus:border-primary focus:ring-0 focus:shadow-none hover:border-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 h-10",
     errorMessage && "border-red-500",
     startIcon && "pl-10",
     endIcon && "pr-10"

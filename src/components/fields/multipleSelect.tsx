@@ -96,7 +96,10 @@ export const MultipleSelect = forwardRef<Select, Props>(({
             ...base,
             borderRadius: "6px",
             cursor: state.isDisabled ? "not-allowed" : "pointer",
-            borderColor: errorMessage ? "#ef4444" : base.borderColor,
+            borderColor: errorMessage ? "#ef4444" : state.isDisabled ? "#d1d5db" : "#d1d5db",
+            border: state.isDisabled ? "1px solid #d1d5db" : "1px solid #d1d5db",
+            backgroundColor: state.isDisabled ? "#f3f4f6" : base.backgroundColor,
+            color: state.isDisabled ? "#9ca3af" : base.color,
             minHeight: "40px",
             fontSize,
           }),
@@ -114,9 +117,10 @@ export const MultipleSelect = forwardRef<Select, Props>(({
             cursor: state.isDisabled ? "not-allowed" : "pointer",
             fontSize,
           }),
-          dropdownIndicator: (base) => ({
+          dropdownIndicator: (base, state) => ({
             ...base,
             display: isClearable && value && value.length > 0 ? "none" : "flex",
+            color: state.isDisabled ? "#9ca3af" : "#6b7280",
           }),
           clearIndicator: (base) => ({
             ...base,
