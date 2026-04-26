@@ -37,13 +37,13 @@ export default function PpdsDetailPage() {
     reset,
   } = usePpdsStore();
 
-  const { statusOptions, fetchMasterStatusOptions } = useMasterStore();
+  const { userStatusOptions, fetchUserStatusOptions } = useMasterStore();
 
   const { isShown: isShowDelete, toggle: toggleDelete } = useModal();
 
   useEffect(() => {
-    fetchMasterStatusOptions();
-  }, [fetchMasterStatusOptions]);
+    fetchUserStatusOptions();
+  }, [fetchUserStatusOptions]);
 
   useEffect(() => {
     if (idUser) {
@@ -311,9 +311,9 @@ export default function PpdsDetailPage() {
                     <SingleSelect
                       {...field}
                       errorMessage={errors.status?.message}
-                      options={statusOptions}
+                      options={userStatusOptions}
                       value={
-                        statusOptions.find(
+                        userStatusOptions.find(
                           (opt) => opt.value === field.value,
                         ) || null
                       }

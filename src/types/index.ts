@@ -36,3 +36,10 @@ export enum UserStatusEnum {
   INACTIVE = "Inactive",
   LULUS = "Lulus",
 }
+
+export enum LogbookStatusEnum {
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected",
+  REVISED = "revised",
+}

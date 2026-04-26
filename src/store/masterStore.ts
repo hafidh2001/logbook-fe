@@ -1,13 +1,19 @@
 import { create } from "zustand";
 import { masterApi } from "@/services/masterApi";
 import type { MasterStore } from "@/types/master/store";
-import { BasicSelectOpt, RoleEnum, UserStatusEnum } from "@/types";
+import {
+  BasicSelectOpt,
+  LogbookStatusEnum,
+  RoleEnum,
+  UserStatusEnum,
+} from "@/types";
 
 const initialState = {
   ppdsOptions: [] as BasicSelectOpt<number>[],
   staffOptions: [] as BasicSelectOpt<number>[],
   staseOptions: [] as BasicSelectOpt<number>[],
-  statusOptions: [] as BasicSelectOpt<string>[],
+  userStatusOptions: [] as BasicSelectOpt<string>[],
+  logbookStatusOptions: [] as BasicSelectOpt<string>[],
   isLoading: false,
   error: null,
 };
@@ -75,7 +81,7 @@ export const useMasterStore = create<MasterStore>((set) => ({
     }
   },
 
-  fetchMasterStatusOptions: async () => {
+  fetchUserStatusOptions: async () => {
     set({ isLoading: true, error: null });
     try {
       const arr = Object.keys(UserStatusEnum).map((key) => {
@@ -84,7 +90,24 @@ export const useMasterStore = create<MasterStore>((set) => ({
           value: UserStatusEnum[key as keyof typeof UserStatusEnum],
         };
       });
-      set({ statusOptions: arr, isLoading: false });
+      set({ userStatusOptions: arr, isLoading: false });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan";
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  fetchLogbookStatusOptions: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const arr = Object.keys(LogbookStatusEnum).map((key) => {
+        return {
+          label: key,
+          value: LogbookStatusEnum[key as keyof typeof LogbookStatusEnum],
+        };
+      });
+      set({ logbookStatusOptions: arr, isLoading: false });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Terjadi kesalahan";
