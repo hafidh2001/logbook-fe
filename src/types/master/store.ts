@@ -18,7 +18,7 @@ export interface MasterActions {
     params: Pick<IMasterUserParams, "id_client">,
   ) => Promise<void>;
   fetchStaseOptions: (params: IMasterParams) => Promise<void>;
-  fetchStatusOptions: () => Promise<void>;
+  fetchMasterStatusOptions: () => Promise<void>;
   reset: () => void;
 }
 

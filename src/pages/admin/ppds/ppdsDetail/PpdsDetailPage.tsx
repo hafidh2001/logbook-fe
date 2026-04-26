@@ -37,13 +37,13 @@ export default function PpdsDetailPage() {
     reset,
   } = usePpdsStore();
 
-  const { statusOptions, fetchStatusOptions } = useMasterStore();
+  const { statusOptions, fetchMasterStatusOptions } = useMasterStore();
 
   const { isShown: isShowDelete, toggle: toggleDelete } = useModal();
 
   useEffect(() => {
-    fetchStatusOptions();
-  }, [fetchStatusOptions]);
+    fetchMasterStatusOptions();
+  }, [fetchMasterStatusOptions]);
 
   useEffect(() => {
     if (idUser) {

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { masterApi } from "@/services/masterApi";
 import type { MasterStore } from "@/types/master/store";
-import { BasicSelectOpt, RoleEnum, StatusEnum } from "@/types";
+import { BasicSelectOpt, RoleEnum, UserStatusEnum } from "@/types";
 
 const initialState = {
   ppdsOptions: [] as BasicSelectOpt<number>[],
@@ -75,13 +75,13 @@ export const useMasterStore = create<MasterStore>((set) => ({
     }
   },
 
-  fetchStatusOptions: async () => {
+  fetchMasterStatusOptions: async () => {
     set({ isLoading: true, error: null });
     try {
-      const arr = Object.keys(StatusEnum).map((key) => {
+      const arr = Object.keys(UserStatusEnum).map((key) => {
         return {
           label: key,
-          value: StatusEnum[key as keyof typeof StatusEnum],
+          value: UserStatusEnum[key as keyof typeof UserStatusEnum],
         };
       });
       set({ statusOptions: arr, isLoading: false });

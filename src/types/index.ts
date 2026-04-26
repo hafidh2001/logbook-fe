@@ -31,7 +31,7 @@ export enum RoleEnum {
   PATIENTS = "patients",
 }
 
-export enum StatusEnum {
+export enum UserStatusEnum {
   ACTIVE = "Active",
   INACTIVE = "Inactive",
   LULUS = "Lulus",
