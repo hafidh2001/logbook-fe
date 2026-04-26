@@ -9,12 +9,15 @@ import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { icons } from "@/assets/images/Icon";
 import { Input } from "@/components/ui/input";
 import { usePpdsStore } from "@/store/ppdsStore";
+import { useAuthStore } from "@/store/authStore";
 import dayjs from "dayjs";
 import { ppdsCreateSchema, PpdsCreateFormData } from "@/validations/ppds/ppds";
+import { showToast } from "@/utils/toast";
 
 export default function PpdsCreatePage() {
   const navigate = useNavigate();
-  const { createPpds } = usePpdsStore();
+  const { createPpds, isLoading } = usePpdsStore();
+  const { user } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -39,13 +42,30 @@ export default function PpdsCreatePage() {
 
   const onSubmit = async (data: PpdsCreateFormData) => {
     const { confirmPassword, dateOfBirth, ...rest } = data;
-    const createData = {
-      ...rest,
-      dateOfBirth: dateOfBirth ? dayjs(dateOfBirth).format("YYYY-MM-DD") : undefined,
+    const payload = {
+      id_client: user?.id_client ?? 0,
+      display_name: rest.displayName,
+      username: rest.username,
+      email: rest.email,
+      phone: rest.phone,
+      password: rest.password,
+      confirm_password: confirmPassword,
+      nim: rest.nim || null,
+      date_of_birth: dateOfBirth
+        ? dayjs(dateOfBirth).format("YYYY-MM-DD")
+        : null,
+      address: rest.address || null,
     };
-    const success = await createPpds(createData);
+    const success = await createPpds(payload);
     if (success) {
+      const successMessage = usePpdsStore.getState().success;
+      showToast(successMessage ?? "Data berhasil dibuat!", "success");
       navigate(ROUTES.ppds);
+    } else {
+      const errorMessage = usePpdsStore.getState().error;
+      showToast(errorMessage ?? "Data gagal dibuat!", "error", {
+        duration: 4000,
+      });
     }
   };
 
@@ -57,13 +77,13 @@ export default function PpdsCreatePage() {
           { label: "Tambah PPDS" },
         ]}
         onSave={handleSubmit(onSubmit)}
+        isLoading={isLoading}
       />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Create Form - 2 Column Layout */}
           <div className="bg-white rounded-lg border p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-
               {/* Row 1: Display Name* | Username* */}
               <Controller
                 name="displayName"
@@ -205,7 +225,9 @@ export default function PpdsCreatePage() {
                       </button>
                     </div>
                     {errors.password && (
-                      <p className="text-sm text-red-600">{errors.password.message}</p>
+                      <p className="text-sm text-red-600">
+                        {errors.password.message}
+                      </p>
                     )}
                   </div>
                 )}
@@ -216,7 +238,8 @@ export default function PpdsCreatePage() {
                 render={({ field }) => (
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Konfirmasi Password<span className="text-red-600 ml-1">*</span>
+                      Konfirmasi Password
+                      <span className="text-red-600 ml-1">*</span>
                     </label>
                     <div className="relative">
                       <Input
@@ -229,7 +252,9 @@ export default function PpdsCreatePage() {
                       />
                       <button
                         type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600"
                       >
                         {showConfirmPassword ? (
@@ -240,12 +265,13 @@ export default function PpdsCreatePage() {
                       </button>
                     </div>
                     {errors.confirmPassword && (
-                      <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+                      <p className="text-sm text-red-600">
+                        {errors.confirmPassword.message}
+                      </p>
                     )}
                   </div>
                 )}
               />
-
             </div>
           </div>
         </div>

@@ -484,5 +484,72 @@ class ApiWebServiceController extends Controller {
             ]
         ]);
     }
+    
+    public function actionCreatePPDS() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+        
+        if (
+            !isset($post['id_client']) ||
+            !isset($post['display_name']) ||
+            !isset($post['username']) ||
+            !isset($post['email']) ||
+            !isset($post['phone']) ||
+            !isset($post['password']) ||
+            !isset($post['confirm_password'])
+        ) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $password         = $post['password'];
+        $confirm_password = $post['confirm_password'];
+
+        if ($password !== $confirm_password) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Password not match!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        $role = MRole::model()->findByAttributes(
+                    [
+                        'id_client' => $post['id_client'],
+                        'name'      => 'ppds'
+                    ],
+                    ['select' => 'id']
+            );
+        
+        try {
+            $user                 = new MUser;
+            $user->id_client      = $post['id_client'];
+            $user->id_role        = $role->id;
+            $user->display_name   = $post['display_name'];
+            $user->username       = $post['username'];
+            $user->email          = $post['email'];
+            $user->phone          = $post['phone'];
+            $user->address        = $post['address'] ?? null;
+            $user->date_of_birth  = $post['date_of_birth'] ?? null;
+            $user->code           = $post['nim'] ?? null;
+            $user->password       = password_hash($post['password'], PASSWORD_BCRYPT);
+            $user->created_date   = date('Y-m-d H:i:s');
+            $user->save(false);
+        
+            echo json_encode([
+                'status'  => true,
+                'message' => 'Data berhasil dibuat!',
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'status'  => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        Yii::app()->end();
+    }
 
 }

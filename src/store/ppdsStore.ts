@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { PpdsStore, PpdsData } from "@/types/ppds/store";
-import type { TPpds, TPpdsDetail, IPpdsPayload } from "@/types/ppds";
+import type { TPpds, TPpdsDetail, IPpdsPayload, IPpdsCreatePayload } from "@/types/ppds";
 import { ppdsApi } from "@/services/ppdsApi";
 import { useAuthStore } from "@/store/authStore";
 
@@ -82,11 +82,14 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
     }
   },
 
-  createPpds: async (data: Partial<TPpds>) => {
-    set({ isLoading: true, error: null });
+  createPpds: async (data: IPpdsCreatePayload) => {
+    set({ isLoading: true, error: null, success: null });
     try {
-      await ppdsApi.createPpds(data);
-      set({ isLoading: false });
+      const response = await ppdsApi.createPpds(data);
+      set({
+        isLoading: false,
+        success: response.message ?? "Data berhasil dibuat!",
+      });
       return true;
     } catch (error) {
       set({

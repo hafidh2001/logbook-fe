@@ -4,6 +4,7 @@ import type {
   IPpdsListParams,
   TPpdsDetail,
   IPpdsPayload,
+  IPpdsCreatePayload,
 } from "./index";
 
 export interface PpdsData {
@@ -29,7 +30,7 @@ export interface PpdsState {
 export interface PpdsActions {
   loadPpdsList: (params?: Partial<IPpdsListParams>) => Promise<PpdsData>;
   loadPpdsDetail: (id_user: number) => Promise<void>;
-  createPpds: (data: Partial<TPpds>) => Promise<boolean>;
+  createPpds: (data: IPpdsCreatePayload) => Promise<boolean>;
   updatePpds: (data: IPpdsPayload) => Promise<boolean>;
   deletePpds: (id_user: number) => Promise<boolean>;
   reset: () => void;

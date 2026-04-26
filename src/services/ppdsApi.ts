@@ -4,6 +4,7 @@ import type {
   IPpdsListParams,
   TPpdsDetail,
   IPpdsPayload,
+  IPpdsCreatePayload,
 } from "@/types/ppds";
 import type { ApiPaginationResponse, ApiResponse } from "@/types";
 
@@ -97,7 +98,7 @@ export const ppdsApi = {
     }
   },
 
-  async createPpds(data: Partial<TPpds>): Promise<TPpds> {
+  async createPpds(data: IPpdsCreatePayload): Promise<ApiResponse<TPpds>> {
     try {
       const { data: responseData } = await apiClient.post("CreatePPDS", data);
 
@@ -105,7 +106,7 @@ export const ppdsApi = {
         throw new Error(responseData.message || "Failed to create PPDS");
       }
 
-      return responseData.data;
+      return responseData;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const responseData = error.response?.data;

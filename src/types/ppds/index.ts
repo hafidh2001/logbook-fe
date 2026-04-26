@@ -45,3 +45,17 @@ export interface IPpdsListParams {
   stase?: Nullable<number>;
   nim?: Nullable<string>;
 }
+
+// Payload for create PPDS (matches PHP backend $post keys)
+export interface IPpdsCreatePayload {
+  id_client: number;
+  display_name: string;
+  username: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirm_password: string;
+  address?: Nullable<string>;
+  date_of_birth?: Nullable<string>;
+  nim?: Nullable<string>;
+}
