@@ -132,7 +132,7 @@ class ApiWebServiceController extends Controller {
     
     // === MASTER STAGE ===
     
-    // option : ppds (Active) | staff
+    // option : ppds (Active) | staff (?)
     public function actionGetMasterUser() {
         $rest_json = file_get_contents("php://input");
         $post = json_decode($rest_json, true);
@@ -158,7 +158,9 @@ class ApiWebServiceController extends Controller {
                 AND mu.is_show    = :is_show
                 AND mu.deleted_at IS NULL 
                 AND mu.id_client  = :id_client
-                AND mr.name       = :role_name';
+                AND mr.name       = :role_name
+                ORDER BY 
+                    mu.display_name ASC';
         
         $res = Yii::app()->db->createCommand($sql)
             ->bindValue(':status', 'Active')
@@ -192,7 +194,9 @@ class ApiWebServiceController extends Controller {
                     ms.name
                 FROM m_stase ms
                 WHERE
-                    ms.id_client = :id_client';
+                    ms.id_client = :id_client
+                ORDER BY 
+                    name ASC';
         
         $res = Yii::app()->db->createCommand($sql)
             ->bindValue(':id_client', $post['id_client'])
@@ -205,12 +209,73 @@ class ApiWebServiceController extends Controller {
         ]);
     }
     
-    public function actionGetPengajarMaster() {
+    public function actionGetMasterStaff() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
         
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = 'SELECT DISTINCT ON (mu.display_name)
+                    mu.id,
+                    mu.display_name AS "name"
+                FROM t_logbook_status tls
+                LEFT JOIN m_user mu ON mu.id = tls.id_user
+                LEFT JOIN m_action_role mar ON mar.id = tls.id_action_role
+                WHERE
+                    mu.deleted_at IS NULL
+                AND mar.id_client = :id_client
+                AND mar.role      != :role_name 
+                ORDER BY
+                    mu.display_name ASC';
+        
+        $res = Yii::app()->db->createCommand($sql)
+            ->bindValue(':id_client', $post['id_client'])
+            ->bindValue(':role_name', 'Peserta')
+            ->queryAll();
+        
+        echo json_encode([
+            'status'  => true,
+            'total'   => count($res),
+            'data'    => $res
+        ]);
     }
     
-    public function actionGetActivityMaster() {
+    public function actionGetMasterActivity() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
         
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        $sql = 'SELECT
+                    ma.id,
+                    ma.name
+                FROM m_action ma
+                WHERE
+                    ma.id_client = :id_client
+                ORDER BY 
+                    name ASC';
+        
+        $res = Yii::app()->db->createCommand($sql)
+            ->bindValue(':id_client', $post['id_client'])
+            ->queryAll();
+        
+        echo json_encode([
+            'status'  => true,
+            'total'   => count($res),
+            'data'    => $res
+        ]);
     }
     
     
@@ -551,5 +616,7 @@ class ApiWebServiceController extends Controller {
         }
         Yii::app()->end();
     }
+    
+    public function actionGetListPPDSLogbook() {}
 
 }

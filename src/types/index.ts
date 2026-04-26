@@ -31,6 +31,16 @@ export enum RoleEnum {
   PATIENTS = "patients",
 }
 
+export enum ActionRoleEnum {
+  ADMIN = "Admin",
+  PESERTA = "Peserta",
+  STAFF_PENGAJAR = "Staff Pengajar",
+  PENGUJI_1 = "Penguji 1",
+  PEMBIMBING_1 = "Pembimbing 1",
+  PEMBIMBING_2 = "Pembimbing 2",
+  PEMBIMBING_3 = "Pembimbing 3",
+}
+
 export enum UserStatusEnum {
   ACTIVE = "Active",
   INACTIVE = "Inactive",
