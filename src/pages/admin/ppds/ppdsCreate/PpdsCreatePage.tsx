@@ -28,33 +28,25 @@ export default function PpdsCreatePage() {
   } = useForm<PpdsCreateFormData>({
     resolver: zodResolver(ppdsCreateSchema),
     defaultValues: {
-      displayName: "",
+      display_name: "",
       username: "",
       phone: "",
       email: "",
       nim: "",
-      dateOfBirth: null,
+      date_of_birth: null,
       address: "",
       password: "",
-      confirmPassword: "",
+      confirm_password: "",
     },
   });
 
   const onSubmit = async (data: PpdsCreateFormData) => {
-    const { confirmPassword, dateOfBirth, ...rest } = data;
     const payload = {
+      ...data,
       id_client: user?.id_client ?? 0,
-      display_name: rest.displayName,
-      username: rest.username,
-      email: rest.email,
-      phone: rest.phone,
-      password: rest.password,
-      confirm_password: confirmPassword,
-      nim: rest.nim || null,
-      date_of_birth: dateOfBirth
-        ? dayjs(dateOfBirth).format("YYYY-MM-DD")
+      date_of_birth: data.date_of_birth
+        ? dayjs(data.date_of_birth).format("YYYY-MM-DD")
         : null,
-      address: rest.address || null,
     };
     const success = await createPpds(payload);
     if (success) {
@@ -86,13 +78,13 @@ export default function PpdsCreatePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
               {/* Row 1: Display Name* | Username* */}
               <Controller
-                name="displayName"
+                name="display_name"
                 control={control}
                 render={({ field }) => (
                   <InputField
                     label="Display Name"
                     required
-                    errorMessage={errors.displayName?.message}
+                    errorMessage={errors.display_name?.message}
                     {...field}
                     value={field.value || ""}
                     onChange={field.onChange}
@@ -164,7 +156,7 @@ export default function PpdsCreatePage() {
                 )}
               />
               <Controller
-                name="dateOfBirth"
+                name="date_of_birth"
                 control={control}
                 render={({ field }) => (
                   <CalendarSelect
@@ -233,7 +225,7 @@ export default function PpdsCreatePage() {
                 )}
               />
               <Controller
-                name="confirmPassword"
+                name="confirm_password"
                 control={control}
                 render={({ field }) => (
                   <div className="flex flex-col gap-1">
@@ -264,9 +256,9 @@ export default function PpdsCreatePage() {
                         )}
                       </button>
                     </div>
-                    {errors.confirmPassword && (
+                    {errors.confirm_password && (
                       <p className="text-sm text-red-600">
-                        {errors.confirmPassword.message}
+                        {errors.confirm_password.message}
                       </p>
                     )}
                   </div>
