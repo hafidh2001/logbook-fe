@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { TPenilaianLogbook, IPenilaianLogbookListParams } from "@/types/penilaianLogbook";
+import type { TPenilaianLogbook, IPenilaianLogbookListParams, IPenilaianLogbookDetailParams } from "@/types/penilaianLogbook";
 import type { ApiResponse } from "@/types";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -31,6 +31,32 @@ export const penilaianLogbookApi = {
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Failed to fetch");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getPenilaianLogbookDetail(
+    params: IPenilaianLogbookDetailParams,
+  ): Promise<ApiResponse<TPenilaianLogbook>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetDetailPenilaianLogbook",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch detail");
       }
 
       return responseData;

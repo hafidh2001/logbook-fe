@@ -1093,7 +1093,6 @@ class ApiWebServiceController extends Controller {
 
         echo json_encode([
             'status'  => true,
-            'total'   => count($res),
             'data'    => $res
         ]);
     }
@@ -1146,7 +1145,6 @@ class ApiWebServiceController extends Controller {
 
         echo json_encode([
             'status'  => true,
-            'total'   => count($res),
             'data'    => $res
         ]);
     }

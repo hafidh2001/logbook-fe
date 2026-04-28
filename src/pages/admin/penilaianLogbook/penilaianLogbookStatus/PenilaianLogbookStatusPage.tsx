@@ -11,14 +11,19 @@ export default function PenilaianLogbookStatusPage() {
   const { idLogbookCategory } = useParams<{ idLogbookCategory: string }>();
   const navigate = useNavigate();
 
-  const { penilaianList, isLoading, loadPenilaianList, reset } = usePenilaianLogbookStore();
+  const {
+    penilaianLogbookDetail,
+    isLoading,
+    loadPenilaianLogbookDetail,
+    reset,
+  } = usePenilaianLogbookStore();
 
   useEffect(() => {
-    loadPenilaianList();
+    if (idLogbookCategory) {
+      loadPenilaianLogbookDetail({ id_action: Number(idLogbookCategory) });
+    }
     return () => reset();
-  }, [loadPenilaianList, reset]);
-
-  const data = penilaianList.find((item) => item.id === Number(idLogbookCategory));
+  }, [idLogbookCategory, loadPenilaianLogbookDetail, reset]);
 
   if (isLoading) {
     return <LoadingPage />;
@@ -40,7 +45,7 @@ export default function PenilaianLogbookStatusPage() {
               icon={icons.FileText}
               badgeIcon={icons.Check}
               color="green"
-              value={data?.totalScored ?? 0}
+              value={penilaianLogbookDetail?.scored ?? 0}
               title="Scored Logbook"
               onClick={() => navigate(ROUTES.penilaianLogbookScoredLogbook(idLogbookCategory || ""))}
             />
@@ -48,7 +53,7 @@ export default function PenilaianLogbookStatusPage() {
               icon={icons.FileText}
               badgeIcon={icons.X}
               color="yellow"
-              value={data?.totalUnscored ?? 0}
+              value={penilaianLogbookDetail?.unscored ?? 0}
               title="Unscored Logbook"
               onClick={() => navigate(ROUTES.penilaianLogbookUnscoredLogbook(idLogbookCategory || ""))}
             />
