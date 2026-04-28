@@ -1,5 +1,5 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
-import { StatusBadge } from "@/components/statusBadge";
+// import { StatusBadge } from "@/components/statusBadge";
 import type { TPpdsLogbookDetail } from "@/types/ppds";
 
 interface Props {
