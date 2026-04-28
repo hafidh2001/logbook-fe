@@ -100,3 +100,11 @@ export type TPpdsLogbookData = {
     pageCount: number;
   };
 };
+
+// Payload for change password (matches PHP backend $post keys)
+export interface IPpdsChangePasswordPayload {
+  updated_by: number;
+  id_user: number;
+  password: string;
+  confirm_password: string;
+}

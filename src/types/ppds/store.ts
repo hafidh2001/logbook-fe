@@ -7,6 +7,7 @@ import type {
   IPpdsCreatePayload,
   TPpdsLogbook,
   IPpdsLogbookListParams,
+  IPpdsChangePasswordPayload,
 } from "./index";
 
 export interface PpdsData {
@@ -47,6 +48,7 @@ export interface PpdsActions {
   createPpds: (data: IPpdsCreatePayload) => Promise<boolean>;
   updatePpds: (data: IPpdsPayload) => Promise<boolean>;
   deletePpds: (id_user: number) => Promise<boolean>;
+  changePassword: (data: IPpdsChangePasswordPayload) => Promise<boolean>;
   reset: () => void;
 }
 

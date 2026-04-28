@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { PpdsStore, PpdsData, PpdsLogbookData } from "@/types/ppds/store";
-import type { TPpds, TPpdsDetail, IPpdsPayload, IPpdsCreatePayload } from "@/types/ppds";
+import type { TPpds, TPpdsDetail, IPpdsPayload, IPpdsCreatePayload, IPpdsChangePasswordPayload } from "@/types/ppds";
 import { ppdsApi } from "@/services/ppdsApi";
 import { useAuthStore } from "@/store/authStore";
 
@@ -147,6 +147,24 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Failed to delete PPDS",
+        isLoading: false,
+      });
+      return false;
+    }
+  },
+
+  changePassword: async (data: IPpdsChangePasswordPayload) => {
+    set({ isLoading: true, error: null, success: null });
+    try {
+      const response = await ppdsApi.changePassword(data);
+      set({
+        isLoading: false,
+        success: response.message ?? "Password berhasil diubah!",
+      });
+      return true;
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Failed to change password",
         isLoading: false,
       });
       return false;

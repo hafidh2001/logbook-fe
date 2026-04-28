@@ -1,43 +1,64 @@
 import { Topbar } from "@/components/layout/Topbar";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { icons } from "@/assets/images/Icon";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/fields/passwordField";
-import { changePasswordSchema, ChangePasswordFormData } from "@/validations/common/changePassword";
+import { ppdsChangePasswordSchema, PpdsChangePasswordFormData } from "@/validations/ppds/ppds";
 import { usePpdsStore } from "@/store/ppdsStore";
+import { useAuthStore } from "@/store/authStore";
 import { useEffect } from "react";
+import { showToast } from "@/utils/toast";
 
 export default function PpdsChangePasswordPage() {
   const { idUser } = useParams<{ idUser: string }>();
+  const navigate = useNavigate();
 
-  const { selectedPpds, loadPpdsDetail, resetDetail } = usePpdsStore();
+  const { selectedPpds, loadPpdsDetail, changePassword, isLoading } = usePpdsStore();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     if (idUser) {
-      loadPpdsDetail(idUser);
+      loadPpdsDetail(Number(idUser));
     }
-    return () => resetDetail();
-  }, [idUser, loadPpdsDetail, resetDetail]);
+  }, [idUser, loadPpdsDetail]);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(changePasswordSchema),
+  } = useForm<PpdsChangePasswordFormData>({
+    resolver: zodResolver(ppdsChangePasswordSchema),
     defaultValues: {
       password: "",
       confirmPassword: "",
     },
   });
 
-  const onSubmit = (data: ChangePasswordFormData) => {
-    console.log("Changing password for user:", idUser, data);
-    // TODO: Call API to change password
+  const onSubmit = async (data: PpdsChangePasswordFormData) => {
+    if (!idUser) return;
+
+    const payload = {
+      updated_by: user?.id ?? 0,
+      id_user: Number(idUser),
+      password: data.password,
+      confirm_password: data.confirmPassword,
+    };
+
+    const success = await changePassword(payload);
+    if (success) {
+      const successMessage = usePpdsStore.getState().success;
+      showToast(successMessage ?? "Password berhasil diubah!", "success");
+      navigate(ROUTES.ppds);
+    } else {
+      const errorMessage = usePpdsStore.getState().error;
+      showToast(errorMessage ?? "Password gagal diubah!", "error", {
+        duration: 4000,
+      });
+    }
   };
 
   return (
@@ -49,6 +70,7 @@ export default function PpdsChangePasswordPage() {
           { label: "Ubah Password" },
         ]}
         onSave={handleSubmit(onSubmit)}
+        isLoading={isLoading}
       />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
@@ -60,10 +82,10 @@ export default function PpdsChangePasswordPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-800">
-                  {selectedPpds?.displayName || "-"}
+                  {selectedPpds?.display_name || "-"}
                 </h2>
                 <p className="text-sm text-gray-500">NIM: {selectedPpds?.nim || "-"}</p>
-                <p className="text-sm text-gray-500 capitalize">Role: {selectedPpds?.role || "ppds"}</p>
+                <p className="text-sm text-gray-500 capitalize">Role: {selectedPpds?.role_name || "ppds"}</p>
               </div>
             </div>
           </CardWrapper>
