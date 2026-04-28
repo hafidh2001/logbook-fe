@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { PpdsStore, PpdsData } from "@/types/ppds/store";
+import type { PpdsStore, PpdsData, PpdsLogbookData } from "@/types/ppds/store";
 import type { TPpds, TPpdsDetail, IPpdsPayload, IPpdsCreatePayload } from "@/types/ppds";
 import { ppdsApi } from "@/services/ppdsApi";
 import { useAuthStore } from "@/store/authStore";
@@ -14,6 +14,7 @@ const initialState = {
       pageCount: 1,
     },
   },
+  ppdsLogbookData: null as PpdsLogbookData | null,
   selectedPpds: null as TPpdsDetail | null,
   isLoading: false,
   isLoadingDetail: false,
@@ -79,6 +80,25 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
           error instanceof Error ? error.message : "Failed to load PPDS detail",
         isLoadingDetail: false,
       });
+    }
+  },
+
+  loadPpdsLogbookList: async (params) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await ppdsApi.getPpdsLogbookList(params);
+      const logbookData: PpdsLogbookData = {
+        list: response.data.list,
+        pagination: {
+          page: response.pagination.page,
+          limit: response.pagination.limit,
+          total: response.total,
+          pageCount: Math.ceil(response.total / response.pagination.limit) || 1,
+        },
+      };
+      set({ ppdsLogbookData: logbookData, isLoading: false, hasInitialized: true });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "Failed to load logbook list", isLoading: false, hasInitialized: true });
     }
   },
 

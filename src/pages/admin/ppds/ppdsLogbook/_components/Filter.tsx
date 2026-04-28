@@ -1,10 +1,18 @@
 import { FilterPanel } from "@/components/filterPanel";
-import type { FilterFieldConfig, FilterProps } from "@/components/filterPanel";
-import { useEffect } from "react";
+import type { FilterFieldConfig, FilterProps, FilterValue } from "@/components/filterPanel";
+import { useEffect, useMemo } from "react";
 import { useMasterStore } from "@/store/masterStore";
 import { useAuthStore } from "@/store/authStore";
+import { BasicSelectOpt } from "@/types";
 
-export const Filter = (props: Omit<FilterProps, "fields">) => {
+export const Filter = ({
+  initialPpdsId,
+  syncValues,
+  ...props
+}: Omit<FilterProps, "fields"> & {
+  initialPpdsId?: number;
+  syncValues?: Record<string, FilterValue>;
+}) => {
   const {
     ppdsOptions,
     staffOptions,
@@ -28,6 +36,54 @@ export const Filter = (props: Omit<FilterProps, "fields">) => {
       fetchLogbookStatusOptions();
     }
   }, [user?.id_client, fetchPPDSOptions, fetchStaffOptions, fetchStaseOptions, fetchActivityOptions, fetchLogbookStatusOptions]);
+
+  // Find the PPDS option that matches initialPpdsId to get correct label
+  const initialPpdsOption = useMemo(() => {
+    if (!initialPpdsId) return undefined;
+    return ppdsOptions.find(opt => opt.value === initialPpdsId);
+  }, [initialPpdsId, ppdsOptions]);
+
+  // Map to convert raw values to BasicSelectOpt for select fields
+  const optionMapNumber: Record<string, BasicSelectOpt<number>[]> = {
+    id_ppds: ppdsOptions,
+    id_staff: staffOptions,
+    id_activity: activityOptions,
+    id_stase: staseOptions,
+  };
+
+  const optionMapString: Record<string, BasicSelectOpt<string>[]> = {
+    status: logbookStatusOptions,
+  };
+
+  // Transform syncValues to BasicSelectOpt format for select fields
+  const transformedSyncValues = useMemo(() => {
+    if (!syncValues) return undefined;
+    const result: Record<string, FilterValue> = {};
+    Object.entries(syncValues).forEach(([key, value]) => {
+      if (value === null || value === undefined) {
+        result[key] = value;
+      } else if (typeof value === 'number' && optionMapNumber[key]) {
+        // Convert raw number to BasicSelectOpt
+        const option = optionMapNumber[key].find(opt => opt.value === value);
+        if (option) {
+          result[key] = option;
+        } else {
+          result[key] = { label: "", value };
+        }
+      } else if (typeof value === 'string' && optionMapString[key]) {
+        // Convert raw string to BasicSelectOpt
+        const option = optionMapString[key].find(opt => opt.value === value);
+        if (option) {
+          result[key] = option;
+        } else {
+          result[key] = { label: "", value };
+        }
+      } else {
+        result[key] = value;
+      }
+    });
+    return result;
+  }, [syncValues, ppdsOptions, staffOptions, activityOptions, staseOptions, logbookStatusOptions]);
 
   const filterFields: FilterFieldConfig[] = [
     {
@@ -79,5 +135,16 @@ export const Filter = (props: Omit<FilterProps, "fields">) => {
     },
   ];
 
-  return <FilterPanel fields={filterFields} {...props} />;
+  const initialValues = initialPpdsOption
+    ? { id_ppds: initialPpdsOption }
+    : undefined;
+
+  return (
+    <FilterPanel
+      fields={filterFields}
+      {...props}
+      initialValues={initialValues}
+      syncValues={transformedSyncValues}
+    />
+  );
 };

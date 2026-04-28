@@ -59,3 +59,44 @@ export interface IPpdsCreatePayload {
   date_of_birth?: Nullable<string>;
   nim?: Nullable<string>;
 }
+
+// Logbook types
+export type TPpdsLogbook = {
+  id: number;
+  date: string;
+  title: string;
+  notes: Nullable<string>;
+  verified_status: string;
+  ppds_name: string;
+  nim: Nullable<string>;
+  action: string;
+  hospital: string;
+  category: Nullable<string>;
+  semester: Nullable<string>;
+  stase_name: string;
+  stage_name: Nullable<string>;
+  staff_name: Nullable<string>;
+};
+
+export interface IPpdsLogbookListParams {
+  id_client: number;
+  page?: number;
+  limit?: number;
+  id_ppds?: Nullable<number>;
+  id_staff?: Nullable<number>;
+  id_activity?: Nullable<number>;
+  id_stase?: Nullable<number>;
+  start_date?: Nullable<string>;
+  end_date?: Nullable<string>;
+  status?: Nullable<string>;
+}
+
+export type TPpdsLogbookData = {
+  list: TPpdsLogbook[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pageCount: number;
+  };
+};

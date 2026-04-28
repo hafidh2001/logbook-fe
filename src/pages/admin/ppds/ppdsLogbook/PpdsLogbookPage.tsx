@@ -3,17 +3,21 @@ import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { useLogbookStore } from "@/store/logbookStore";
+import { usePpdsStore } from "@/store/ppdsStore";
+import { useAuthStore } from "@/store/authStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
+import type { TPpdsLogbook } from "@/types/ppds";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useEffect } from "react";
-
-type LogbookEntry = Record<string, any>;
+import { DEFAULT_PAGE_SIZE } from "@/constants/table";
+import usePagination from "@/hooks/usePagination";
+import useFilter from "@/hooks/useFilter";
+import { FilterValue } from "@/components/filterPanel";
 
 export default function PpdsLogbookPage() {
   const { width } = useWindowDimensions();
@@ -23,21 +27,74 @@ export default function PpdsLogbookPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { ppdsLogbook, isLoading, loadPpdsLogbook, reset } = useLogbookStore();
+  const { ppdsLogbookData, isLoading, loadPpdsLogbookList, reset } = usePpdsStore();
+  const { user } = useAuthStore();
+
+  // Pagination - page is always read from URL
+  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+    defaultPage: 1,
+    defaultLimit: DEFAULT_PAGE_SIZE,
+  });
+
+  // Filter hook
+  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<
+    Omit<Record<string, FilterValue>, "start_date" | "end_date"> & {
+      start_date?: string;
+      end_date?: string;
+    }
+  >({
+    fields: [
+      { key: "id_ppds" },
+      { key: "id_staff" },
+      { key: "id_activity" },
+      { key: "id_stase" },
+      { key: "status" },
+    ],
+    onFilterChange: () => setPage(1),
+    initialValues: idUser ? { id_ppds: Number(idUser) } : undefined,
+  });
 
   useEffect(() => {
-    if (idUser) {
-      loadPpdsLogbook(idUser);
+    // Runs when URL or filter changes
+    if (user?.id_client) {
+      loadPpdsLogbookList({
+        id_client: user.id_client,
+        page,
+        limit,
+        ...filterParams,
+        start_date: filterParams.start_date as string | undefined,
+        end_date: filterParams.end_date as string | undefined,
+      });
     }
-    return () => reset();
-  }, [idUser, loadPpdsLogbook, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, filterParams]);
+
+  useEffect(() => {
+    // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
+    return () => {
+      reset();
+    };
+  }, [reset]);
+
+  // Reset store when sidebar is clicked (URL has no page param)
+  useEffect(() => {
+    const pageParam = searchParams.get("page");
+    // If no page param in URL, reset store
+    if (!pageParam) {
+      reset();
+      // Also force page to 1 in URL if somehow different
+      if (page !== 1) {
+        setPage(1);
+      }
+    }
+  }, [searchParams, reset, page, setPage]);
 
   const isInactive = location.pathname.includes("/ppds-inactive/");
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
   const ppdsDetailRoute = isInactive ? ROUTES.ppdsInactiveDetail(idUser || "") : ROUTES.ppdsDetail(idUser || "");
 
-  const logbooks = ppdsLogbook?.logbooks || [];
+  const logbooks = ppdsLogbookData?.list || [];
 
   const handleExport = () => {
     // TODO: Implement export
@@ -48,19 +105,15 @@ export default function PpdsLogbookPage() {
     console.log("Search:", query);
   };
 
-  const handleFilterSearch = (data: Record<string, unknown>) => {
-    console.log("Filter search:", data);
+  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
+    setPage(pageIndex + 1);
+    setLimit(pageSize);
   };
 
-  const handleFilterReset = () => {
-    console.log("Filter reset");
-  };
-
-  const handleRowClick = (row: Row<LogbookEntry>) => {
-    console.log("Row clicked:", row.original);
+  const handleRowClick = (row: Row<TPpdsLogbook>) => {
     const detailRoute = isInactive
-      ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(row.original.no))
-      : ROUTES.ppdsLogbookDetail(String(idUser), String(row.original.no));
+      ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(row.original.id))
+      : ROUTES.ppdsLogbookDetail(String(idUser), String(row.original.id));
     navigate(detailRoute);
   };
 
@@ -90,15 +143,7 @@ export default function PpdsLogbookPage() {
   };
 
   // Define columns for Logbook table
-  const columns: ColumnDef<LogbookEntry>[] = [
-    {
-      accessorKey: "no",
-      header: "No.",
-      size: 60,
-      cell: ({ row: { original } }) => (
-        <span className="text-center block">{original.no}</span>
-      ),
-    },
+  const columns: ColumnDef<TPpdsLogbook>[] = [
     {
       accessorKey: "date",
       header: "Date",
@@ -106,7 +151,7 @@ export default function PpdsLogbookPage() {
       cell: ({ row: { original } }) => {
         return original.date ? (
           <span className="whitespace-nowrap">
-            {dayjs(original.date).locale("id").format("DD MMM YYYY – HH:mm")}
+            {dayjs(original.date).locale("id").format("DD MMM YYYY")}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -114,29 +159,43 @@ export default function PpdsLogbookPage() {
       },
     },
     {
-      accessorKey: "activity",
-      header: "Activity",
-      size: 200,
+      accessorKey: "ppds_name",
+      header: "Peserta PPDS",
+      size: 180,
       cell: ({ row: { original } }) => (
-        <span className="font-medium">{original.activity ?? "-"}</span>
+        <span className="font-medium">{original.ppds_name ?? "-"}</span>
       ),
     },
     {
-      accessorKey: "staffPengajar",
-      header: "Staff Pengajar",
-      size: 150,
+      accessorKey: "nim",
+      header: "NIM",
+      size: 120,
+      cell: ({ row: { original } }) => original.nim ?? "-",
+    },
+    {
+      accessorKey: "staff_name",
+      header: "Staff Pengajar/DPJP",
+      size: 180,
       cell: ({ row: { original } }) => {
-        return original.staffPengajar ? (
-          <span>{original.staffPengajar}</span>
+        return original.staff_name ? (
+          <span>{original.staff_name}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
       },
     },
     {
+      accessorKey: "action",
+      header: "Activity",
+      size: 180,
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.action ?? "-"}</span>
+      ),
+    },
+    {
       accessorKey: "hospital",
       header: "Hospital",
-      size: 180,
+      size: 150,
       cell: ({ row: { original } }) => {
         return original.hospital ? (
           <span className="flex items-center gap-1">
@@ -163,10 +222,10 @@ export default function PpdsLogbookPage() {
       },
     },
     {
-      accessorKey: "verifiedStatus",
-      header: "Status",
+      accessorKey: "verified_status",
+      header: "Verified Status",
       size: 140,
-      cell: ({ row: { original } }) => getVerifiedBadge(original.verifiedStatus),
+      cell: ({ row: { original } }) => getVerifiedBadge(original.verified_status),
     },
     {
       id: "actions",
@@ -176,8 +235,8 @@ export default function PpdsLogbookPage() {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
           const detailRoute = isInactive
-            ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(original.no))
-            : ROUTES.ppdsLogbookDetail(String(idUser), String(original.no));
+            ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(original.id))
+            : ROUTES.ppdsLogbookDetail(String(idUser), String(original.id));
           navigate(detailRoute);
         };
 
@@ -213,7 +272,7 @@ export default function PpdsLogbookPage() {
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
-          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} />
+          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} initialPpdsId={idUser ? Number(idUser) : undefined} syncValues={filterParams} />
 
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
@@ -221,12 +280,15 @@ export default function PpdsLogbookPage() {
               data={logbooks}
               columns={columns}
               isLoading={isLoading}
-              isShowNumbering={false}
+              isShowNumbering={true}
               pagination={{
                 enabled: true,
+                mode: "server",
                 initialPageIndex: 0,
-                initialPageSize: 10,
+                initialPageSize: DEFAULT_PAGE_SIZE,
+                pageCount: ppdsLogbookData?.pagination.pageCount ?? 1,
               }}
+              onPaginationChange={handlePaginationChange}
               onRowClick={handleRowClick}
               noDataText="Tidak ada data logbook"
               className="h-full"

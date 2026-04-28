@@ -128,6 +128,63 @@ class ApiWebServiceController extends Controller {
         ]);
     }
     
+    public function actionChangePassword() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+        
+        if (
+            !isset($post['updated_by']) ||
+            !isset($post['id_user']) ||
+            !isset($post['password']) ||
+            !isset($post['confirm_password'])
+        ) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        $password         = $post['password'];
+        $confirm_password = $post['confirm_password'];
+
+        if ($password !== $confirm_password) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Password not match!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        $user = MUser::model()->findByPk($post["id_user"]);
+        
+        if (!$user) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'User tidak ditemukan!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        try {
+            $user->password       = password_hash($post['password'], PASSWORD_BCRYPT);
+            $user->updated_date   = date('Y-m-d H:i:s');
+            $user->updated_by     = $post['updated_by'];
+            $user->save(false);
+        
+            echo json_encode([
+                'status'  => true,
+                'message' => 'Data berhasil diupdate!',
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'status'  => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        Yii::app()->end();
+    }
+    
     
     
     // === MASTER STAGE ===
@@ -315,7 +372,9 @@ class ApiWebServiceController extends Controller {
                     (
                         SELECT COUNT(*)
                         FROM t_logbook tl
-                        WHERE tl.id_user = mu.id
+                        WHERE 
+                            tl.id_user = mu.id
+                        AND tl.deleted_at IS NULL
                     ) AS total_logbook
                 FROM m_user mu
                 LEFT JOIN m_role mr ON mr.id = mu.id_role
@@ -324,7 +383,8 @@ class ApiWebServiceController extends Controller {
                     mu.id_client  = :id_client
                 AND mu.status     = :status
                 AND mu.is_show    = :is_show
-                AND mu.deleted_at IS NULL';
+                AND mu.deleted_at IS NULL
+                AND mr.name       = :role_name';
         
         $countSql = 'SELECT COUNT(*)
                     FROM m_user mu
@@ -334,12 +394,14 @@ class ApiWebServiceController extends Controller {
                         mu.id_client  = :id_client
                     AND mu.status     = :status
                     AND mu.is_show    = :is_show
-                    AND mu.deleted_at IS NULL';
+                    AND mu.deleted_at IS NULL
+                    AND mr.name       = :role_name';
     
         $params = [
             ':id_client' => $post['id_client'],
             ':status'    => 'Active',
-            ':is_show'   => true
+            ':is_show'   => true,
+            ':role_name' => 'ppds'
         ];
     
         // 🔥 optional filter
@@ -468,7 +530,9 @@ class ApiWebServiceController extends Controller {
                     (
                         SELECT COUNT(*)
                         FROM t_logbook tl
-                        WHERE tl.id_user = mu.id
+                        WHERE 
+                            tl.id_user = mu.id
+                        AND tl.deleted_at IS NULL
                     ) AS total_logbook
                 FROM m_user mu
                 LEFT JOIN m_role mr ON mr.id = mu.id_role
@@ -617,6 +681,149 @@ class ApiWebServiceController extends Controller {
         Yii::app()->end();
     }
     
-    public function actionGetListPPDSLogbook() {}
+    public function actionGetListPPDSLogbook() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        // pagination default
+        $page  = isset($post['page']) ? (int)$post['page'] : 1;
+        $limit = isset($post['limit']) ? (int)$post['limit'] : 10;
+        $offset = ($page - 1) * $limit;
+
+        // sorting (default DESC)
+        $sort = (isset($post['sort']) && strtolower($post['sort']) === 'desc') ? 'DESC' : 'ASC';
+
+        $sql = 'SELECT
+                    tl.id,
+                    tl.date,
+                    tl.title,
+                    tl.notes,
+                    tl.verified_status,
+                    mu.display_name AS ppds_name,
+                    mu.code AS nim,
+                    ma.name AS action,
+                    mh.name AS hospital,
+                    mac.name AS category,
+                    ms.name AS semester,
+                    st.name AS stase_name,
+                    stg.name AS stage_name,
+                    tls.display_name AS staff_name
+                FROM t_logbook tl
+                LEFT JOIN m_user mu ON tl.id_user = mu.id
+                LEFT JOIN m_action ma ON tl.id_action = ma.id
+                LEFT JOIN m_hospital mh ON tl.id_hospital = mh.id
+                LEFT JOIN m_action_category mac ON tl.id_category = mac.id
+                LEFT JOIN m_semester ms ON tl.id_semester = ms.id
+                LEFT JOIN m_stase st ON tl.id_stase = st.id
+                LEFT JOIN m_stage stg ON st.id_stage = stg.id
+                LEFT JOIN LATERAL (
+                    SELECT tls.id_logbook, mu.display_name, tls.id_user
+                    FROM t_logbook_status tls
+                    JOIN m_action_role mar ON tls.id_action_role = mar.id
+                    JOIN m_user mu ON tls.id_user = mu.id
+                    WHERE tls.id_logbook = tl.id
+                    AND mar.role != :role_action
+                    LIMIT 1
+                ) tls ON true
+                WHERE
+                    tl.id_client = :id_client
+                AND tl.deleted_at IS NULL';
+
+        $countSql = 'SELECT COUNT(*)
+                    FROM t_logbook tl
+                    WHERE
+                        tl.id_client = :id_client
+                    AND tl.deleted_at IS NULL';
+
+        $params = [
+            ':id_client' => $post['id_client'],
+            ':role_action' => 'Peserta'
+        ];
+
+        // optional filter
+        if (!empty($post['id_ppds'])) {
+            $sql      .= ' AND tl.id_user = :id_ppds';
+            $countSql .= ' AND tl.id_user = :id_ppds';
+            $params[':id_ppds'] = $post['id_ppds'];
+        }
+
+        if (!empty($post['id_staff'])) {
+            $sql      .= ' AND tls.id_user = :id_staff';
+            $countSql .= ' AND tls.id_user = :id_staff';
+            $params[':id_staff'] = $post['id_staff'];
+        }
+
+        if (!empty($post['id_activity'])) {
+            $sql      .= ' AND tl.id_action = :id_activity';
+            $countSql .= ' AND tl.id_action = :id_activity';
+            $params[':id_activity'] = $post['id_activity'];
+        }
+
+        if (!empty($post['id_stase'])) {
+            $sql      .= ' AND tl.id_stase = :id_stase';
+            $countSql .= ' AND tl.id_stase = :id_stase';
+            $params[':id_stase'] = $post['id_stase'];
+        }
+
+        if (!empty($post['start_date'])) {
+            $sql      .= ' AND tl.date >= :start_date';
+            $countSql .= ' AND tl.date >= :start_date';
+            $params[':start_date'] = $post['start_date'];
+        }
+
+        if (!empty($post['end_date'])) {
+            $sql      .= ' AND tl.date <= :end_date';
+            $countSql .= ' AND tl.date <= :end_date';
+            $params[':end_date'] = $post['end_date'];
+        }
+
+        if (!empty($post['status'])) {
+            $sql      .= ' AND tl.verified_status = :status';
+            $countSql .= ' AND tl.verified_status = :status';
+            $params[':status'] = $post['status'];
+        }
+
+        // sorting + pagination
+        $sql .= " ORDER BY
+                    tl.date
+                    $sort
+                LIMIT :limit
+                OFFSET :offset";
+
+        $command      = Yii::app()->db->createCommand($sql);
+        $countCommand = Yii::app()->db->createCommand($countSql);
+
+        foreach ($params as $key => $val) {
+            $command->bindValue($key, $val);
+            // $countCommand->bindValue($key, $val);
+            if ($key !== ':role_action') {
+                $countCommand->bindValue($key, $val);
+            }
+        }
+
+        $command->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $command->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $res   = $command->queryAll();
+        $total = $countCommand->queryScalar();
+
+        echo json_encode([
+            'status' => true,
+            'total'  => (int)$total,
+            'data'   => $res,
+            'pagination' => [
+                'page'   => $page,
+                'limit'  => $limit,
+            ]
+        ]);
+    }
 
 }

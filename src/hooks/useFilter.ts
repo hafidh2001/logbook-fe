@@ -13,6 +13,8 @@ type UseFilterConfig<T extends Record<string, unknown>> = {
   onFilterChange: () => void;
   /** Transform raw FilterPanel data to filter params */
   transform?: (data: Record<string, unknown>) => T;
+  /** Initial filter values to set on mount */
+  initialValues?: Partial<T>;
 };
 
 type UseFilterReturn<T> = {
@@ -29,7 +31,7 @@ type UseFilterReturn<T> = {
 const useFilter = <T extends Record<string, unknown>>(
   config: UseFilterConfig<T>
 ): UseFilterReturn<T> => {
-  const { fields, onFilterChange, transform } = config;
+  const { fields, onFilterChange, transform, initialValues } = config;
 
   // Default filter params - all null/undefined
   const getDefaultFilterParams = (): T => {
@@ -40,7 +42,16 @@ const useFilter = <T extends Record<string, unknown>>(
     return defaults as T;
   };
 
-  const [filterParams, setFilterParams] = useState<T>(getDefaultFilterParams());
+  // Merge initial values with defaults
+  const getInitialParams = (): T => {
+    const defaults = getDefaultFilterParams();
+    if (initialValues) {
+      return { ...defaults, ...initialValues } as T;
+    }
+    return defaults;
+  };
+
+  const [filterParams, setFilterParams] = useState<T>(getInitialParams());
 
   const handleFilterSearch = useCallback(
     (data: Record<string, unknown>) => {

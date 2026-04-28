@@ -5,6 +5,8 @@ import type {
   TPpdsDetail,
   IPpdsPayload,
   IPpdsCreatePayload,
+  IPpdsLogbookListParams,
+  TPpdsLogbookData,
 } from "@/types/ppds";
 import type { ApiPaginationResponse, ApiResponse } from "@/types";
 
@@ -128,6 +130,41 @@ export const ppdsApi = {
       }
 
       return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getPpdsLogbookList(
+    params: IPpdsLogbookListParams,
+  ): Promise<ApiPaginationResponse<TPpdsLogbookData>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetListPPDSLogbook",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch logbook list");
+      }
+
+      // Transform response to match PpdsLogbookData structure
+      const result: ApiPaginationResponse<TPpdsLogbookData> = {
+        ...responseData,
+        data: {
+          list: responseData.data,
+          pagination: responseData.pagination,
+        },
+      };
+
+      return result;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const responseData = error.response?.data;

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SingleSelect } from "@/components/fields/singleSelect";
 import { MultipleSelect } from "@/components/fields/multipleSelect";
 import { InputField } from "@/components/fields/inputField";
@@ -41,6 +41,7 @@ export type FilterValue =
   | BasicSelectOpt<string | number>
   | BasicSelectOpt<string | number>[]
   | string
+  | number
   | Date
   | boolean
   | null
@@ -51,6 +52,9 @@ export type FilterProps = {
   onSearch: (data: Record<string, FilterValue>) => void;
   onReset: () => void;
   resultCount?: number;
+  initialValues?: Record<string, FilterValue>;
+  /** External filter values to watch and sync - when these change externally, internal state updates */
+  syncValues?: Record<string, FilterValue>;
 };
 
 // Helper to check if filter has value
@@ -111,12 +115,12 @@ const getDefaultValue = (type: FilterFieldType): FilterValue => {
   }
 };
 
-export function FilterPanel({ fields, onSearch, onReset, resultCount }: FilterProps) {
+export function FilterPanel({ fields, onSearch, onReset, resultCount, initialValues, syncValues }: FilterProps) {
   // State untuk setiap filter
   const [filters, setFilters] = useState<Record<string, FilterValue>>(() =>
     fields.reduce(
       (acc, field) => {
-        acc[field.key] = getDefaultValue(field.type);
+        acc[field.key] = initialValues?.[field.key] ?? getDefaultValue(field.type);
         return acc;
       },
       {} as Record<string, FilterValue>
@@ -124,6 +128,24 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount }: FilterPr
   );
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Sync filters when initialValues or syncValues changes
+  useEffect(() => {
+    const valuesToSync = syncValues ?? initialValues;
+    if (valuesToSync) {
+      setFilters((prev) => {
+        let hasUpdates = false;
+        const newFilters = { ...prev };
+        Object.entries(valuesToSync).forEach(([key, value]) => {
+          if (prev[key] !== value) {
+            newFilters[key] = value;
+            hasUpdates = true;
+          }
+        });
+        return hasUpdates ? newFilters : prev;
+      });
+    }
+  }, [syncValues, initialValues]);
 
   // Hitung jumlah filter yang aktif
   const activeFilterCount = useMemo(() => {
