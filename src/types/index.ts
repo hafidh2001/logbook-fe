@@ -48,8 +48,9 @@ export enum UserStatusEnum {
 }
 
 export enum LogbookStatusEnum {
+  APPROVED = "approved",
   PENDING = "pending",
-  VERIFIED = "verified",
   REJECTED = "rejected",
   REVISED = "revised",
+  VERIFIED = "verified",
 }
