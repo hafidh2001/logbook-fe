@@ -32,8 +32,19 @@ export interface PpdsLogbookData {
   };
 }
 
+export interface PpdsInactiveData {
+  list: TPpds[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pageCount: number;
+  };
+}
+
 export interface PpdsState {
   ppdsData: PpdsData;
+  ppdsInactiveData: PpdsInactiveData | null;
   ppdsLogbookData: PpdsLogbookData | null;
   ppdsLogbookDetail: TPpdsLogbookDetail | null;
   selectedPpds: TPpdsDetail | null;
@@ -45,6 +56,7 @@ export interface PpdsState {
 
 export interface PpdsActions {
   loadPpdsList: (params?: Partial<IPpdsListParams>) => Promise<PpdsData>;
+  loadPpdsInactiveList: (params?: Partial<IPpdsListParams>) => Promise<void>;
   loadPpdsDetail: (id_user: number) => Promise<void>;
   loadPpdsLogbookList: (params: IPpdsLogbookListParams) => Promise<void>;
   loadPpdsLogbookDetail: (params: IPpdsLogbookDetailParams) => Promise<void>;

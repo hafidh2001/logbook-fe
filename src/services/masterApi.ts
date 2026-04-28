@@ -34,7 +34,33 @@ export const masterApi = {
       );
 
       if (responseData.status === false) {
-        throw new Error(responseData.message || "Failed to fetch master user");
+        throw new Error(responseData.message || "Failed to fetch");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getMasterPPDSInactive(
+    params: IMasterUserParams,
+  ): Promise<ApiPaginationResponse<IMasterOptions[]>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetMasterPPDSInactive",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch");
       }
 
       return responseData;
@@ -60,7 +86,7 @@ export const masterApi = {
       );
 
       if (responseData.status === false) {
-        throw new Error(responseData.message || "Failed to fetch master stase");
+        throw new Error(responseData.message || "Failed to fetch");
       }
 
       return responseData;
@@ -86,7 +112,7 @@ export const masterApi = {
       );
 
       if (responseData.status === false) {
-        throw new Error(responseData.message || "Failed to fetch master activity");
+        throw new Error(responseData.message || "Failed to fetch");
       }
 
       return responseData;

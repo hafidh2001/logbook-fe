@@ -232,6 +232,49 @@ class ApiWebServiceController extends Controller {
             'data'    => $res
         ]);
     }
+
+    public function actionGetMasterPPDSInactive() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+        
+        if (
+            !isset($post['id_client']) ||
+            !isset($post['role_name'])
+            ) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        $sql = 'SELECT
+                    mu.id,
+                    mu.display_name AS "name"
+                FROM m_user mu
+                LEFT JOIN m_role mr ON mr.id = mu.id_role
+                WHERE
+                    mu.status     = :status 
+                -- AND mu.is_show    = :is_show
+                AND mu.deleted_at IS NULL 
+                AND mu.id_client  = :id_client
+                AND mr.name       = :role_name
+                ORDER BY 
+                    mu.display_name ASC';
+        
+        $res = Yii::app()->db->createCommand($sql)
+            ->bindValue(':status', 'Inactive')
+            // ->bindValue(':is_show', true)
+            ->bindValue(':id_client', $post['id_client'])
+            ->bindValue(':role_name', $post['role_name'])
+            ->queryAll();
+        
+        echo json_encode([
+            'status'  => true,
+            'total'   => count($res),
+            'data'    => $res
+        ]);
+    }
     
     // option : stase
     public function actionGetMasterStase() {
@@ -878,6 +921,123 @@ class ApiWebServiceController extends Controller {
         echo json_encode([
             'status'  => true,
             'data'    => $res
+        ]);
+    }
+
+    public function actionGetListPPDSInactive() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+        
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+    
+        // pagination default
+        $page  = isset($post['page']) ? (int)$post['page'] : 1;
+        $limit = isset($post['limit']) ? (int)$post['limit'] : 10;
+        $offset = ($page - 1) * $limit;
+    
+        // sorting (default ASC)
+        $sort = (isset($post['sort']) && strtolower($post['sort']) === 'desc') ? 'DESC' : 'ASC';
+    
+        $sql = 'SELECT
+                    mu.id,
+                    mu.display_name,
+                    mu.username,
+                    mu.email,
+                    mu.phone,
+                    mu.address,
+                    mu.date_of_birth,
+                    mu.code AS nim,
+                    mr.name AS role_name,
+                    ms.name AS stase_name,
+                    (
+                        SELECT COUNT(*)
+                        FROM t_logbook tl
+                        WHERE 
+                            tl.id_user = mu.id
+                        AND tl.deleted_at IS NULL
+                    ) AS total_logbook
+                FROM m_user mu
+                LEFT JOIN m_role mr ON mr.id = mu.id_role
+                LEFT JOIN m_stase ms ON ms.id = mu.id_stase
+                WHERE 
+                    mu.id_client  = :id_client
+                AND mu.status     = :status
+                -- AND mu.is_show    = :is_show
+                AND mu.deleted_at IS NULL
+                AND mr.name       = :role_name';
+        
+        $countSql = 'SELECT COUNT(*)
+                    FROM m_user mu
+                    LEFT JOIN m_role mr ON mr.id = mu.id_role
+                    LEFT JOIN m_stase ms ON ms.id = mu.id_stase
+                    WHERE 
+                        mu.id_client  = :id_client
+                    AND mu.status     = :status
+                    -- AND mu.is_show    = :is_show
+                    AND mu.deleted_at IS NULL
+                    AND mr.name       = :role_name';
+    
+        $params = [
+            ':id_client' => $post['id_client'],
+            ':status'    => 'Inactive',
+            // ':is_show'   => true,
+            ':role_name' => 'ppds'
+        ];
+    
+        // 🔥 optional filter
+        if (!empty($post['ppds'])) {
+            $sql      .= ' AND mu.id = :ppds';
+            $countSql .= ' AND mu.id = :ppds';
+            $params[':ppds'] = $post['ppds'];
+        }
+    
+        if (!empty($post['stase'])) {
+            $sql      .= ' AND mu.id_stase = :stase';
+            $countSql .= ' AND mu.id_stase = :stase';
+            $params[':stase'] = $post['stase'];
+        }
+    
+        if (!empty($post['nim'])) {
+            $sql      .= ' AND mu.code ILIKE :nim';
+            $countSql .= ' AND mu.code ILIKE :nim';
+            $params[':nim'] = '%' . $post['nim'] . '%';
+        }
+    
+        // sorting + pagination
+        $sql .= " ORDER BY 
+                    mu.display_name 
+                    $sort 
+                LIMIT :limit 
+                OFFSET :offset";
+    
+        $command      = Yii::app()->db->createCommand($sql);
+        $countCommand = Yii::app()->db->createCommand($countSql);
+        
+        foreach ($params as $key => $val) {
+            $command->bindValue($key, $val);
+            $countCommand->bindValue($key, $val);
+        }
+    
+        $command->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $command->bindValue(':offset', $offset, PDO::PARAM_INT);
+    
+        $res   = $command->queryAll();
+        $total = $countCommand->queryScalar();
+    
+        echo json_encode([
+            'status' => true,
+            'total'  => (int)$total,
+            'data'   => $res,
+            'pagination' => [
+                'page'   => $page,
+                'limit'  => $limit,
+            ]
         ]);
     }
 }

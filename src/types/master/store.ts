@@ -3,6 +3,7 @@ import { IMasterParams, IMasterUserParams } from "@/types/master";
 
 export interface MasterState {
   ppdsOptions: BasicSelectOpt<number>[];
+  ppdsInactiveOptions: BasicSelectOpt<number>[];
   staffOptions: BasicSelectOpt<number>[];
   staseOptions: BasicSelectOpt<number>[];
   activityOptions: BasicSelectOpt<number>[];
@@ -14,6 +15,9 @@ export interface MasterState {
 
 export interface MasterActions {
   fetchPPDSOptions: (
+    params: Pick<IMasterUserParams, "id_client">,
+  ) => Promise<void>;
+  fetchPPDSInactiveOptions: (
     params: Pick<IMasterUserParams, "id_client">,
   ) => Promise<void>;
   fetchStaffOptions: (

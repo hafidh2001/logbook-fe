@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { PpdsStore, PpdsData, PpdsLogbookData } from "@/types/ppds/store";
-import type { TPpds, TPpdsDetail, IPpdsPayload, IPpdsCreatePayload, IPpdsChangePasswordPayload, TPpdsLogbookDetail, IPpdsLogbookDetailParams } from "@/types/ppds";
+import type { PpdsStore, PpdsData, PpdsLogbookData, PpdsInactiveData } from "@/types/ppds/store";
+import type { TPpds, TPpdsDetail, IPpdsPayload, IPpdsCreatePayload, IPpdsChangePasswordPayload, TPpdsLogbookDetail, IPpdsLogbookDetailParams, IPpdsListParams } from "@/types/ppds";
 import { ppdsApi } from "@/services/ppdsApi";
 import { useAuthStore } from "@/store/authStore";
 
@@ -14,6 +14,7 @@ const initialState = {
       pageCount: 1,
     },
   },
+  ppdsInactiveData: null as PpdsInactiveData | null,
   ppdsLogbookData: null as PpdsLogbookData | null,
   ppdsLogbookDetail: null as TPpdsLogbookDetail | null,
   selectedPpds: null as TPpdsDetail | null,
@@ -79,6 +80,46 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
         error:
           error instanceof Error ? error.message : "Failed to load PPDS detail",
         isLoading: false,
+      });
+    }
+  },
+
+  loadPpdsInactiveList: async (params?: Partial<IPpdsListParams>) => {
+    const { user } = useAuthStore.getState();
+
+    set({ isLoading: true, error: null });
+    try {
+      const response = await ppdsApi.getPpdsInactiveList({
+        id_client: user?.id_client ?? 0,
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 10,
+        ppds: params?.ppds ?? null,
+        stase: params?.stase ?? null,
+        nim: params?.nim ?? null,
+        status: params?.status ?? null,
+      });
+
+      const inactiveData: PpdsInactiveData = {
+        list: response.data,
+        pagination: {
+          page: response.pagination.page,
+          limit: response.pagination.limit,
+          total: response.total,
+          pageCount: Math.ceil(response.total / response.pagination.limit) || 1,
+        },
+      };
+
+      set({
+        ppdsInactiveData: inactiveData,
+        isLoading: false,
+        hasInitialized: true,
+      });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error ? error.message : "Failed to load inactive PPDS list",
+        isLoading: false,
+        hasInitialized: true,
       });
     }
   },

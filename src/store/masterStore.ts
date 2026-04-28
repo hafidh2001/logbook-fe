@@ -10,6 +10,7 @@ import {
 
 const initialState = {
   ppdsOptions: [] as BasicSelectOpt<number>[],
+  ppdsInactiveOptions: [] as BasicSelectOpt<number>[],
   staffOptions: [] as BasicSelectOpt<number>[],
   staseOptions: [] as BasicSelectOpt<number>[],
   activityOptions: [] as BasicSelectOpt<number>[],
@@ -36,6 +37,27 @@ export const useMasterStore = create<MasterStore>((set) => ({
         };
       });
       set({ ppdsOptions: arr, isLoading: false });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan";
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  fetchPPDSInactiveOptions: async (params) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await masterApi.getMasterPPDSInactive({
+        role_name: RoleEnum.PPDS,
+        ...params,
+      });
+      const arr = response.data.map((item) => {
+        return {
+          label: item.name,
+          value: item.id,
+        };
+      });
+      set({ ppdsInactiveOptions: arr, isLoading: false });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Terjadi kesalahan";
