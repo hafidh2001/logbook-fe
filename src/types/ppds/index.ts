@@ -71,10 +71,8 @@ export type TPpdsLogbook = {
   nim: Nullable<string>;
   action: string;
   hospital: string;
-  category: Nullable<string>;
   semester: Nullable<string>;
   stase_name: string;
-  stage_name: Nullable<string>;
   staff_name: Nullable<string>;
 };
 

@@ -711,19 +711,15 @@ class ApiWebServiceController extends Controller {
                     mu.code AS nim,
                     ma.name AS action,
                     mh.name AS hospital,
-                    mac.name AS category,
                     ms.name AS semester,
                     st.name AS stase_name,
-                    stg.name AS stage_name,
                     tls.display_name AS staff_name
                 FROM t_logbook tl
                 LEFT JOIN m_user mu ON tl.id_user = mu.id
                 LEFT JOIN m_action ma ON tl.id_action = ma.id
                 LEFT JOIN m_hospital mh ON tl.id_hospital = mh.id
-                LEFT JOIN m_action_category mac ON tl.id_category = mac.id
                 LEFT JOIN m_semester ms ON tl.id_semester = ms.id
                 LEFT JOIN m_stase st ON tl.id_stase = st.id
-                LEFT JOIN m_stage stg ON st.id_stage = stg.id
                 LEFT JOIN LATERAL (
                     SELECT tls.id_logbook, mu.display_name, tls.id_user
                     FROM t_logbook_status tls
@@ -826,4 +822,61 @@ class ApiWebServiceController extends Controller {
         ]);
     }
 
+    public function actionGetDetailPPDSLogbook() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_logbook'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = 'SELECT
+                    tl.id,
+                    tl.date,
+                    tl.notes,
+                    tl.verified_status,
+                    mu.display_name AS ppds_name,
+                    mu.code AS nim,
+                    mu.inisial_code,
+                    ma.name AS action,
+                    mh.name AS hospital,
+                    tls.display_name AS staff_name
+                FROM t_logbook tl
+                LEFT JOIN m_user mu ON tl.id_user = mu.id
+                LEFT JOIN m_action ma ON tl.id_action = ma.id
+                LEFT JOIN m_hospital mh ON tl.id_hospital = mh.id
+                LEFT JOIN m_stase st ON tl.id_stase = st.id
+                LEFT JOIN LATERAL (
+                    SELECT tls.id_logbook, mu.display_name, tls.id_user
+                    FROM t_logbook_status tls
+                    JOIN m_action_role mar ON tls.id_action_role = mar.id
+                    JOIN m_user mu ON tls.id_user = mu.id
+                    WHERE tls.id_logbook = tl.id
+                    AND mar.role != :role_action
+                    LIMIT 1
+                ) tls ON true
+                WHERE
+                    tl.id = :id_logbook';
+
+        $res = Yii::app()->db->createCommand($sql)
+            ->bindValue(':id_logbook', $post['id_logbook'])
+            ->queryRow();
+
+        if (!$res) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Logbook tidak ditemukan!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        echo json_encode([
+            'status'  => true,
+            'data'    => $res
+        ]);
+    }
 }
