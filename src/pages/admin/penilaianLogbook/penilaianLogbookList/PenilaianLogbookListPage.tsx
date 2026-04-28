@@ -5,11 +5,10 @@ import { BaseTable } from "@/components/basetable/BaseTable";
 import { usePenilaianLogbookStore } from "@/store/penilaianLogbookStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
+import type { TPenilaianLogbook } from "@/types/penilaianLogbook";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import { useEffect } from "react";
-
-type TPenilaianLogbook = Record<string, any>;
 
 export default function PenilaianLogbookListPage() {
   const navigate = useNavigate();
@@ -21,34 +20,34 @@ export default function PenilaianLogbookListPage() {
     return () => reset();
   }, [loadPenilaianList, reset]);
 
-  const handleRowClick = (row: Row<any>) => {
-    navigate(ROUTES.penilaianLogbookDetail(String(row.original.id)))
+  const handleRowClick = (row: Row<TPenilaianLogbook>) => {
+    navigate(ROUTES.penilaianLogbookDetail(String(row.original.id)));
   };
 
   // Define columns for Penilaian Logbook table
   const columns: ColumnDef<TPenilaianLogbook>[] = [
     {
       accessorKey: "name",
-      header: "Nama",
+      header: "Nama Aktivitas",
       size: 300,
       cell: ({ row: { original } }) => (
         <span className="font-medium">{original.name ?? "-"}</span>
       ),
     },
     {
-      accessorKey: "totalScored",
+      accessorKey: "scored",
       header: "Scored",
       size: 150,
       cell: ({ row: { original } }) => (
-        <span className="text-center block">{original.totalScored ?? 0}</span>
+        <span className="text-center block">{original.scored ?? 0}</span>
       ),
     },
     {
-      accessorKey: "totalUnscored",
+      accessorKey: "unscored",
       header: "Unscored",
       size: 150,
       cell: ({ row: { original } }) => (
-        <span className="text-center block">{original.totalUnscored ?? 0}</span>
+        <span className="text-center block">{original.unscored ?? 0}</span>
       ),
     },
     {
@@ -90,7 +89,7 @@ export default function PenilaianLogbookListPage() {
               isLoading={isLoading}
               isShowNumbering
               pagination={{
-                enabled: true,
+                enabled: false, // API returns flat list, no pagination needed
                 initialPageIndex: 0,
                 initialPageSize: 10,
               }}
