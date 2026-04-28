@@ -8,6 +8,8 @@ import type {
   TPpdsLogbook,
   IPpdsLogbookListParams,
   IPpdsChangePasswordPayload,
+  TPpdsLogbookDetail,
+  IPpdsLogbookDetailParams,
 } from "./index";
 
 export interface PpdsData {
@@ -33,6 +35,7 @@ export interface PpdsLogbookData {
 export interface PpdsState {
   ppdsData: PpdsData;
   ppdsLogbookData: PpdsLogbookData | null;
+  ppdsLogbookDetail: TPpdsLogbookDetail | null;
   selectedPpds: TPpdsDetail | null;
   isLoading: boolean;
   error: Nullable<string>;
@@ -44,11 +47,13 @@ export interface PpdsActions {
   loadPpdsList: (params?: Partial<IPpdsListParams>) => Promise<PpdsData>;
   loadPpdsDetail: (id_user: number) => Promise<void>;
   loadPpdsLogbookList: (params: IPpdsLogbookListParams) => Promise<void>;
+  loadPpdsLogbookDetail: (params: IPpdsLogbookDetailParams) => Promise<void>;
   createPpds: (data: IPpdsCreatePayload) => Promise<boolean>;
   updatePpds: (data: IPpdsPayload) => Promise<boolean>;
   deletePpds: (id_user: number) => Promise<boolean>;
   changePassword: (data: IPpdsChangePasswordPayload) => Promise<boolean>;
   reset: () => void;
+  resetLogbookDetail: () => void;
 }
 
 export type PpdsStore = PpdsState & PpdsActions;

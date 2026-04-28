@@ -864,6 +864,7 @@ class ApiWebServiceController extends Controller {
 
         $res = Yii::app()->db->createCommand($sql)
             ->bindValue(':id_logbook', $post['id_logbook'])
+            ->bindValue(':role_action', 'Peserta')
             ->queryRow();
 
         if (!$res) {

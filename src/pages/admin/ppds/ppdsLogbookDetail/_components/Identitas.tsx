@@ -1,7 +1,8 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
+import type { TPpdsLogbookDetail } from "@/types/ppds";
 
 interface Props {
-  data: any;
+  data: TPpdsLogbookDetail | null;
 }
 
 export const Identitas = ({ data }: Props) => {
@@ -14,12 +15,14 @@ export const Identitas = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">PPDS</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.displayName ?? "-"}
+          {data?.ppds_name ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Inisial Code</span>
-        <span className="text-sm font-medium text-gray-800">-</span>
+        <span className="text-sm font-medium text-gray-800">
+          {data?.inisial_code ?? "-"}
+        </span>
       </div>
       {/* Row 2 */}
       <div className="flex items-center gap-2">

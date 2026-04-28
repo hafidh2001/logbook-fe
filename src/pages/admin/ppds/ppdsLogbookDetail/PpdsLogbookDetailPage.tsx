@@ -4,7 +4,7 @@ import { ROUTES } from "@/utils/routes";
 import { useParams, useLocation } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
 import { useEffect } from "react";
-import { useLogbookStore } from "@/store/logbookStore";
+import { usePpdsStore } from "@/store/ppdsStore";
 import { Identitas } from "./_components/Identitas";
 import { Kegiatan } from "./_components/Kegiatan";
 import { Staff } from "./_components/Staff";
@@ -17,26 +17,20 @@ export default function PpdsLogbookDetailPage() {
   const location = useLocation();
 
   const {
-    ppdsLogbook,
     ppdsLogbookDetail,
-    isLoadingDetail,
-    loadPpdsLogbook,
+    isLoading,
     loadPpdsLogbookDetail,
-    resetDetail,
-  } = useLogbookStore();
+    resetLogbookDetail,
+  } = usePpdsStore();
 
   useEffect(() => {
-    if (idUser) {
-      loadPpdsLogbook(idUser);
+    if (idLogbook) {
+      loadPpdsLogbookDetail({
+        id_logbook: Number(idLogbook),
+      });
     }
-    return () => resetDetail();
-  }, [idUser, loadPpdsLogbook, resetDetail]);
-
-  useEffect(() => {
-    if (idUser && idLogbook) {
-      loadPpdsLogbookDetail(idUser, idLogbook);
-    }
-  }, [idUser, idLogbook, loadPpdsLogbookDetail]);
+    return () => resetLogbookDetail();
+  }, [idUser, idLogbook, loadPpdsLogbookDetail, resetLogbookDetail]);
 
   const isInactive = location.pathname.includes("/ppds-inactive/");
 
@@ -48,7 +42,7 @@ export default function PpdsLogbookDetailPage() {
     ? ROUTES.ppdsInactiveLogbook(idUser || "")
     : ROUTES.ppdsLogbook(idUser || "");
 
-  if (isLoadingDetail) {
+  if (isLoading) {
     return <LoadingPage />;
   }
 
@@ -65,7 +59,7 @@ export default function PpdsLogbookDetailPage() {
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           {/* Card 1 - Identitas */}
-          <Identitas data={ppdsLogbook?.participant ?? null} />
+          <Identitas data={ppdsLogbookDetail} />
 
           {/* Card 2 - Kegiatan */}
           <Kegiatan data={ppdsLogbookDetail} />

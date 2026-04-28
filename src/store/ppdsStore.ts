@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { PpdsStore, PpdsData, PpdsLogbookData } from "@/types/ppds/store";
-import type { TPpds, TPpdsDetail, IPpdsPayload, IPpdsCreatePayload, IPpdsChangePasswordPayload } from "@/types/ppds";
+import type { TPpds, TPpdsDetail, IPpdsPayload, IPpdsCreatePayload, IPpdsChangePasswordPayload, TPpdsLogbookDetail, IPpdsLogbookDetailParams } from "@/types/ppds";
 import { ppdsApi } from "@/services/ppdsApi";
 import { useAuthStore } from "@/store/authStore";
 
@@ -15,6 +15,7 @@ const initialState = {
     },
   },
   ppdsLogbookData: null as PpdsLogbookData | null,
+  ppdsLogbookDetail: null as TPpdsLogbookDetail | null,
   selectedPpds: null as TPpdsDetail | null,
   isLoading: false,
   error: null as string | null,
@@ -169,6 +170,26 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
       return false;
     }
   },
+
+  loadPpdsLogbookDetail: async (params: IPpdsLogbookDetailParams) => {
+    set({ isLoading: true, error: null, ppdsLogbookDetail: null });
+    try {
+      const response = await ppdsApi.getPpdsLogbookDetail(params);
+      set({ ppdsLogbookDetail: response.data || null, isLoading: false });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error ? error.message : "Failed to load logbook detail",
+        isLoading: false,
+      });
+    }
+  },
+
+  resetLogbookDetail: () => set({
+    ppdsLogbookDetail: null,
+    isLoading: false,
+    error: null,
+  }),
 
   reset: () => set(initialState),
 }));

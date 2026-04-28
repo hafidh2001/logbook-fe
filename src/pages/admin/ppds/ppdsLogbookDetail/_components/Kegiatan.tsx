@@ -1,9 +1,10 @@
 import dayjs from "dayjs";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { StatusBadge } from "@/components/statusBadge";
+import type { TPpdsLogbookDetail } from "@/types/ppds";
 
 interface Props {
-  data: any;
+  data: TPpdsLogbookDetail | null;
 }
 
 export const Kegiatan = ({ data }: Props) => {
@@ -29,12 +30,12 @@ export const Kegiatan = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Activity</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.activity ?? "-"}
+          {data?.action ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Verified Status</span>
-        <StatusBadge status={data?.verifiedStatus ?? null} />
+        <StatusBadge status={data?.verified_status ?? null} />
       </div>
       {/* Row 3 - Hospital (full width) */}
       <div className="sm:col-span-2 flex items-center gap-2">

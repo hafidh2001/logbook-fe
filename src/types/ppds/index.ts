@@ -106,3 +106,22 @@ export interface IPpdsChangePasswordPayload {
   password: string;
   confirm_password: string;
 }
+
+// Types for PPDS Logbook Detail (matches GetDetailPPDSLogbook API response)
+export interface TPpdsLogbookDetail {
+  id: number;
+  date: string;
+  notes: Nullable<string>;
+  verified_status: string;
+  ppds_name: string;
+  nim: Nullable<string>;
+  inisial_code: Nullable<string>;
+  action: string;
+  hospital: string;
+  staff_name: Nullable<string>;
+}
+
+// Params for getting PPDS Logbook Detail
+export interface IPpdsLogbookDetailParams {
+  id_logbook: number;
+}

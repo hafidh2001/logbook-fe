@@ -1,8 +1,9 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { StatusBadge } from "@/components/statusBadge";
+import type { TPpdsLogbookDetail } from "@/types/ppds";
 
 interface Props {
-  data: any;
+  data: TPpdsLogbookDetail | null;
 }
 
 export const Staff = ({ data }: Props) => {
@@ -13,9 +14,9 @@ export const Staff = ({ data }: Props) => {
     >
       <span className="text-sm text-gray-500 w-24">Staff Pengajar</span>
       <span className="text-sm font-medium text-gray-800">
-        {data?.staffPengajar ?? "-"}
+        {data?.staff_name ?? "-"}
       </span>
-      <StatusBadge status={data?.verifiedStatus ?? null} />
+      {/* <StatusBadge status={data?.verified_status ?? null} /> */}
     </CardWrapper>
   );
 };
