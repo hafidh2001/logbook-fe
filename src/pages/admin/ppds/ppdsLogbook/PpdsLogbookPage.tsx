@@ -36,7 +36,7 @@ export default function PpdsLogbookPage() {
     defaultLimit: DEFAULT_PAGE_SIZE,
   });
 
-  // Filter hook
+  // Filter hook - id_ppds is NOT included because it's controlled by URL (idUser)
   const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<
     Omit<Record<string, FilterValue>, "start_date" | "end_date"> & {
       start_date?: string;
@@ -44,14 +44,14 @@ export default function PpdsLogbookPage() {
     }
   >({
     fields: [
-      { key: "id_ppds" },
       { key: "id_staff" },
       { key: "id_activity" },
       { key: "id_stase" },
       { key: "status" },
+      { key: "start_date" },
+      { key: "end_date" },
     ],
     onFilterChange: () => setPage(1),
-    initialValues: idUser ? { id_ppds: Number(idUser) } : undefined,
   });
 
   useEffect(() => {
@@ -59,6 +59,7 @@ export default function PpdsLogbookPage() {
     if (user?.id_client) {
       loadPpdsLogbookList({
         id_client: user.id_client,
+        id_ppds: Number(idUser),
         page,
         limit,
         ...filterParams,
@@ -272,7 +273,7 @@ export default function PpdsLogbookPage() {
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
-          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} initialPpdsId={idUser ? Number(idUser) : undefined} syncValues={filterParams} />
+          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} initialPpdsId={idUser ? Number(idUser) : undefined} />
 
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">

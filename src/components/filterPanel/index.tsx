@@ -34,6 +34,7 @@ export type FilterFieldConfig = {
   type: FilterFieldType;
   options?: BasicSelectOpt<string | number>[];
   placeholder?: string;
+  disabled?: boolean;
 };
 
 // Filter state type - can hold different value types
@@ -164,6 +165,7 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
         value: filters[field.key],
         type: field.type,
         displayValue: getChipLabel(filters[field.key], field.type),
+        disabled: field.disabled,
       }));
   }, [fields, filters]);
 
@@ -189,7 +191,12 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
     setFilters(
       fields.reduce(
         (acc, field) => {
-          acc[field.key] = getDefaultValue(field.type);
+          // Preserve disabled field values during reset
+          if (field.disabled) {
+            acc[field.key] = filters[field.key];
+          } else {
+            acc[field.key] = getDefaultValue(field.type);
+          }
           return acc;
         },
         {} as Record<string, FilterValue>
@@ -215,6 +222,7 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
             isSearchable
             placeholder={field.placeholder || `Pilih ${field.label}...`}
             selectClassName="w-full"
+            disabled={field.disabled}
           />
         );
 
@@ -326,12 +334,14 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
             >
               <span className="font-medium">{chip.label}:</span>
               <span>{chip.displayValue}</span>
-              <button
-                onClick={() => handleRemoveChip(chip.key)}
-                className="ml-1 hover:bg-blue-300 rounded-full p-0.5 transition-colors"
-              >
-                <icons.X size={14} />
-              </button>
+              {!chip.disabled && (
+                <button
+                  onClick={() => handleRemoveChip(chip.key)}
+                  className="ml-1 hover:bg-blue-300 rounded-full p-0.5 transition-colors"
+                >
+                  <icons.X size={14} />
+                </button>
+              )}
             </div>
           ))}
         </div>

@@ -188,6 +188,19 @@ export const BaseTable = <
     }
   }, [opt.data.length, searchParams, setSearchParams, opt.isLoading]);
 
+  // Handle edge case: when pageCount becomes less than pageIndex (e.g., after filtering)
+  useEffect(() => {
+    if (opt.isLoading) return;
+
+    const pageCount = opt.pagination?.pageCount ?? 1;
+    if (pagination.pageIndex >= pageCount) {
+      setPagination(prev => ({
+        ...prev,
+        pageIndex: pageCount > 0 ? pageCount - 1 : 0,
+      }));
+    }
+  }, [opt.pagination?.pageCount, opt.isLoading]);
+
   // Helper function to get page from URL (1-based)
   const getPageFromUrlFn = () => {
     const pageParam = searchParams.get("page");

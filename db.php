@@ -699,7 +699,7 @@ class ApiWebServiceController extends Controller {
         $offset = ($page - 1) * $limit;
 
         // sorting (default DESC)
-        $sort = (isset($post['sort']) && strtolower($post['sort']) === 'desc') ? 'DESC' : 'ASC';
+        $sort = (isset($post['sort']) && strtolower($post['sort']) === 'asc') ? 'ASC' : 'DESC';
 
         $sql = 'SELECT
                     tl.id,
