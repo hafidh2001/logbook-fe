@@ -27,7 +27,8 @@ export default function PpdsLogbookPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { ppdsLogbookData, isLoading, loadPpdsLogbookList, reset } = usePpdsStore();
+  const { ppdsLogbookData, isLoading, loadPpdsLogbookList, reset } =
+    usePpdsStore();
   const { user } = useAuthStore();
 
   // Pagination - page is always read from URL
@@ -62,9 +63,12 @@ export default function PpdsLogbookPage() {
         id_ppds: Number(idUser),
         page,
         limit,
-        ...filterParams,
-        start_date: filterParams.start_date as string | undefined,
-        end_date: filterParams.end_date as string | undefined,
+        id_staff: (filterParams.id_staff as number | null) ?? undefined,
+        id_activity: (filterParams.id_activity as number | null) ?? undefined,
+        id_stase: (filterParams.id_stase as number | null) ?? undefined,
+        status: (filterParams.status as string | null) ?? undefined,
+        start_date: filterParams.start_date ?? undefined,
+        end_date: filterParams.end_date ?? undefined,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,7 +97,9 @@ export default function PpdsLogbookPage() {
   const isInactive = location.pathname.includes("/ppds-inactive/");
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
-  const ppdsDetailRoute = isInactive ? ROUTES.ppdsInactiveDetail(idUser || "") : ROUTES.ppdsDetail(idUser || "");
+  const ppdsDetailRoute = isInactive
+    ? ROUTES.ppdsInactiveDetail(idUser || "")
+    : ROUTES.ppdsDetail(idUser || "");
 
   const logbooks = ppdsLogbookData?.list || [];
 
@@ -113,7 +119,10 @@ export default function PpdsLogbookPage() {
 
   const handleRowClick = (row: Row<TPpdsLogbook>) => {
     const detailRoute = isInactive
-      ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(row.original.id))
+      ? ROUTES.ppdsInactiveLogbookDetail(
+          String(idUser),
+          String(row.original.id),
+        )
       : ROUTES.ppdsLogbookDetail(String(idUser), String(row.original.id));
     navigate(detailRoute);
   };
@@ -137,8 +146,7 @@ export default function PpdsLogbookPage() {
     }
     return (
       <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-md">
-        <icons.X className="h-3 w-3" />
-        -
+        <icons.X className="h-3 w-3" />-
       </span>
     );
   };
@@ -172,6 +180,12 @@ export default function PpdsLogbookPage() {
       header: "NIM",
       size: 120,
       cell: ({ row: { original } }) => original.nim ?? "-",
+    },
+    {
+      accessorKey: "stase_name",
+      header: "Stase",
+      size: 150,
+      cell: ({ row: { original } }) => original.stase_name ?? "-",
     },
     {
       accessorKey: "staff_name",
@@ -226,7 +240,8 @@ export default function PpdsLogbookPage() {
       accessorKey: "verified_status",
       header: "Verified Status",
       size: 140,
-      cell: ({ row: { original } }) => getVerifiedBadge(original.verified_status),
+      cell: ({ row: { original } }) =>
+        getVerifiedBadge(original.verified_status),
     },
     {
       id: "actions",
@@ -236,7 +251,10 @@ export default function PpdsLogbookPage() {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
           const detailRoute = isInactive
-            ? ROUTES.ppdsInactiveLogbookDetail(String(idUser), String(original.id))
+            ? ROUTES.ppdsInactiveLogbookDetail(
+                String(idUser),
+                String(original.id),
+              )
             : ROUTES.ppdsLogbookDetail(String(idUser), String(original.id));
           navigate(detailRoute);
         };
@@ -273,7 +291,11 @@ export default function PpdsLogbookPage() {
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
-          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} initialPpdsId={idUser ? Number(idUser) : undefined} />
+          <Filter
+            onSearch={handleFilterSearch}
+            onReset={handleFilterReset}
+            initialPpdsId={idUser ? Number(idUser) : undefined}
+          />
 
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
