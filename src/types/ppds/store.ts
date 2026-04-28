@@ -35,7 +35,6 @@ export interface PpdsState {
   ppdsLogbookData: PpdsLogbookData | null;
   selectedPpds: TPpdsDetail | null;
   isLoading: boolean;
-  isLoadingDetail: boolean;
   error: Nullable<string>;
   success: Nullable<string>;
   hasInitialized: boolean;

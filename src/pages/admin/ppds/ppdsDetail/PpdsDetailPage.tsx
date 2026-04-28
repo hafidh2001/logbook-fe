@@ -29,7 +29,6 @@ export default function PpdsDetailPage() {
 
   const {
     selectedPpds,
-    isLoadingDetail,
     isLoading,
     loadPpdsDetail,
     updatePpds,
@@ -134,7 +133,7 @@ export default function PpdsDetailPage() {
     toggleDelete(false);
   };
 
-  if (isLoadingDetail) {
+  if (isLoading) {
     return <LoadingPage />;
   }
 

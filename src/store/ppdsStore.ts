@@ -17,7 +17,6 @@ const initialState = {
   ppdsLogbookData: null as PpdsLogbookData | null,
   selectedPpds: null as TPpdsDetail | null,
   isLoading: false,
-  isLoadingDetail: false,
   error: null as string | null,
   success: null as string | null,
   hasInitialized: false,
@@ -70,15 +69,15 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
   },
 
   loadPpdsDetail: async (id_user: number) => {
-    set({ isLoadingDetail: true, error: null, selectedPpds: null });
+    set({ isLoading: true, error: null, selectedPpds: null });
     try {
       const response = await ppdsApi.getPpdsById(id_user);
-      set({ selectedPpds: response.data || null, isLoadingDetail: false });
+      set({ selectedPpds: response.data || null, isLoading: false });
     } catch (error) {
       set({
         error:
           error instanceof Error ? error.message : "Failed to load PPDS detail",
-        isLoadingDetail: false,
+        isLoading: false,
       });
     }
   },
