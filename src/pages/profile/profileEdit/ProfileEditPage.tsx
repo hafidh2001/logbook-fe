@@ -13,41 +13,42 @@ import {
 } from "@/validations/user/profile";
 import { useAuthStore } from "@/store/authStore";
 import { showToast } from "@/utils/toast";
+import { useEffect } from "react";
 
 export default function ProfileEditPage() {
   const navigate = useNavigate();
-  const {
-    user,
-    updateProfile,
-    isLoading,
-  } = useAuthStore();
+  const { user, updateProfile, isLoading } = useAuthStore();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
+    reset: resetForm,
   } = useForm<ProfileEditFormData>({
     resolver: zodResolver(profileEditSchema),
-    defaultValues: {
-      display_name: user?.display_name ?? "",
-      email: user?.email ?? "",
-      phone: user?.phone ?? "",
-      address: user?.address ?? "",
-      date_of_birth: user?.date_of_birth ? new Date(user.date_of_birth) : null,
-      code: user?.code ?? "",
-    },
   });
+
+  useEffect(() => {
+    if (user) {
+      resetForm({
+        display_name: user?.display_name ?? "",
+        email: user?.email ?? "",
+        phone: user?.phone ?? "",
+        address: user?.address ?? "",
+        date_of_birth: user?.date_of_birth
+          ? new Date(user.date_of_birth)
+          : null,
+        code: user?.code ?? "",
+      });
+    }
+  }, [resetForm]);
 
   const onSubmit = async (data: ProfileEditFormData) => {
     const payload = {
-      display_name: data.display_name ?? null,
-      email: data.email ?? null,
-      phone: data.phone ?? null,
-      address: data.address ?? null,
+      ...data,
       date_of_birth: data.date_of_birth
         ? dayjs(data.date_of_birth).format("YYYY-MM-DD")
         : null,
-      code: data.code ?? null,
     };
 
     const success = await updateProfile({ ...payload, id_user: user?.id ?? 0 });

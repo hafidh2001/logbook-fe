@@ -43,9 +43,9 @@ export interface ILoginRequest {
 export interface IProfilePayload {
   id_user: number;
   display_name: string;
-  email: Nullable<string>;
-  phone: Nullable<string>;
-  address: Nullable<string>;
-  date_of_birth: Nullable<string>;
-  code: Nullable<string>;
+  email?: Nullable<string>;
+  phone?: Nullable<string>;
+  address?: Nullable<string>;
+  date_of_birth?: Nullable<string>;
+  code?: Nullable<string>;
 }
