@@ -1168,9 +1168,9 @@ class ApiWebServiceController extends Controller {
         $page   = isset($post['page']) ? (int)$post['page'] : 1;
         $limit  = isset($post['limit']) ? (int)$post['limit'] : 10;
         $offset = ($page - 1) * $limit;
-        
-        // sorting (default ASC)
-        $sort = (isset($post['sort']) && strtolower($post['sort']) === 'desc') ? 'DESC' : 'ASC';
+
+        // sorting (default DESC - newest first)
+        $sort = (isset($post['sort']) && strtolower($post['sort']) === 'asc') ? 'ASC' : 'DESC';
 
         $baseCte = "
             WITH asm_scores AS (
@@ -1358,8 +1358,8 @@ class ApiWebServiceController extends Controller {
                 sl.staff_name,
                 ts.total_score
             ORDER BY
-                tl.date {$sort},
-                tl.id DESC
+                tl.date
+                {$sort}
             LIMIT :limit
             OFFSET :offset
         ";
