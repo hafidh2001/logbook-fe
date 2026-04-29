@@ -1,6 +1,6 @@
 import axios from "axios";
-import type { TPenilaianLogbook, IPenilaianLogbookListParams, IPenilaianLogbookDetailParams } from "@/types/penilaianLogbook";
-import type { ApiResponse } from "@/types";
+import type { TPenilaianLogbook, IPenilaianLogbookListParams, IPenilaianLogbookDetailParams, TPenilaianLogbookStatusListItem, IPenilaianLogbookStatusListParams } from "@/types/penilaianLogbook";
+import type { ApiResponse, ApiPaginationResponse } from "@/types";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
@@ -57,6 +57,32 @@ export const penilaianLogbookApi = {
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Failed to fetch detail");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getPenilaianLogbookByStatus(
+    params: IPenilaianLogbookStatusListParams,
+  ): Promise<ApiPaginationResponse<TPenilaianLogbookStatusListItem[]>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetListByStatusPenilaianLogbook",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch");
       }
 
       return responseData;

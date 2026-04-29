@@ -1148,6 +1148,246 @@ class ApiWebServiceController extends Controller {
             'data'    => $res
         ]);
     }
+
+    public function actionGetListByStatusPenilaianLogbook()
+    {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (
+            !isset($post['id_action']) ||
+            !isset($post['type'])
+        ) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $page   = isset($post['page']) ? (int)$post['page'] : 1;
+        $limit  = isset($post['limit']) ? (int)$post['limit'] : 10;
+        $offset = ($page - 1) * $limit;
+        
+        // sorting (default ASC)
+        $sort = (isset($post['sort']) && strtolower($post['sort']) === 'desc') ? 'DESC' : 'ASC';
+
+        $baseCte = "
+            WITH asm_scores AS (
+                SELECT
+                    tla.id_logbook,
+                    map.name AS asm_param,
+                    AVG(tla.score) AS avg_score
+                FROM t_logbook_asm tla
+                INNER JOIN m_asm_param map
+                    ON map.id = tla.id_asm_param
+                GROUP BY
+                    tla.id_logbook,
+                    map.name
+            ),
+            total_scores AS (
+                SELECT
+                    id_logbook,
+                    AVG(avg_score) AS total_score
+                FROM asm_scores
+                GROUP BY id_logbook
+            ),
+            staff_logbook AS (
+                SELECT DISTINCT ON (tls.id_logbook)
+                    tls.id_logbook,
+                    tls.id_user AS staff_id,
+                    mu.display_name AS staff_name
+                FROM t_logbook_status tls
+                INNER JOIN m_action_role mar
+                    ON mar.id = tls.id_action_role
+                INNER JOIN m_user mu
+                    ON mu.id = tls.id_user
+                WHERE mar.role != 'Peserta'
+                ORDER BY
+                    tls.id_logbook,
+                    tls.id ASC
+            )
+        ";
+
+        $baseWhere = "
+            FROM t_logbook tl
+            INNER JOIN m_user mu
+                ON mu.id = tl.id_user
+            INNER JOIN m_action ma
+                ON ma.id = tl.id_action
+            LEFT JOIN m_semester ms
+                ON ms.id = tl.id_semester
+            LEFT JOIN m_stase mst
+                ON mst.id = tl.id_stase
+            LEFT JOIN m_stage mstage
+                ON mstage.id = mst.id_stage
+            LEFT JOIN m_another_role mar
+                ON mar.id = tl.id_another_role
+            LEFT JOIN m_action_category mac
+                ON mac.id = tl.id_category
+            LEFT JOIN asm_scores asm
+                ON asm.id_logbook = tl.id
+            LEFT JOIN total_scores ts
+                ON ts.id_logbook = tl.id
+            LEFT JOIN staff_logbook sl
+                ON sl.id_logbook = tl.id
+            WHERE
+                tl.deleted_at IS NULL
+                AND tl.id_action = :id_action
+                AND COALESCE(mac.required_asm, TRUE) = TRUE
+                AND (
+                    (:type = 'scored' AND ts.id_logbook IS NOT NULL)
+                    OR
+                    (:type = 'unscored' AND ts.id_logbook IS NULL)
+                )
+        ";
+
+        $sql = "
+            {$baseCte}
+            SELECT
+                tl.id,
+                tl.date,
+                tl.title,
+
+                mu.display_name AS ppds_name,
+                mu.code,
+                mu.inisial_code,
+
+                ms.name AS semester_name,
+                mst.name AS stase_name,
+                mstage.name AS stage_name,
+
+                ma.name AS action_name,
+                mar.role_name,
+                mac.name AS category,
+
+                sl.staff_name,
+
+                ROUND(
+                    MAX(
+                        CASE
+                            WHEN asm.asm_param = 'Psikomotor'
+                            THEN asm.avg_score
+                        END
+                    )::numeric,
+                    2
+                ) AS psikomotor,
+
+                ROUND(
+                    MAX(
+                        CASE
+                            WHEN asm.asm_param = 'Knowledge'
+                            THEN asm.avg_score
+                        END
+                    )::numeric,
+                    2
+                ) AS knowledge,
+
+                ROUND(
+                    MAX(
+                        CASE
+                            WHEN asm.asm_param = 'Afektif'
+                            THEN asm.avg_score
+                        END
+                    )::numeric,
+                    2
+                ) AS afektif,
+
+                ROUND(ts.total_score::numeric, 2) AS total
+
+            {$baseWhere}
+        ";
+
+        $countSql = "
+            {$baseCte}
+            SELECT COUNT(DISTINCT tl.id)
+            {$baseWhere}
+        ";
+
+        $params = [
+            ':id_action' => $post['id_action'],
+            ':type'      => $post['type'],
+        ];
+
+        if (!empty($post['id_ppds'])) {
+            $sql .= ' AND tl.id_user = :id_ppds';
+            $countSql .= ' AND tl.id_user = :id_ppds';
+            $params[':id_ppds'] = $post['id_ppds'];
+        }
+
+        if (!empty($post['id_staff'])) {
+            $sql .= ' AND sl.staff_id = :id_staff';
+            $countSql .= ' AND sl.staff_id = :id_staff';
+            $params[':id_staff'] = $post['id_staff'];
+        }
+
+        if (!empty($post['id_stase'])) {
+            $sql .= ' AND tl.id_stase = :id_stase';
+            $countSql .= ' AND tl.id_stase = :id_stase';
+            $params[':id_stase'] = $post['id_stase'];
+        }
+
+        if (!empty($post['start_date'])) {
+            $sql .= ' AND tl.date >= :start_date';
+            $countSql .= ' AND tl.date >= :start_date';
+            $params[':start_date'] = $post['start_date'];
+        }
+
+        if (!empty($post['end_date'])) {
+            $sql .= ' AND tl.date <= :end_date';
+            $countSql .= ' AND tl.date <= :end_date';
+            $params[':end_date'] = $post['end_date'];
+        }
+
+        $sql .= "
+            GROUP BY
+                tl.id,
+                tl.date,
+                tl.title,
+                tl.verified_status,
+                mu.display_name,
+                mu.code,
+                mu.inisial_code,
+                ms.name,
+                mst.name,
+                mstage.name,
+                ma.name,
+                mar.role_name,
+                mac.name,
+                sl.staff_id,
+                sl.staff_name,
+                ts.total_score
+            ORDER BY
+                tl.date {$sort},
+                tl.id DESC
+            LIMIT :limit
+            OFFSET :offset
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $countCommand = Yii::app()->db->createCommand($countSql);
+
+        foreach ($params as $key => $value) {
+            $command->bindValue($key, $value);
+            $countCommand->bindValue($key, $value);
+        }
+
+        $command->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $command->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $data  = $command->queryAll();
+        $total = (int)$countCommand->queryScalar();
+
+        echo json_encode([
+            'status'     => true,
+            'total'      => $total,
+            'data'       => $data,
+            'pagination' => [
+                'page'       => $page,
+                'limit'      => $limit
+            ],
+        ]);
+    }
     // === PENILAIAN LOGBOOK STAGE ===
 
     

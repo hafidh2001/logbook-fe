@@ -54,3 +54,8 @@ export enum LogbookStatusEnum {
   REVISED = "revised",
   VERIFIED = "verified",
 }
+
+export enum PenilaianLogbookStatusEnum {
+  SCORED = "scored",
+  UNSCORED = "unscored",
+}
