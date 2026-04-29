@@ -163,7 +163,7 @@ export default function PenilaianLogbookStatusListPage() {
       accessorKey: "staff_names",
       header: "Staff Pengajar/DPJP",
       size: 150,
-      cell: ({ row: { original } }) => original.staff_names ?? "-",
+      cell: ({ row: { original } }) => original.staff_name ?? "-",
     },
     {
       accessorKey: "action_name",
