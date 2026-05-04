@@ -1,16 +1,11 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
+import { TPenilaianLogbookDetailByStatus } from "@/types/penilaianLogbook";
 
-interface PenilaianLogbookDetail {
-  ppds?: string | null;
-  semester?: string | null;
-  code?: string | null;
+interface Props {
+  data: TPenilaianLogbookDetailByStatus;
 }
 
-interface IdentitasProps {
-  data: PenilaianLogbookDetail | null;
-}
-
-export const Identitas = ({ data }: IdentitasProps) => {
+export const Identitas = ({ data }: Props) => {
   return (
     <CardWrapper
       title="Identitas"
@@ -19,13 +14,13 @@ export const Identitas = ({ data }: IdentitasProps) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">PPDS</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.ppds ?? "-"}
+          {data?.ppds_name ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Semester</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.semester ?? "-"}
+          {data?.semester_name ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -34,7 +29,24 @@ export const Identitas = ({ data }: IdentitasProps) => {
           {data?.code ?? "-"}
         </span>
       </div>
-      <div></div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-500 w-24">Inisial Code</span>
+        <span className="text-sm font-medium text-gray-800">
+          {data?.inisial_code ?? "-"}
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-500 w-24">Email</span>
+        <span className="text-sm font-medium text-gray-800">
+          {data?.email ?? "-"}
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-500 w-24">Phone</span>
+        <span className="text-sm font-medium text-gray-800">
+          {data?.phone ?? "-"}
+        </span>
+      </div>
     </CardWrapper>
   );
 };

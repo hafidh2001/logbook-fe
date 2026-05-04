@@ -1,7 +1,8 @@
 import { icons } from "@/assets/images/Icon";
+import { TPenilaianLogbookDetailByStatus } from "@/types/penilaianLogbook";
 
 interface Props {
-  data: any;
+  data: TPenilaianLogbookDetailByStatus;
 }
 
 export const Header = ({ data }: Props) => {
@@ -14,12 +15,12 @@ export const Header = ({ data }: Props) => {
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-semibold text-gray-800">
-              {data?.ppds ?? "-"}
+              {data?.ppds_name ?? "-"}
             </h2>
             <div className="flex items-center gap-3 mt-1">
               <span className="text-sm text-gray-500">{data?.code ?? "-"}</span>
               <span className="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded">
-                {data?.semester ?? "-"}
+                {data?.semester_name ?? "-"}
               </span>
             </div>
           </div>

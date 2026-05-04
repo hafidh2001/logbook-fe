@@ -19,18 +19,18 @@ export default function PenilaianLogbookDetailPage() {
   const location = useLocation();
 
   const {
-    penilaianLogbookDetail,
+    penilaianLogbookDetailByStatus,
     isLoadingDetail,
-    loadPenilaianLogbookDetail,
+    loadPenilaianLogbookDetailByStatus,
     resetDetail,
   } = usePenilaianLogbookStore();
 
   useEffect(() => {
     if (idLogbook) {
-      loadPenilaianLogbookDetail(idLogbook);
+      loadPenilaianLogbookDetailByStatus({ id_logbook: Number(idLogbook) });
     }
     return () => resetDetail();
-  }, [idLogbook, loadPenilaianLogbookDetail, resetDetail]);
+  }, [idLogbook, loadPenilaianLogbookDetailByStatus, resetDetail]);
 
   const isScored = location.pathname.includes("/scored-logbook/");
 
@@ -58,11 +58,11 @@ export default function PenilaianLogbookDetailPage() {
       />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
-          <Header data={penilaianLogbookDetail} />
-          <Identitas data={penilaianLogbookDetail} />
-          <Kegiatan data={penilaianLogbookDetail} />
-          <Skor data={penilaianLogbookDetail} />
-          <Staff data={penilaianLogbookDetail} />
+          <Header data={penilaianLogbookDetailByStatus} />
+          <Identitas data={penilaianLogbookDetailByStatus} />
+          <Kegiatan data={penilaianLogbookDetailByStatus} />
+          <Skor data={penilaianLogbookDetailByStatus} />
+          <Staff data={penilaianLogbookDetailByStatus} />
 
           {/* Back Button */}
           <div className="flex justify-end">

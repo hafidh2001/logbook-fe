@@ -46,3 +46,20 @@ export interface IPenilaianLogbookStatusListParams {
   start_date?: string | null;
   end_date?: string | null;
 }
+
+export type TPenilaianLogbookDetailByStatus = Omit<
+  TPenilaianLogbookStatusListItem,
+  "staff_name"
+> & {
+  staff: Array<{
+    name: string | null;
+    role: string | null;
+  }>;
+  notes: string | null;
+  email: string | null;
+  phone: string | null;
+};
+
+export interface IPenilaianLogbookDetailByStatusParams {
+  id_logbook: number;
+}

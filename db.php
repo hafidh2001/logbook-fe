@@ -1422,84 +1422,58 @@ class ApiWebServiceController extends Controller {
                     ROUND(AVG(avg_score)::numeric, 2) AS total_score
                 FROM asm_scores
                 GROUP BY id_logbook
-            ),
-            staff_logbook AS (
-                SELECT
-                    tls.id_logbook,
-                    tls.id_user AS staff_id,
-                    mu.display_name AS staff_name
-                FROM t_logbook_status tls
-                INNER JOIN m_action_role mar
-                    ON mar.id = tls.id_action_role
-                INNER JOIN m_user mu
-                    ON mu.id = tls.id_user
-                WHERE
-                    tls.id_logbook = :id_logbook
-                    AND mar.role != 'Peserta'
-                ORDER BY tls.id ASC
-                LIMIT 1
             )
             SELECT
                 tl.id,
                 tl.date,
                 tl.title,
                 tl.notes,
-                tl.verified_status,
-                tl.created_date,
 
-                mu.id AS ppds_id,
                 mu.display_name AS ppds_name,
                 mu.code,
                 mu.inisial_code,
                 mu.email,
                 mu.phone,
 
-                ma.id AS action_id,
-                ma.name AS action_name,
-
-                ms.id AS semester_id,
                 ms.name AS semester_name,
-
-                mst.id AS stase_id,
                 mst.name AS stase_name,
-
-                mstage.id AS stage_id,
                 mstage.name AS stage_name,
 
-                mh.id AS hospital_id,
-                mh.name AS hospital_name,
-
-                mar.id AS role_id,
+                ma.name AS action_name,
                 mar.role_name,
+                mac.name AS category,
 
-                mac.id AS category_id,
-                mac.name AS category_name,
-
-                sl.staff_id,
-                sl.staff_name,
-
-                MAX(
-                    CASE
-                        WHEN asm.asm_param = 'Psikomotor'
-                        THEN asm.avg_score
-                    END
+                ROUND(
+                    MAX(
+                        CASE
+                            WHEN asm.asm_param = 'Psikomotor'
+                            THEN asm.avg_score
+                        END
+                    )::numeric,
+                    2
                 ) AS psikomotor,
 
-                MAX(
-                    CASE
-                        WHEN asm.asm_param = 'Knowledge'
-                        THEN asm.avg_score
-                    END
+                ROUND(
+                    MAX(
+                        CASE
+                            WHEN asm.asm_param = 'Knowledge'
+                            THEN asm.avg_score
+                        END
+                    )::numeric,
+                    2
                 ) AS knowledge,
 
-                MAX(
-                    CASE
-                        WHEN asm.asm_param = 'Afektif'
-                        THEN asm.avg_score
-                    END
+                ROUND(
+                    MAX(
+                        CASE
+                            WHEN asm.asm_param = 'Afektif'
+                            THEN asm.avg_score
+                        END
+                    )::numeric,
+                    2
                 ) AS afektif,
 
-                ts.total_score AS total
+                ROUND(ts.total_score::numeric, 2) AS total
             FROM t_logbook tl
             INNER JOIN m_user mu
                 ON mu.id = tl.id_user
@@ -1521,8 +1495,6 @@ class ApiWebServiceController extends Controller {
                 ON asm.id_logbook = tl.id
             LEFT JOIN total_scores ts
                 ON ts.id_logbook = tl.id
-            LEFT JOIN staff_logbook sl
-                ON sl.id_logbook = tl.id
             WHERE
                 tl.id = :id_logbook
                 AND tl.deleted_at IS NULL
@@ -1537,8 +1509,6 @@ class ApiWebServiceController extends Controller {
                 mh.id,
                 mar.id,
                 mac.id,
-                sl.staff_id,
-                sl.staff_name,
                 ts.total_score
             LIMIT 1
         ";
@@ -1554,6 +1524,27 @@ class ApiWebServiceController extends Controller {
             ]);
             Yii::app()->end();
         }
+
+        // Query staff separately to avoid JSON in GROUP BY issue
+        $staffSql = "
+            SELECT
+                mu.display_name AS name,
+                mar.role AS role
+            FROM t_logbook_status tls
+            INNER JOIN m_action_role mar
+                ON mar.id = tls.id_action_role
+            INNER JOIN m_user mu
+                ON mu.id = tls.id_user
+            WHERE
+                tls.id_logbook = :id_logbook
+                AND mar.role != 'Peserta'
+            ORDER BY mu.display_name
+        ";
+        $staffCommand = Yii::app()->db->createCommand($staffSql);
+        $staffCommand->bindValue(':id_logbook', $post['id_logbook']);
+        $staffData = $staffCommand->queryAll();
+
+        $data['staff'] = $staffData;
 
         echo json_encode([
             'status' => true,
