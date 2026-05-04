@@ -1388,6 +1388,178 @@ class ApiWebServiceController extends Controller {
             ],
         ]);
     }
+
+    public function actionGetDetailByStatusPenilaianLogbook()
+    {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_logbook'])) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "
+            WITH asm_scores AS (
+                SELECT
+                    tla.id_logbook,
+                    map.name AS asm_param,
+                    ROUND(AVG(tla.score)::numeric, 2) AS avg_score
+                FROM t_logbook_asm tla
+                INNER JOIN m_asm_param map
+                    ON map.id = tla.id_asm_param
+                WHERE tla.id_logbook = :id_logbook
+                GROUP BY
+                    tla.id_logbook,
+                    map.name
+            ),
+            total_scores AS (
+                SELECT
+                    id_logbook,
+                    ROUND(AVG(avg_score)::numeric, 2) AS total_score
+                FROM asm_scores
+                GROUP BY id_logbook
+            ),
+            staff_logbook AS (
+                SELECT
+                    tls.id_logbook,
+                    tls.id_user AS staff_id,
+                    mu.display_name AS staff_name
+                FROM t_logbook_status tls
+                INNER JOIN m_action_role mar
+                    ON mar.id = tls.id_action_role
+                INNER JOIN m_user mu
+                    ON mu.id = tls.id_user
+                WHERE
+                    tls.id_logbook = :id_logbook
+                    AND mar.role != 'Peserta'
+                ORDER BY tls.id ASC
+                LIMIT 1
+            )
+            SELECT
+                tl.id,
+                tl.date,
+                tl.title,
+                tl.notes,
+                tl.verified_status,
+                tl.created_date,
+
+                mu.id AS ppds_id,
+                mu.display_name AS ppds_name,
+                mu.code,
+                mu.inisial_code,
+                mu.email,
+                mu.phone,
+
+                ma.id AS action_id,
+                ma.name AS action_name,
+
+                ms.id AS semester_id,
+                ms.name AS semester_name,
+
+                mst.id AS stase_id,
+                mst.name AS stase_name,
+
+                mstage.id AS stage_id,
+                mstage.name AS stage_name,
+
+                mh.id AS hospital_id,
+                mh.name AS hospital_name,
+
+                mar.id AS role_id,
+                mar.role_name,
+
+                mac.id AS category_id,
+                mac.name AS category_name,
+
+                sl.staff_id,
+                sl.staff_name,
+
+                MAX(
+                    CASE
+                        WHEN asm.asm_param = 'Psikomotor'
+                        THEN asm.avg_score
+                    END
+                ) AS psikomotor,
+
+                MAX(
+                    CASE
+                        WHEN asm.asm_param = 'Knowledge'
+                        THEN asm.avg_score
+                    END
+                ) AS knowledge,
+
+                MAX(
+                    CASE
+                        WHEN asm.asm_param = 'Afektif'
+                        THEN asm.avg_score
+                    END
+                ) AS afektif,
+
+                ts.total_score AS total
+            FROM t_logbook tl
+            INNER JOIN m_user mu
+                ON mu.id = tl.id_user
+            INNER JOIN m_action ma
+                ON ma.id = tl.id_action
+            LEFT JOIN m_semester ms
+                ON ms.id = tl.id_semester
+            LEFT JOIN m_stase mst
+                ON mst.id = tl.id_stase
+            LEFT JOIN m_stage mstage
+                ON mstage.id = mst.id_stage
+            LEFT JOIN m_hospital mh
+                ON mh.id = tl.id_hospital
+            LEFT JOIN m_another_role mar
+                ON mar.id = tl.id_another_role
+            LEFT JOIN m_action_category mac
+                ON mac.id = tl.id_category
+            LEFT JOIN asm_scores asm
+                ON asm.id_logbook = tl.id
+            LEFT JOIN total_scores ts
+                ON ts.id_logbook = tl.id
+            LEFT JOIN staff_logbook sl
+                ON sl.id_logbook = tl.id
+            WHERE
+                tl.id = :id_logbook
+                AND tl.deleted_at IS NULL
+            GROUP BY
+                tl.id,
+                tl.created_date,
+                mu.id,
+                ma.id,
+                ms.id,
+                mst.id,
+                mstage.id,
+                mh.id,
+                mar.id,
+                mac.id,
+                sl.staff_id,
+                sl.staff_name,
+                ts.total_score
+            LIMIT 1
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_logbook', $post['id_logbook']);
+        $data = $command->queryRow();
+
+        if (!$data) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Logbook not found'
+            ]);
+            Yii::app()->end();
+        }
+
+        echo json_encode([
+            'status' => true,
+            'data'   => $data
+        ]);
+    }
     // === PENILAIAN LOGBOOK STAGE ===
 
     
