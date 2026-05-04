@@ -160,10 +160,14 @@ export default function PenilaianLogbookStatusListPage() {
       cell: ({ row: { original } }) => original.stage_name ?? "-",
     },
     {
-      accessorKey: "staff_names",
+      accessorKey: "staff",
       header: "Staff Pengajar/DPJP",
       size: 150,
-      cell: ({ row: { original } }) => original.staff_name ?? "-",
+      cell: ({ row: { original } }) => {
+        const staffList = original.staff;
+        if (!staffList || staffList.length === 0) return "-";
+        return staffList.map(s => s.name).join(", ");
+      },
     },
     {
       accessorKey: "action_name",

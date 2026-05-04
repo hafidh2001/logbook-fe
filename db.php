@@ -1192,20 +1192,15 @@ class ApiWebServiceController extends Controller {
                 FROM asm_scores
                 GROUP BY id_logbook
             ),
-            staff_logbook AS (
-                SELECT DISTINCT ON (tls.id_logbook)
+            staff_ids_cte AS (
+                SELECT
                     tls.id_logbook,
-                    tls.id_user AS staff_id,
-                    mu.display_name AS staff_name
+                    ARRAY_AGG(DISTINCT tls.id_user) AS staff_ids
                 FROM t_logbook_status tls
                 INNER JOIN m_action_role mar
                     ON mar.id = tls.id_action_role
-                INNER JOIN m_user mu
-                    ON mu.id = tls.id_user
                 WHERE mar.role != 'Peserta'
-                ORDER BY
-                    tls.id_logbook,
-                    tls.id ASC
+                GROUP BY tls.id_logbook
             )
         ";
 
@@ -1229,8 +1224,8 @@ class ApiWebServiceController extends Controller {
                 ON asm.id_logbook = tl.id
             LEFT JOIN total_scores ts
                 ON ts.id_logbook = tl.id
-            LEFT JOIN staff_logbook sl
-                ON sl.id_logbook = tl.id
+            LEFT JOIN staff_ids_cte sic
+                ON sic.id_logbook = tl.id
             WHERE
                 tl.deleted_at IS NULL
                 AND tl.id_action = :id_action
@@ -1260,8 +1255,6 @@ class ApiWebServiceController extends Controller {
                 ma.name AS action_name,
                 mar.role_name,
                 mac.name AS category,
-
-                sl.staff_name,
 
                 ROUND(
                     MAX(
@@ -1316,8 +1309,8 @@ class ApiWebServiceController extends Controller {
         }
 
         if (!empty($post['id_staff'])) {
-            $sql .= ' AND sl.staff_id = :id_staff';
-            $countSql .= ' AND sl.staff_id = :id_staff';
+            $sql .= ' AND :id_staff = ANY(sic.staff_ids)';
+            $countSql .= ' AND :id_staff = ANY(sic.staff_ids)';
             $params[':id_staff'] = $post['id_staff'];
         }
 
@@ -1354,8 +1347,7 @@ class ApiWebServiceController extends Controller {
                 ma.name,
                 mar.role_name,
                 mac.name,
-                sl.staff_id,
-                sl.staff_name,
+                sic.staff_ids,
                 ts.total_score
             ORDER BY
                 tl.date
@@ -1377,6 +1369,52 @@ class ApiWebServiceController extends Controller {
 
         $data  = $command->queryAll();
         $total = (int)$countCommand->queryScalar();
+
+        // Query staff data separately and merge
+        if (!empty($data)) {
+            $logbookIds = array_column($data, 'id');
+
+            $staffSql = "
+                SELECT
+                    tls.id_logbook,
+                    tls.id_user AS id,
+                    mu.display_name AS name
+                FROM t_logbook_status tls
+                INNER JOIN m_action_role mar
+                    ON mar.id = tls.id_action_role
+                INNER JOIN m_user mu
+                    ON mu.id = tls.id_user
+                WHERE tls.id_logbook IN (" . implode(',', $logbookIds) . ")
+                    AND mar.role != 'Peserta'
+                ORDER BY
+                    tls.id_logbook,
+                    mu.display_name
+            ";
+            $staffCommand = Yii::app()->db->createCommand($staffSql);
+            $staffData = $staffCommand->queryAll();
+
+            // Group staff by logbook_id
+            $staffByLogbook = [];
+            foreach ($staffData as $staff) {
+                $idLogbook = $staff['id_logbook'];
+                if (!isset($staffByLogbook[$idLogbook])) {
+                    $staffByLogbook[$idLogbook] = [];
+                }
+                $staffByLogbook[$idLogbook][] = [
+                    'id' => $staff['id'],
+                    'name' => $staff['name'],
+                ];
+            }
+
+            // Merge staff data into result
+            foreach ($data as &$row) {
+                $row['staff'] = $staffByLogbook[$row['id']] ?? [];
+            }
+        } else {
+            foreach ($data as &$row) {
+                $row['staff'] = [];
+            }
+        }
 
         echo json_encode([
             'status'     => true,

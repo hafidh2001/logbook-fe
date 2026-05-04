@@ -28,7 +28,7 @@ export type TPenilaianLogbookStatusListItem = {
   action_name: string;
   role_name: string | null;
   category: string | null;
-  staff_name: string | null;
+  staff: Array<{ id: number; name: string | null }>;
   psikomotor: number | null;
   knowledge: number | null;
   afektif: number | null;
