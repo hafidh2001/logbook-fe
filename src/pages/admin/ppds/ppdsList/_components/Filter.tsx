@@ -5,22 +5,22 @@ import { useMasterStore } from "@/store/masterStore";
 import { useAuthStore } from "@/store/authStore";
 
 export const Filter = (props: Omit<FilterProps, "fields">) => {
-  const { ppdsOptions, staseOptions, fetchPPDSOptions, fetchStaseOptions } = useMasterStore();
+  const { ppdsActiveOptions, staseOptions, fetchPPDSActiveOptions, fetchStaseOptions } = useMasterStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
     if (user?.id_client) {
-      fetchPPDSOptions({ id_client: user.id_client });
+      fetchPPDSActiveOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
     }
-  }, [user?.id_client, fetchPPDSOptions, fetchStaseOptions]);
+  }, [user?.id_client, fetchPPDSActiveOptions, fetchStaseOptions]);
 
   const filterFields: FilterFieldConfig[] = [
     {
       key: "ppds",
       label: "PPDS",
       type: "select",
-      options: ppdsOptions,
+      options: ppdsActiveOptions,
       placeholder: "Pilih PPDS...",
     },
     {

@@ -50,6 +50,58 @@ export const masterApi = {
     }
   },
 
+  async getMasterPPDS(
+    params: IMasterUserParams,
+  ): Promise<ApiPaginationResponse<IMasterOptions[]>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetMasterPPDS",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getMasterPPDSActive(
+    params: IMasterUserParams,
+  ): Promise<ApiPaginationResponse<IMasterOptions[]>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetMasterPPDSActive",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
   async getMasterPPDSInactive(
     params: IMasterUserParams,
   ): Promise<ApiPaginationResponse<IMasterOptions[]>> {

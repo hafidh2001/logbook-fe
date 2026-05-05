@@ -5,12 +5,8 @@ import { useMasterStore } from "@/store/masterStore";
 import { useAuthStore } from "@/store/authStore";
 
 export const Filter = (props: Omit<FilterProps, "fields">) => {
-  const {
-    ppdsOptions,
-    staseOptions,
-    fetchPPDSOptions,
-    fetchStaseOptions,
-  } = useMasterStore();
+  const { ppdsOptions, staseOptions, fetchPPDSOptions, fetchStaseOptions } =
+    useMasterStore();
   const { user } = useAuthStore();
 
   useEffect(() => {

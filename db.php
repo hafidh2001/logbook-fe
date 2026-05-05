@@ -232,6 +232,88 @@ class ApiWebServiceController extends Controller {
         ]);
     }
 
+    public function actionGetMasterPPDS() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+        
+        if (
+            !isset($post['id_client']) ||
+            !isset($post['role_name'])
+            ) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        $sql = 'SELECT
+                    mu.id,
+                    mu.display_name AS "name"
+                FROM m_user mu
+                LEFT JOIN m_role mr ON mr.id = mu.id_role
+                WHERE
+                    mu.deleted_at IS NULL 
+                AND mu.id_client  = :id_client
+                AND mr.name       = :role_name
+                ORDER BY 
+                    mu.display_name ASC';
+        
+        $res = Yii::app()->db->createCommand($sql)
+            ->bindValue(':id_client', $post['id_client'])
+            ->bindValue(':role_name', $post['role_name'])
+            ->queryAll();
+        
+        echo json_encode([
+            'status'  => true,
+            'total'   => count($res),
+            'data'    => $res
+        ]);
+    }
+
+    public function actionGetMasterPPDSActive() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+        
+        if (
+            !isset($post['id_client']) ||
+            !isset($post['role_name'])
+            ) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        $sql = 'SELECT
+                    mu.id,
+                    mu.display_name AS "name"
+                FROM m_user mu
+                LEFT JOIN m_role mr ON mr.id = mu.id_role
+                WHERE
+                    mu.status     = :status 
+                AND mu.is_show    = :is_show
+                AND mu.deleted_at IS NULL 
+                AND mu.id_client  = :id_client
+                AND mr.name       = :role_name
+                ORDER BY 
+                    mu.display_name ASC';
+        
+        $res = Yii::app()->db->createCommand($sql)
+            ->bindValue(':status', 'Active')
+            ->bindValue(':is_show', true)
+            ->bindValue(':id_client', $post['id_client'])
+            ->bindValue(':role_name', $post['role_name'])
+            ->queryAll();
+        
+        echo json_encode([
+            'status'  => true,
+            'total'   => count($res),
+            'data'    => $res
+        ]);
+    }
+
     public function actionGetMasterPPDSInactive() {
         $rest_json = file_get_contents("php://input");
         $post = json_decode($rest_json, true);
@@ -295,7 +377,7 @@ class ApiWebServiceController extends Controller {
                 WHERE
                     ms.id_client = :id_client
                 ORDER BY 
-                    name ASC';
+                    ms.sequence ASC';
         
         $res = Yii::app()->db->createCommand($sql)
             ->bindValue(':id_client', $post['id_client'])

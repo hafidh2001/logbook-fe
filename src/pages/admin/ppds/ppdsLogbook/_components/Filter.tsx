@@ -11,12 +11,12 @@ export const Filter = ({
   initialPpdsId?: number;
 }) => {
   const {
-    ppdsOptions,
+    ppdsActiveOptions,
     staffOptions,
     staseOptions,
     activityOptions,
     logbookStatusOptions,
-    fetchPPDSOptions,
+    fetchPPDSActiveOptions,
     fetchStaffOptions,
     fetchStaseOptions,
     fetchActivityOptions,
@@ -26,26 +26,26 @@ export const Filter = ({
 
   useEffect(() => {
     if (user?.id_client) {
-      fetchPPDSOptions({ id_client: user.id_client });
+      fetchPPDSActiveOptions({ id_client: user.id_client });
       fetchStaffOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
       fetchActivityOptions({ id_client: user.id_client });
       fetchLogbookStatusOptions();
     }
-  }, [user?.id_client, fetchPPDSOptions, fetchStaffOptions, fetchStaseOptions, fetchActivityOptions, fetchLogbookStatusOptions]);
+  }, [user?.id_client, fetchPPDSActiveOptions, fetchStaffOptions, fetchStaseOptions, fetchActivityOptions, fetchLogbookStatusOptions]);
 
   // Find the PPDS option that matches initialPpdsId to get correct label
   const initialPpdsOption = useMemo(() => {
     if (!initialPpdsId) return undefined;
-    return ppdsOptions.find(opt => opt.value === initialPpdsId);
-  }, [initialPpdsId, ppdsOptions]);
+    return ppdsActiveOptions.find(opt => opt.value === initialPpdsId);
+  }, [initialPpdsId, ppdsActiveOptions]);
 
   const filterFields: FilterFieldConfig[] = [
     {
       key: "id_ppds",
       label: "PPDS",
       type: "select",
-      options: ppdsOptions,
+      options: ppdsActiveOptions,
       placeholder: "Pilih PPDS...",
       disabled: true, // PPDS is controlled by URL, not filter
     },

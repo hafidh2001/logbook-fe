@@ -6,10 +6,10 @@ import { useAuthStore } from "@/store/authStore";
 
 export const Filter = (props: Omit<FilterProps, "fields">) => {
   const {
-    ppdsOptions,
+    ppdsActiveOptions,
     staffOptions,
     staseOptions,
-    fetchPPDSOptions,
+    fetchPPDSActiveOptions,
     fetchStaffOptions,
     fetchStaseOptions,
   } = useMasterStore();
@@ -17,18 +17,18 @@ export const Filter = (props: Omit<FilterProps, "fields">) => {
 
   useEffect(() => {
     if (user?.id_client) {
-      fetchPPDSOptions({ id_client: user.id_client });
+      fetchPPDSActiveOptions({ id_client: user.id_client });
       fetchStaffOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
     }
-  }, [user?.id_client, fetchPPDSOptions, fetchStaffOptions, fetchStaseOptions]);
+  }, [user?.id_client, fetchPPDSActiveOptions, fetchStaffOptions, fetchStaseOptions]);
 
   const filterFields: FilterFieldConfig[] = [
     {
       key: "id_ppds",
       label: "PPDS",
       type: "select",
-      options: ppdsOptions,
+      options: ppdsActiveOptions,
       placeholder: "Pilih PPDS...",
     },
     {
