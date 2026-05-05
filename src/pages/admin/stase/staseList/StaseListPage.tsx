@@ -11,6 +11,10 @@ import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useState, useEffect } from "react";
 import { ConfirmationModal } from "@/components/confirmationModal";
 import type { Stase } from "@/store/staseStore";
+import usePagination from "@/hooks/usePagination";
+import { DEFAULT_PAGE_SIZE } from "@/constants/table";
+import useFilter from "@/hooks/useFilter";
+import dayjs from "dayjs";
 
 type TStase = Stase;
 
@@ -20,13 +24,51 @@ export default function StaseListPage() {
 
   const navigate = useNavigate();
 
-  const { staseList, isLoading, loadStaseList, deleteStase, reset } =
-    useStaseStore();
+  const {
+    staseList,
+    pagination,
+    isLoading,
+    loadStaseList,
+    deleteStase,
+    reset,
+  } = useStaseStore();
+
+  // Pagination - page is always read from URL
+  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+    defaultPage: 1,
+    defaultLimit: DEFAULT_PAGE_SIZE,
+  });
+
+  // Filter hook
+  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<{
+    id_ppds?: number | null;
+    id_stase?: number | null;
+    start_date?: string;
+    end_date?: string;
+  }>({
+    fields: [
+      { key: "id_ppds" },
+      { key: "id_stase" },
+      { key: "start_date" },
+      { key: "end_date" },
+    ],
+    onFilterChange: () => setPage(1),
+  });
 
   useEffect(() => {
-    loadStaseList();
+    loadStaseList({
+      page,
+      limit,
+      id_ppds: filterParams.id_ppds ?? undefined,
+      id_stase: filterParams.id_stase ?? undefined,
+      start_date: filterParams.start_date ?? undefined,
+      end_date: filterParams.end_date ?? undefined,
+    });
+  }, [searchParams, filterParams, loadStaseList]);
+
+  useEffect(() => {
     return () => reset();
-  }, [loadStaseList, reset]);
+  }, [reset]);
 
   // Delete confirmation modal state
   const [deleteModal, setDeleteModal] = useState<{
@@ -43,16 +85,7 @@ export default function StaseListPage() {
   };
 
   const handleSearch = (query: string) => {
-    // TODO: Implement search
     console.log("Search:", query);
-  };
-
-  const handleFilterSearch = (data: Record<string, unknown>) => {
-    console.log("Filter search:", data);
-  };
-
-  const handleFilterReset = () => {
-    console.log("Filter reset");
   };
 
   const handleDelete = (item: TStase) => {
@@ -60,7 +93,7 @@ export default function StaseListPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (deleteModal.item) {
+    if (deleteModal.item?.id) {
       await deleteStase(String(deleteModal.item.id));
     }
     setDeleteModal({ open: false, item: null });
@@ -68,6 +101,17 @@ export default function StaseListPage() {
 
   const handleDeleteCancel = () => {
     setDeleteModal({ open: false, item: null });
+  };
+
+  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
+    setPage(pageIndex + 1);
+    setLimit(pageSize);
+  };
+
+  const handleRowClick = (row: TStase) => {
+    if (row.id) {
+      navigate(ROUTES.staseDetail(String(row.id)));
+    }
   };
 
   // Define columns for Stase table
@@ -98,7 +142,15 @@ export default function StaseListPage() {
       accessorKey: "date",
       header: "Date",
       size: 180,
-      cell: ({ row: { original } }) => original.date ?? "-",
+      cell: ({ row: { original } }) => {
+        return original.date ? (
+          <span className="whitespace-nowrap">
+            {dayjs(original.date).locale("id").format("DD MMM YYYY")}
+          </span>
+        ) : (
+          <span className="text-gray-400">-</span>
+        );
+      },
     },
     {
       accessorKey: "notes",
@@ -121,7 +173,9 @@ export default function StaseListPage() {
       cell: ({ row }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.staseDetail(String(row.original.id)));
+          if (row.original.id) {
+            navigate(ROUTES.staseDetail(String(row.original.id)));
+          }
         };
         const handleDeleteClick = (e: React.MouseEvent) => {
           e.stopPropagation();
@@ -177,9 +231,13 @@ export default function StaseListPage() {
               isShowNumbering
               pagination={{
                 enabled: true,
+                mode: "server",
                 initialPageIndex: 0,
-                initialPageSize: 10,
+                initialPageSize: DEFAULT_PAGE_SIZE,
+                pageCount: pagination.pageCount ?? 1,
               }}
+              onPaginationChange={handlePaginationChange}
+              onRowClick={handleRowClick}
               noDataText="Tidak ada data stase"
               className="h-full"
             />

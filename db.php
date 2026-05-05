@@ -1593,6 +1593,106 @@ class ApiWebServiceController extends Controller {
 
     
 
+    // === STASE ===
+    public function actionGetListStase()
+    {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $page   = isset($post['page']) ? (int)$post['page'] : 1;
+        $limit  = isset($post['limit']) ? (int)$post['limit'] : 10;
+        $offset = ($page - 1) * $limit;
+
+        $params = [
+            ':id_client' => $post['id_client'],
+        ];
+
+        $whereClause = "
+            WHERE
+                tl.deleted_at IS NULL
+                AND tl.id_client = :id_client
+                AND tl.id_semester IS NOT NULL
+        ";
+
+        if (!empty($post['id_ppds'])) {
+            $whereClause .= ' AND tl.id_user = :id_ppds';
+            $params[':id_ppds'] = $post['id_ppds'];
+        }
+
+        if (!empty($post['id_stase'])) {
+            $whereClause .= ' AND tl.id_stase = :id_stase';
+            $params[':id_stase'] = $post['id_stase'];
+        }
+
+        if (!empty($post['start_date'])) {
+            $whereClause .= ' AND tl.date >= :start_date';
+            $params[':start_date'] = $post['start_date'];
+        }
+
+        if (!empty($post['end_date'])) {
+            $whereClause .= ' AND tl.date <= :end_date';
+            $params[':end_date'] = $post['end_date'];
+        }
+
+        $sql = "
+            SELECT
+                mu.display_name AS user,
+                ms.name AS stase,
+                tl.date,
+                tl.notes
+            FROM t_logbook tl
+            LEFT JOIN m_user mu ON mu.id = tl.id_user
+            LEFT JOIN m_stase ms ON ms.id = tl.id_stase
+            {$whereClause}
+            ORDER BY mu.display_name ASC
+            LIMIT :limit
+            OFFSET :offset
+        ";
+
+        $countSql = "
+            SELECT COUNT(*)
+            FROM t_logbook tl
+            LEFT JOIN m_user mu ON mu.id = tl.id_user
+            LEFT JOIN m_stase ms ON ms.id = tl.id_stase
+            {$whereClause}
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $countCommand = Yii::app()->db->createCommand($countSql);
+
+        foreach ($params as $key => $value) {
+            $command->bindValue($key, $value);
+            $countCommand->bindValue($key, $value);
+        }
+
+        $command->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $command->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $data  = $command->queryAll();
+        $total = (int)$countCommand->queryScalar();
+
+        echo json_encode([
+            'status'     => true,
+            'total'      => $total,
+            'data'       => $data,
+            'pagination' => [
+                'page'       => $page,
+                'limit'      => $limit
+            ],
+        ]);
+    }
+    // === STASE ===
+
+
+
     // === DASHBOARD ===
     public function actionGetDashboard() {
         $rest_json = file_get_contents("php://input");
