@@ -18,6 +18,7 @@ import { DEFAULT_PAGE_SIZE } from "@/constants/table";
 import usePagination from "@/hooks/usePagination";
 import useFilter from "@/hooks/useFilter";
 import { FilterValue } from "@/components/filterPanel";
+import { StatusBadge } from "@/components/statusBadge";
 
 export default function PpdsLogbookPage() {
   const { width } = useWindowDimensions();
@@ -127,30 +128,6 @@ export default function PpdsLogbookPage() {
     navigate(detailRoute);
   };
 
-  const getVerifiedBadge = (status: string | null) => {
-    if (status === "verified") {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-md">
-          <icons.Check className="h-3 w-3" />
-          Terverifikasi
-        </span>
-      );
-    }
-    if (status === "pending") {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-md">
-          <icons.Clock className="h-3 w-3" />
-          Menunggu
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-md">
-        <icons.X className="h-3 w-3" />-
-      </span>
-    );
-  };
-
   // Define columns for Logbook table
   const columns: ColumnDef<TPpdsLogbook>[] = [
     {
@@ -194,7 +171,7 @@ export default function PpdsLogbookPage() {
       cell: ({ row: { original } }) => {
         const staffList = original.staff;
         if (!staffList || staffList.length === 0) return "-";
-        return staffList.map(s => s.name).join(", ");
+        return staffList.map((s) => s.name).join(", ");
       },
     },
     {
@@ -239,7 +216,11 @@ export default function PpdsLogbookPage() {
       header: "Verified Status",
       size: 140,
       cell: ({ row: { original } }) =>
-        getVerifiedBadge(original.verified_status),
+        original.verified_status ? (
+          <StatusBadge status={original.verified_status} />
+        ) : (
+          <span className="text-gray-400">-</span>
+        ),
     },
     {
       id: "actions",
