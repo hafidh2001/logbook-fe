@@ -73,7 +73,7 @@ export type TPpdsLogbook = {
   hospital: string;
   semester: Nullable<string>;
   stase_name: string;
-  staff_name: Nullable<string>;
+  staff: Array<{ id: number; name: string | null }>;
 };
 
 export interface IPpdsLogbookListParams {
@@ -110,15 +110,24 @@ export interface IPpdsChangePasswordPayload {
 // Types for PPDS Logbook Detail (matches GetDetailPPDSLogbook API response)
 export interface TPpdsLogbookDetail {
   id: number;
-  date: string;
-  notes: Nullable<string>;
-  verified_status: string;
+  // user
   ppds_name: string;
   nim: Nullable<string>;
   inisial_code: Nullable<string>;
-  action: string;
-  hospital: string;
-  staff_name: Nullable<string>;
+
+  // kegiatan
+  date: Nullable<string>;
+  action_name: Nullable<string>;
+  hospital_name: Nullable<string>;
+  notes: Nullable<string>;
+  status_logbook: Nullable<string>;
+
+  // staff
+  staff: Array<{
+    name: string | null;
+    role: string | null;
+    status: string | null;
+  }>;
 }
 
 // Params for getting PPDS Logbook Detail

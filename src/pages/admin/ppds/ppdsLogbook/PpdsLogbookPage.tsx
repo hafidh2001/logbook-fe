@@ -188,15 +188,13 @@ export default function PpdsLogbookPage() {
       cell: ({ row: { original } }) => original.stase_name ?? "-",
     },
     {
-      accessorKey: "staff_name",
+      accessorKey: "staff",
       header: "Staff Pengajar/DPJP",
-      size: 180,
+      size: 150,
       cell: ({ row: { original } }) => {
-        return original.staff_name ? (
-          <span>{original.staff_name}</span>
-        ) : (
-          <span className="text-gray-400">-</span>
-        );
+        const staffList = original.staff;
+        if (!staffList || staffList.length === 0) return "-";
+        return staffList.map(s => s.name).join(", ");
       },
     },
     {

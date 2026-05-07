@@ -1,5 +1,5 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
-// import { StatusBadge } from "@/components/statusBadge";
+import { StatusBadge } from "@/components/statusBadge";
 import type { TPpdsLogbookDetail } from "@/types/ppds";
 
 interface Props {
@@ -7,16 +7,29 @@ interface Props {
 }
 
 export const Staff = ({ data }: Props) => {
+  if (!data?.staff || data.staff.length === 0) {
+    return (
+      <CardWrapper title="Staff" contentClassName="flex flex-col gap-3">
+        <span className="text-sm text-gray-500">-</span>
+      </CardWrapper>
+    );
+  }
+
   return (
-    <CardWrapper
-      title="Staff"
-      contentClassName="sm:col-span-2 flex items-center gap-2"
-    >
-      <span className="text-sm text-gray-500 w-24">Staff Pengajar</span>
-      <span className="text-sm font-medium text-gray-800">
-        {data?.staff_name ?? "-"}
-      </span>
-      {/* <StatusBadge status={data?.verified_status ?? null} /> */}
+    <CardWrapper title="Staff" contentClassName="flex flex-col gap-3">
+      {data.staff.map(
+        (item: { name: string | null; role: string | null; status: string | null }, index: number) => (
+          <div key={index} className="flex items-center gap-4">
+            <div className="flex-1">
+              <span className="text-sm font-semibold text-gray-800 block">
+                {item.role ?? "-"}
+              </span>
+              <span className="text-sm text-gray-600">{item.name ?? "-"}</span>
+            </div>
+            <StatusBadge status={item.status ?? null} />
+          </div>
+        ),
+      )}
     </CardWrapper>
   );
 };

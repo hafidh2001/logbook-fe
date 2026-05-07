@@ -921,47 +921,53 @@ class ApiWebServiceController extends Controller {
         // sorting (default DESC)
         $sort = (isset($post['sort']) && strtolower($post['sort']) === 'asc') ? 'ASC' : 'DESC';
 
-        $sql = 'SELECT
-                    tl.id,
-                    tl.date,
-                    tl.title,
-                    tl.notes,
-                    tl.verified_status,
-                    mu.display_name AS ppds_name,
-                    mu.code AS nim,
-                    ma.name AS action,
-                    mh.name AS hospital,
-                    ms.name AS semester,
-                    st.name AS stase_name,
-                    tls.display_name AS staff_name
-                FROM t_logbook tl
-                LEFT JOIN m_user mu ON tl.id_user = mu.id
-                LEFT JOIN m_action ma ON tl.id_action = ma.id
-                LEFT JOIN m_hospital mh ON tl.id_hospital = mh.id
-                LEFT JOIN m_semester ms ON tl.id_semester = ms.id
-                LEFT JOIN m_stase st ON tl.id_stase = st.id
-                LEFT JOIN LATERAL (
-                    SELECT tls.id_logbook, mu.display_name, tls.id_user
-                    FROM t_logbook_status tls
-                    JOIN m_action_role mar ON tls.id_action_role = mar.id
-                    JOIN m_user mu ON tls.id_user = mu.id
-                    WHERE tls.id_logbook = tl.id
-                    AND mar.role != :role_action
-                    LIMIT 1
-                ) tls ON true
-                WHERE
-                    tl.id_client = :id_client
-                AND tl.deleted_at IS NULL';
+        $baseCte = "
+            WITH staff_ids_cte AS (
+                SELECT
+                    tls.id_logbook,
+                    ARRAY_AGG(DISTINCT tls.id_user) AS staff_ids
+                FROM t_logbook_status tls
+                INNER JOIN m_action_role mar
+                    ON mar.id = tls.id_action_role
+                WHERE mar.role != 'Peserta'
+                GROUP BY tls.id_logbook
+            )
+        ";
 
-        $countSql = 'SELECT COUNT(*)
-                    FROM t_logbook tl
-                    WHERE
-                        tl.id_client = :id_client
-                    AND tl.deleted_at IS NULL';
+        $sql = "{$baseCte}
+            SELECT
+                tl.id,
+                tl.date,
+                tl.title,
+                tl.notes,
+                tl.verified_status,
+                mu.display_name AS ppds_name,
+                mu.code AS nim,
+                ma.name AS action,
+                mh.name AS hospital,
+                ms.name AS semester,
+                st.name AS stase_name
+            FROM t_logbook tl
+            LEFT JOIN m_user mu ON tl.id_user = mu.id
+            LEFT JOIN m_action ma ON tl.id_action = ma.id
+            LEFT JOIN m_hospital mh ON tl.id_hospital = mh.id
+            LEFT JOIN m_semester ms ON tl.id_semester = ms.id
+            LEFT JOIN m_stase st ON tl.id_stase = st.id
+            LEFT JOIN staff_ids_cte sic ON sic.id_logbook = tl.id
+            WHERE
+                tl.id_client = :id_client
+            AND tl.deleted_at IS NULL";
+
+        $countSql = "{$baseCte}
+            SELECT COUNT(DISTINCT tl.id)
+            FROM t_logbook tl
+            LEFT JOIN staff_ids_cte sic ON sic.id_logbook = tl.id
+            WHERE
+                tl.id_client = :id_client
+            AND tl.deleted_at IS NULL";
 
         $params = [
             ':id_client' => $post['id_client'],
-            ':role_action' => 'Peserta'
         ];
 
         // optional filter
@@ -972,8 +978,8 @@ class ApiWebServiceController extends Controller {
         }
 
         if (!empty($post['id_staff'])) {
-            $sql      .= ' AND tls.id_user = :id_staff';
-            $countSql .= ' AND tls.id_user = :id_staff';
+            $sql      .= ' AND :id_staff = ANY(sic.staff_ids)';
+            $countSql .= ' AND :id_staff = ANY(sic.staff_ids)';
             $params[':id_staff'] = $post['id_staff'];
         }
 
@@ -1028,13 +1034,59 @@ class ApiWebServiceController extends Controller {
         $command->bindValue(':limit', $limit, PDO::PARAM_INT);
         $command->bindValue(':offset', $offset, PDO::PARAM_INT);
 
-        $res   = $command->queryAll();
+        $data   = $command->queryAll();
         $total = $countCommand->queryScalar();
+
+        // Query staff data separately and merge
+        if (!empty($data)) {
+            $logbookIds = array_column($data, 'id');
+
+            $staffSql = "
+                SELECT
+                    tls.id_logbook,
+                    tls.id_user AS id,
+                    mu.display_name AS name
+                FROM t_logbook_status tls
+                INNER JOIN m_action_role mar
+                    ON mar.id = tls.id_action_role
+                INNER JOIN m_user mu
+                    ON mu.id = tls.id_user
+                WHERE tls.id_logbook IN (" . implode(',', $logbookIds) . ")
+                    AND mar.role != 'Peserta'
+                ORDER BY
+                    tls.id_logbook,
+                    mu.display_name
+            ";
+            $staffCommand = Yii::app()->db->createCommand($staffSql);
+            $staffData = $staffCommand->queryAll();
+
+            // Group staff by logbook_id
+            $staffByLogbook = [];
+            foreach ($staffData as $staff) {
+                $idLogbook = $staff['id_logbook'];
+                if (!isset($staffByLogbook[$idLogbook])) {
+                    $staffByLogbook[$idLogbook] = [];
+                }
+                $staffByLogbook[$idLogbook][] = [
+                    'id' => $staff['id'],
+                    'name' => $staff['name'],
+                ];
+            }
+
+            // Merge staff data into result
+            foreach ($data as &$row) {
+                $row['staff'] = $staffByLogbook[$row['id']] ?? [];
+            }
+        } else {
+            foreach ($data as &$row) {
+                $row['staff'] = [];
+            }
+        }
 
         echo json_encode([
             'status' => true,
             'total'  => (int)$total,
-            'data'   => $res,
+            'data'   => $data,
             'pagination' => [
                 'page'   => $page,
                 'limit'  => $limit,
@@ -1054,50 +1106,67 @@ class ApiWebServiceController extends Controller {
             Yii::app()->end();
         }
 
-        $sql = 'SELECT
-                    tl.id,
-                    tl.date,
-                    tl.notes,
-                    tl.verified_status,
-                    mu.display_name AS ppds_name,
-                    mu.code AS nim,
-                    mu.inisial_code,
-                    ma.name AS action,
-                    mh.name AS hospital,
-                    tls.display_name AS staff_name
-                FROM t_logbook tl
-                LEFT JOIN m_user mu ON tl.id_user = mu.id
-                LEFT JOIN m_action ma ON tl.id_action = ma.id
-                LEFT JOIN m_hospital mh ON tl.id_hospital = mh.id
-                LEFT JOIN m_stase st ON tl.id_stase = st.id
-                LEFT JOIN LATERAL (
-                    SELECT tls.id_logbook, mu.display_name, tls.id_user
-                    FROM t_logbook_status tls
-                    JOIN m_action_role mar ON tls.id_action_role = mar.id
-                    JOIN m_user mu ON tls.id_user = mu.id
-                    WHERE tls.id_logbook = tl.id
-                    AND mar.role != :role_action
-                    LIMIT 1
-                ) tls ON true
-                WHERE
-                    tl.id = :id_logbook';
+        $sql = "
+            SELECT
+                tl.id,
+                mu.display_name AS ppds_name,
+                mu.code AS nim,
+                mu.inisial_code,
+                tl.date,
+                tl.notes,
+                tl.verified_status AS status_logbook,
+                mh.name AS hospital_name,
+                ma.name AS action_name
+            FROM t_logbook tl
+            LEFT JOIN m_user mu
+                ON mu.id = tl.id_user
+            LEFT JOIN m_action ma
+                ON ma.id = tl.id_action
+            LEFT JOIN m_hospital mh
+                ON mh.id = tl.id_hospital
+            WHERE
+                tl.id = :id_logbook
+                AND tl.deleted_at IS NULL
+            LIMIT 1
+        ";
 
-        $res = Yii::app()->db->createCommand($sql)
-            ->bindValue(':id_logbook', $post['id_logbook'])
-            ->bindValue(':role_action', 'Peserta')
-            ->queryRow();
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_logbook', $post['id_logbook']);
+        $data = $command->queryRow();
 
-        if (!$res) {
+        if (!$data) {
             echo json_encode([
                 'status'  => false,
-                'message' => 'Logbook tidak ditemukan!'
+                'message' => 'Logbook not found'
             ]);
             Yii::app()->end();
         }
-        
+
+        // Query staff separately to get all verifying staff
+        $staffSql = "
+            SELECT
+                mu.display_name AS name,
+                mar.role AS role,
+                tls.status
+            FROM t_logbook_status tls
+            INNER JOIN m_action_role mar
+                ON mar.id = tls.id_action_role
+            INNER JOIN m_user mu
+                ON mu.id = tls.id_user
+            WHERE
+                tls.id_logbook = :id_logbook
+                AND mar.role != 'Peserta'
+            ORDER BY mu.display_name
+        ";
+        $staffCommand = Yii::app()->db->createCommand($staffSql);
+        $staffCommand->bindValue(':id_logbook', $post['id_logbook']);
+        $staffData = $staffCommand->queryAll();
+
+        $data['staff'] = $staffData;
+
         echo json_encode([
-            'status'  => true,
-            'data'    => $res
+            'status' => true,
+            'data'   => $data
         ]);
     }
 
