@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { masterApi } from "@/services/masterApi";
-import type { MasterStore } from "@/types/master/store";
+import type { MasterStore, StaseSelectOpt } from "@/types/master/store";
 import {
   BasicSelectOpt,
   LogbookStatusEnum,
@@ -13,7 +13,9 @@ const initialState = {
   ppdsActiveOptions: [] as BasicSelectOpt<number>[],
   ppdsInactiveOptions: [] as BasicSelectOpt<number>[],
   staffOptions: [] as BasicSelectOpt<number>[],
-  staseOptions: [] as BasicSelectOpt<number>[],
+  staseOptions: [] as StaseSelectOpt[],
+  stageOptions: [] as BasicSelectOpt<number>[],
+  semesterOptions: [] as BasicSelectOpt<number>[],
   activityOptions: [] as BasicSelectOpt<number>[],
   userStatusOptions: [] as BasicSelectOpt<string>[],
   logbookStatusOptions: [] as BasicSelectOpt<string>[],
@@ -116,9 +118,64 @@ export const useMasterStore = create<MasterStore>((set) => ({
         return {
           label: item.name,
           value: item.id,
+          id_stage: item.id_stage ?? 0,
         };
       });
       set({ staseOptions: arr, isLoading: false });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan";
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  fetchStageOptions: async (params) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await masterApi.getMasterStage({ ...params });
+      const arr = response.data.map((item) => {
+        return {
+          label: item.name,
+          value: item.id,
+        };
+      });
+      set({ stageOptions: arr, isLoading: false });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan";
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  fetchStageByStase: async (params) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await masterApi.getStageByStase(params);
+      const arr = response.data.map((item) => {
+        return {
+          label: item.name ?? "",
+          value: item.id_stage ?? 0,
+        };
+      });
+      set({ stageOptions: arr, isLoading: false });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan";
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  fetchSemesterOptions: async (params) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await masterApi.getMasterSemester(params);
+      const arr = response.data.map((item) => {
+        return {
+          label: item.name,
+          value: item.id,
+        };
+      });
+      set({ semesterOptions: arr, isLoading: false });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Terjadi kesalahan";

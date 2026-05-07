@@ -372,11 +372,12 @@ class ApiWebServiceController extends Controller {
         
         $sql = 'SELECT
                     ms.id,
-                    ms.name
+                    ms.name,
+                    ms.id_stage
                 FROM m_stase ms
                 WHERE
                     ms.id_client = :id_client
-                ORDER BY 
+                ORDER BY
                     ms.sequence ASC';
         
         $res = Yii::app()->db->createCommand($sql)
@@ -452,6 +453,100 @@ class ApiWebServiceController extends Controller {
             ->bindValue(':id_client', $post['id_client'])
             ->queryAll();
         
+        echo json_encode([
+            'status'  => true,
+            'total'   => count($res),
+            'data'    => $res
+        ]);
+    }
+
+    public function actionGetMasterStage() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = 'SELECT
+                    ms.id,
+                    ms.name
+                FROM m_stage ms
+                WHERE
+                    ms.id_client = :id_client
+                ORDER BY
+                    ms.name ASC';
+
+        $res = Yii::app()->db->createCommand($sql)
+            ->bindValue(':id_client', $post['id_client'])
+            ->queryAll();
+
+        echo json_encode([
+            'status'  => true,
+            'total'   => count($res),
+            'data'    => $res
+        ]);
+    }
+
+    public function actionGetStageByStase() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_stase'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = 'SELECT
+                    mst.id_stage,
+                    ms.name
+                FROM m_stase mst
+                LEFT JOIN m_stage ms ON ms.id = mst.id_stage
+                WHERE mst.id = :id_stase';
+
+        $res = Yii::app()->db->createCommand($sql)
+            ->bindValue(':id_stase', $post['id_stase'])
+            ->queryAll();
+
+        echo json_encode([
+            'status'  => true,
+            'total'   => count($res),
+            'data'    => $res
+        ]);
+    }
+
+    public function actionGetMasterSemester() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_stage'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = 'SELECT
+                    ms.id,
+                    ms.name
+                FROM m_semester ms
+                WHERE
+                    ms.id_stage = :id_stage
+                ORDER BY
+                    ms.name ASC';
+
+        $res = Yii::app()->db->createCommand($sql)
+            ->bindValue(':id_stage', $post['id_stage'])
+            ->queryAll();
+
         echo json_encode([
             'status'  => true,
             'total'   => count($res),
@@ -1726,15 +1821,16 @@ class ApiWebServiceController extends Controller {
 
         $sql = "
             SELECT
-                mu.display_name AS user,
-                ms.name AS stase,
+                tl.id,
+                mu.display_name AS user_name,
+                ms.name AS stase_name,
                 tl.date,
                 tl.notes
             FROM t_logbook tl
             LEFT JOIN m_user mu ON mu.id = tl.id_user
             LEFT JOIN m_stase ms ON ms.id = tl.id_stase
             {$whereClause}
-            ORDER BY mu.display_name ASC
+            ORDER BY tl.date DESC
             LIMIT :limit
             OFFSET :offset
         ";
@@ -1770,6 +1866,210 @@ class ApiWebServiceController extends Controller {
                 'limit'      => $limit
             ],
         ]);
+    }
+
+    public function actionGetDetailStase()
+    {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_logbook'])) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "
+            SELECT
+                tl.id,
+                tl.id_user,
+                tl.id_stase,
+                tl.id_semester,
+                tl.date,
+                tl.notes,
+                tl.is_retake,
+                ms.id_stage
+            FROM t_logbook tl
+            LEFT JOIN m_stase ms ON ms.id = tl.id_stase
+            WHERE
+                tl.id = :id_logbook
+            AND tl.deleted_at IS NULL
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_logbook', $post['id_logbook']);
+        $data = $command->queryRow();
+
+        if (!$data) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Data not found'
+            ]);
+            Yii::app()->end();
+        }
+
+        echo json_encode([
+            'status' => true,
+            'data'   => $data
+        ]);
+    }
+
+    public function actionDeleteStase() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+        
+        if (!isset($post['id_logbook'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+        
+        try {
+            $logbook = TLogbook::model()->findByPk($post["id_logbook"]);
+            
+            if (!$logbook) {
+                echo json_encode([
+                    'status'  => false,
+                    'message' => 'User tidak ditemukan!'
+                ]);
+                Yii::app()->end();
+            }
+            
+            $logbook->deleted_at = new CDbExpression('NOW()');
+            $logbook->save(false);
+
+            echo json_encode([
+                'status' => true,
+                'message' => 'Data berhasil dihapus!'
+            ]);
+        
+        } catch (Exception $e) {
+            echo json_encode([
+                'status'  => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        Yii::app()->end();
+    }
+
+    public function actionCreateStase()
+    {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (
+            !isset($post['id_client']) ||
+            !isset($post['created_by']) ||
+            !isset($post['id_user']) ||
+            !isset($post['id_stase']) ||
+            !isset($post['id_semester']) ||
+            !isset($post['date'])
+        ) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        try {
+            $action = MAction::model()->find(
+                    'id_client = :id_client AND identifier = :identifier', 
+                    [
+                        ':id_client' => $post['id_client'],
+                        ':identifier' => 'stase'
+                    ]);
+
+            if (!$action) {
+                echo json_encode([
+                    'status'  => false,
+                    'message' => 'Action "stase" not found for the client!'
+                ]);
+                Yii::app()->end();
+            }
+
+            $logbook               = new TLogbook;
+            $logbook->id_client    = $post['id_client'];
+            $logbook->id_action    = $action->id ?? null;
+            $logbook->id_user      = $post['id_user'];
+            $logbook->id_stase     = $post['id_stase'];
+            $logbook->id_semester  = $post['id_semester'];
+            $logbook->date         = $post['date'];
+            $logbook->notes        = $post['notes'] ?? null;
+            $logbook->is_retake    = $post['is_retake'] ?? false;
+            $logbook->created_date = date('Y-m-d H:i:s');
+            $logbook->created_by   = $post['created_by'];
+            $logbook->save(false);
+
+            echo json_encode([
+                'status'  => true,
+                'message' => 'Data berhasil dibuat!',
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'status'  => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        Yii::app()->end();
+    }
+
+    public function actionUpdateStase()
+    {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (
+            !isset($post['id_logbook']) ||
+            !isset($post['updated_by']) ||
+            !isset($post['id_user']) ||
+            !isset($post['id_stase']) ||
+            !isset($post['id_semester']) ||
+            !isset($post['date'])
+        ) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $logbook = TLogbook::model()->findByPk($post['id_logbook']);
+
+        if (!$logbook) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Data tidak ditemukan!'
+            ]);
+            Yii::app()->end();
+        }
+
+        try {
+            $logbook->id_user      = $post['id_user'];
+            $logbook->id_stase     = $post['id_stase'];
+            $logbook->id_semester  = $post['id_semester'];
+            $logbook->date         = $post['date'];
+            $logbook->notes        = $post['notes'] ?? null;
+            $logbook->is_retake    = $post['is_retake'] ?? false;
+            $logbook->updated_date = date('Y-m-d H:i:s');
+            $logbook->updated_by   = $post['updated_by'];
+            $logbook->save(false);
+
+            echo json_encode([
+                'status'  => true,
+                'message' => 'Data berhasil diupdate!',
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'status'  => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        Yii::app()->end();
     }
     // === STASE ===
 

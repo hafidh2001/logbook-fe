@@ -1,24 +1,24 @@
 import { z } from "zod";
 
 export const staseSchema = z.object({
-  user: z.string().min(1, "User harus dipilih"),
-  stase: z.string().min(1, "Stase harus dipilih"),
-  stage: z.string().min(1, "Stage harus dipilih"),
-  semester: z.string().min(1, "Semester harus dipilih"),
-  date: z.date().min(1, "Date harus diisi"),
+  id_user: z.number({ message: "User harus dipilih" }).nullable(),
+  id_stase: z.number({ message: "Stase harus dipilih" }).nullable(),
+  id_stage: z.number({ message: "Stage harus dipilih" }).nullable(),
+  id_semester: z.number({ message: "Semester harus dipilih" }).nullable(),
+  date: z.date({ message: "Date harus diisi" }),
   notes: z.string().optional(),
-  mengulangStase: z.boolean(),
+  is_retake: z.boolean(),
 });
 
 export type StaseFormData = z.infer<typeof staseSchema>;
 
 // Initial values for create mode
 export const createInitialStaseValues: StaseFormData = {
-  user: "",
-  stase: "",
-  stage: "",
-  semester: "",
+  id_user: null,
+  id_stase: null,
+  id_stage: null,
+  id_semester: null,
   date: undefined as unknown as Date,
   notes: "",
-  mengulangStase: false,
+  is_retake: false,
 };

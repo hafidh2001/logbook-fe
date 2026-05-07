@@ -4,19 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
 import { useStaseStore } from "@/store/staseStore";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useState, useEffect } from "react";
 import { ConfirmationModal } from "@/components/confirmationModal";
-import type { Stase } from "@/store/staseStore";
+import type { TStaseListItem } from "@/types/stase";
 import usePagination from "@/hooks/usePagination";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
 import useFilter from "@/hooks/useFilter";
 import dayjs from "dayjs";
-
-type TStase = Stase;
+import { showToast } from "@/utils/toast";
 
 export default function StaseListPage() {
   const { width } = useWindowDimensions();
@@ -25,8 +24,7 @@ export default function StaseListPage() {
   const navigate = useNavigate();
 
   const {
-    staseList,
-    pagination,
+    staseData,
     isLoading,
     loadStaseList,
     deleteStase,
@@ -73,7 +71,7 @@ export default function StaseListPage() {
   // Delete confirmation modal state
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
-    item: TStase | null;
+    item: TStaseListItem | null;
   }>({ open: false, item: null });
 
   const handleCreate = () => {
@@ -88,13 +86,33 @@ export default function StaseListPage() {
     console.log("Search:", query);
   };
 
-  const handleDelete = (item: TStase) => {
+  const handleDelete = (item: TStaseListItem) => {
     setDeleteModal({ open: true, item });
   };
 
   const handleDeleteConfirm = async () => {
     if (deleteModal.item?.id) {
-      await deleteStase(String(deleteModal.item.id));
+      const success = await deleteStase(deleteModal.item.id);
+      if (success) {
+        const successMessage = useStaseStore.getState().success;
+        showToast(successMessage ?? "Data berhasil dihapus!", "success", {
+          duration: 3000,
+        });
+        // Re-fetch to get fresh data with correct pagination
+        loadStaseList({
+          page,
+          limit,
+          id_ppds: filterParams.id_ppds ?? undefined,
+          id_stase: filterParams.id_stase ?? undefined,
+          start_date: filterParams.start_date ?? undefined,
+          end_date: filterParams.end_date ?? undefined,
+        });
+      } else {
+        const errorMessage = useStaseStore.getState().error;
+        showToast(errorMessage ?? "Gagal menghapus data", "error", {
+          duration: 4000,
+        });
+      }
     }
     setDeleteModal({ open: false, item: null });
   };
@@ -108,30 +126,30 @@ export default function StaseListPage() {
     setLimit(pageSize);
   };
 
-  const handleRowClick = (row: TStase) => {
-    if (row.id) {
-      navigate(ROUTES.staseDetail(String(row.id)));
+  const handleRowClick = (row: Row<TStaseListItem>) => {
+    if (row.original.id) {
+      navigate(ROUTES.staseDetail(String(row.original.id)));
     }
   };
 
   // Define columns for Stase table
-  const columns: ColumnDef<TStase>[] = [
+  const columns: ColumnDef<TStaseListItem>[] = [
     {
-      accessorKey: "user",
+      accessorKey: "user_name",
       header: "User",
       size: 150,
       cell: ({ row: { original } }) => (
-        <span className="font-medium">{original.user ?? "-"}</span>
+        <span className="font-medium">{original.user_name ?? "-"}</span>
       ),
     },
     {
-      accessorKey: "stase",
+      accessorKey: "stase_name",
       header: "Stase",
       size: 180,
       cell: ({ row: { original } }) => {
-        return original.stase ? (
+        return original.stase_name ? (
           <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
-            {original.stase}
+            {original.stase_name}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -225,7 +243,7 @@ export default function StaseListPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={staseList}
+              data={staseData.list}
               columns={columns}
               isLoading={isLoading}
               isShowNumbering
@@ -234,7 +252,7 @@ export default function StaseListPage() {
                 mode: "server",
                 initialPageIndex: 0,
                 initialPageSize: DEFAULT_PAGE_SIZE,
-                pageCount: pagination.pageCount ?? 1,
+                pageCount: staseData.pagination.pageCount ?? 1,
               }}
               onPaginationChange={handlePaginationChange}
               onRowClick={handleRowClick}
@@ -258,9 +276,9 @@ export default function StaseListPage() {
         description={
           <>
             Apakah Anda yakin ingin menghapus data stase{" "}
-            <span className="font-semibold">{deleteModal.item?.stase}</span>{" "}
+            <span className="font-semibold">{deleteModal.item?.stase_name}</span>{" "}
             untuk user{" "}
-            <span className="font-semibold">{deleteModal.item?.user}</span>?
+            <span className="font-semibold">{deleteModal.item?.user_name}</span>?
             Tindakan ini tidak dapat dibatalkan.
           </>
         }
