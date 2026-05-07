@@ -4,13 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
 import { useStaffStore } from "@/store/staffStore";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useState, useEffect } from "react";
 import { ConfirmationModal } from "@/components/confirmationModal";
-import type { Staff } from "@/services/staffApi";
+import type { TStaff } from "@/types/staff";
+import usePagination from "@/hooks/usePagination";
+import { DEFAULT_PAGE_SIZE } from "@/constants/table";
+import useFilter from "@/hooks/useFilter";
+import { showToast } from "@/utils/toast";
 
 export default function StaffListPage() {
   const { width } = useWindowDimensions();
@@ -18,17 +22,50 @@ export default function StaffListPage() {
 
   const navigate = useNavigate();
 
-  const { staffList, isLoading, loadStaffList, deleteStaff, reset } = useStaffStore();
+  const {
+    staffData,
+    isLoading,
+    loadStaffList,
+    deleteStaff,
+    reset,
+  } = useStaffStore();
+
+  // Pagination - page is always read from URL
+  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+    defaultPage: 1,
+    defaultLimit: DEFAULT_PAGE_SIZE,
+  });
+
+  // Filter hook
+  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<{
+    staff?: number | null;
+    stase?: number | null;
+    nim?: string | null;
+  }>({
+    fields: [
+      { key: "staff" },
+      { key: "stase" },
+      { key: "nim" },
+    ],
+    onFilterChange: () => setPage(1),
+  });
 
   useEffect(() => {
-    loadStaffList();
+    loadStaffList({
+      page,
+      limit,
+      ...filterParams,
+    });
+  }, [searchParams, filterParams, loadStaffList]);
+
+  useEffect(() => {
     return () => reset();
-  }, [loadStaffList, reset]);
+  }, [reset]);
 
   // Delete confirmation modal state
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
-    item: Staff | null;
+    item: TStaff | null;
   }>({ open: false, item: null });
 
   const handleCreate = () => {
@@ -40,25 +77,28 @@ export default function StaffListPage() {
   };
 
   const handleSearch = (query: string) => {
-    // TODO: Implement search
     console.log("Search:", query);
   };
 
-  const handleFilterSearch = (data: Record<string, unknown>) => {
-    console.log("Filter search:", data);
-  };
-
-  const handleFilterReset = () => {
-    console.log("Filter reset");
-  };
-
-  const handleDelete = (item: Staff) => {
+  const handleDelete = (item: TStaff) => {
     setDeleteModal({ open: true, item });
   };
 
   const handleDeleteConfirm = async () => {
-    if (deleteModal.item) {
-      await deleteStaff(String(deleteModal.item.id));
+    if (deleteModal.item?.id) {
+      const success = await deleteStaff(deleteModal.item.id);
+      if (success) {
+        const successMessage = useStaffStore.getState().success;
+        showToast(successMessage ?? "Data berhasil dihapus!", "success", {
+          duration: 3000,
+        });
+        loadStaffList({ page, limit, ...filterParams });
+      } else {
+        const errorMessage = useStaffStore.getState().error;
+        showToast(errorMessage ?? "Gagal menghapus data", "error", {
+          duration: 4000,
+        });
+      }
     }
     setDeleteModal({ open: false, item: null });
   };
@@ -67,8 +107,19 @@ export default function StaffListPage() {
     setDeleteModal({ open: false, item: null });
   };
 
+  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
+    setPage(pageIndex + 1);
+    setLimit(pageSize);
+  };
+
+  const handleRowClick = (row: Row<TStaff>) => {
+    if (row.original.id) {
+      navigate(ROUTES.staffDetail(String(row.original.id)));
+    }
+  };
+
   // Define columns for Staff table
-  const columns: ColumnDef<Staff>[] = [
+  const columns: ColumnDef<TStaff>[] = [
     {
       accessorKey: "display_name",
       header: "Nama",
@@ -108,41 +159,45 @@ export default function StaffListPage() {
       },
     },
     {
-      accessorKey: "code",
-      header: "Code",
+      accessorKey: "nim",
+      header: "NIM",
       size: 150,
       cell: ({ row: { original } }) => {
-        return original.code ? (
-          <span className="font-mono text-sm">{original.code}</span>
+        return original.nim ? (
+          <span className="font-mono text-sm">{original.nim}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
       },
     },
     {
-      accessorKey: "logbook_status",
+      accessorKey: "total_logbook",
       header: "Logbook",
       size: 100,
       cell: ({ row: { original } }) => (
-        <span className="text-center block">{original.logbook_status ?? "-"}</span>
+        <span className="text-center block">{original.total_logbook ?? 0}</span>
       ),
     },
     {
       id: "actions",
       header: "Action",
       size: sm ? 350 : 180,
-      cell: ({ row: { original } }) => {
+      cell: ({ row }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.staffDetail(String(original.id)));
+          if (row.original.id) {
+            navigate(ROUTES.staffDetail(String(row.original.id)));
+          }
         };
         const handleChangePassword = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.staffChangePassword(String(original.id)));
+          if (row.original.id) {
+            navigate(ROUTES.staffChangePassword(String(row.original.id)));
+          }
         };
         const handleDeleteClick = (e: React.MouseEvent) => {
           e.stopPropagation();
-          handleDelete(original);
+          handleDelete(row.original);
         };
 
         return (
@@ -178,7 +233,7 @@ export default function StaffListPage() {
         );
       },
     },
-  ] as ColumnDef<Staff>[];
+  ];
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
@@ -197,16 +252,19 @@ export default function StaffListPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={staffList}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              columns={columns as any}
+              data={staffData.list}
+              columns={columns}
               isLoading={isLoading}
               isShowNumbering
               pagination={{
                 enabled: true,
+                mode: "server",
                 initialPageIndex: 0,
-                initialPageSize: 10,
+                initialPageSize: DEFAULT_PAGE_SIZE,
+                pageCount: staffData.pagination.pageCount ?? 1,
               }}
+              onPaginationChange={handlePaginationChange}
+              onRowClick={handleRowClick}
               noDataText="Tidak ada data staff"
               className="h-full"
             />
@@ -217,7 +275,12 @@ export default function StaffListPage() {
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isShown={deleteModal.open}
-        toggle={(open) => setDeleteModal({ open: open ?? !deleteModal.open, item: deleteModal.item })}
+        toggle={(open) =>
+          setDeleteModal({
+            open: open ?? !deleteModal.open,
+            item: deleteModal.item,
+          })
+        }
         title="Hapus Data"
         description={
           <>

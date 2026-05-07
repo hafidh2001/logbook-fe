@@ -1,27 +1,32 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
+import type { TStaffLogbookDetail } from "@/types/staff";
 
 interface Props {
-  data: any;
+  data: TStaffLogbookDetail | null;
 }
 
 export const Identitas = ({ data }: Props) => {
   return (
     <CardWrapper
       title="Identitas"
-      className="mb-4"
       contentClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
     >
-      {/* Row 1 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500 w-24">Nama</span>
+        <span className="text-sm text-gray-500 w-24">PPDS</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.displayName ?? "-"}
+          {data?.ppds_name ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Code</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.code ?? "-"}
+          {data?.nim ?? "-"}
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-500 w-24">Inisial Code</span>
+        <span className="text-sm font-medium text-gray-800">
+          {data?.inisial_code ?? "-"}
         </span>
       </div>
     </CardWrapper>

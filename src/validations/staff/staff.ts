@@ -1,15 +1,13 @@
 import { z } from "zod";
 
 export const staffSchema = z.object({
-  displayName: z.string().min(1, "Display Name harus diisi"),
+  display_name: z.string().min(1, "Display Name harus diisi"),
   username: z.string().min(1, "Username harus diisi"),
   email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
   phone: z.string().min(1, "Phone harus diisi"),
-  dateOfBirth: z.date().optional().nullable(),
-  code: z.string().optional(),
-  address: z.string().optional(),
-  role: z.string(),
-  logbookCount: z.string(),
+  address: z.string().optional().nullable(),
+  date_of_birth: z.date().optional().nullable(),
+  nim: z.string().optional().nullable(),
 });
 
 export type StaffFormData = z.infer<typeof staffSchema>;
@@ -17,19 +15,19 @@ export type StaffFormData = z.infer<typeof staffSchema>;
 // Schema for Staff create form
 export const staffCreateSchema = z
   .object({
-    displayName: z.string().min(1, "Display Name harus diisi"),
+    display_name: z.string().min(1, "Display Name harus diisi"),
     username: z.string().min(1, "Username harus diisi"),
-    email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
     phone: z.string().min(1, "Phone harus diisi"),
-    dateOfBirth: z.date().optional().nullable(),
-    code: z.string().optional(),
+    email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
+    nim: z.string().optional(),
+    date_of_birth: z.date().optional().nullable(),
     address: z.string().optional(),
     password: z.string().min(1, "Password harus diisi").min(8, "Password minimal 8 karakter"),
-    confirmPassword: z.string().min(1, "Konfirmasi Password harus diisi"),
+    confirm_password: z.string().min(1, "Konfirmasi Password harus diisi"),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.confirm_password, {
     message: "Password tidak cocok",
-    path: ["confirmPassword"],
+    path: ["confirm_password"],
   });
 
 export type StaffCreateFormData = z.infer<typeof staffCreateSchema>;

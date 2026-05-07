@@ -6,11 +6,11 @@ export const changePasswordSchema = z
       .string()
       .min(1, "Password harus diisi")
       .min(8, "Password minimal 8 karakter"),
-    confirmPassword: z.string().min(1, "Konfirmasi Password harus diisi"),
+    confirm_password: z.string().min(1, "Konfirmasi Password harus diisi"),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.confirm_password, {
     message: "Password tidak cocok",
-    path: ["confirmPassword"],
+    path: ["confirm_password"],
   });
 
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;

@@ -1,24 +1,36 @@
-import dayjs from "dayjs";
-import "dayjs/locale/id";
 import { CardWrapper } from "@/components/card/cardWrapper";
+import type { TStaffLogbookDetail } from "@/types/staff";
 import { StatusBadge } from "@/components/statusBadge";
+import dayjs from "dayjs";
 
 interface Props {
-  data: any;
+  data: TStaffLogbookDetail | null;
 }
 
 export const Kegiatan = ({ data }: Props) => {
   return (
     <CardWrapper
       title="Kegiatan"
-      className="mb-4"
       contentClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
     >
-      {/* Row 1 */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Date</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.date ? dayjs(data?.date).format("DD MMM YYYY") : "-"}
+          {data?.date
+            ? dayjs(data.date).locale("id").format("DD MMM YYYY")
+            : "-"}
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-500 w-24">Activity</span>
+        <span className="text-sm font-medium text-gray-800">
+          {data?.action_name ?? "-"}
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-500 w-24">Hospital</span>
+        <span className="text-sm font-medium text-gray-800">
+          {data?.hospital_name ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -27,23 +39,9 @@ export const Kegiatan = ({ data }: Props) => {
           {data?.notes ?? "-"}
         </span>
       </div>
-      {/* Row 2 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500 w-24">Activity</span>
-        <span className="text-sm font-medium text-gray-800">
-          {data?.activity ?? "-"}
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500 w-24">Verified Status</span>
-        <StatusBadge status={data?.verifiedStatus ?? null} />
-      </div>
-      {/* Row 3 - Hospital (full width) */}
-      <div className="sm:col-span-2 flex items-center gap-2">
-        <span className="text-sm text-gray-500 w-24">Hospital</span>
-        <span className="text-sm font-medium text-gray-800">
-          {data?.hospital ?? "-"}
-        </span>
+        <span className="text-sm text-gray-500 w-24">Status</span>
+        <StatusBadge status={data?.status_logbook ?? null} />
       </div>
     </CardWrapper>
   );

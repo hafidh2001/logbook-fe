@@ -1,7 +1,7 @@
 import { Topbar } from "@/components/layout/Topbar";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { ROUTES } from "@/utils/routes";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { icons } from "@/assets/images/Icon";
@@ -9,16 +9,20 @@ import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/fields/passwordField";
 import { changePasswordSchema, ChangePasswordFormData } from "@/validations/common/changePassword";
 import { useStaffStore } from "@/store/staffStore";
+import { useAuthStore } from "@/store/authStore";
 import { useEffect } from "react";
+import { showToast } from "@/utils/toast";
 
 export default function StaffChangePasswordPage() {
   const { idUser } = useParams<{ idUser: string }>();
+  const navigate = useNavigate();
 
-  const { selectedStaff, loadStaffDetail, resetDetail } = useStaffStore();
+  const { selectedStaff, loadStaffDetail, resetDetail, changePassword, isLoading } = useStaffStore();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     if (idUser) {
-      loadStaffDetail(idUser);
+      loadStaffDetail(Number(idUser));
     }
     return () => resetDetail();
   }, [idUser, loadStaffDetail, resetDetail]);
@@ -31,13 +35,31 @@ export default function StaffChangePasswordPage() {
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       password: "",
-      confirmPassword: "",
+      confirm_password: "",
     },
   });
 
-  const onSubmit = (data: ChangePasswordFormData) => {
-    console.log("Changing password for user:", idUser, data);
-    // TODO: Call API to change password
+  const onSubmit = async (data: ChangePasswordFormData) => {
+    if (!idUser) return;
+
+    const payload = {
+      updated_by: user?.id ?? 0,
+      id_user: Number(idUser),
+      password: data.password,
+      confirm_password: data.confirm_password,
+    };
+
+    const success = await changePassword(payload);
+    if (success) {
+      const successMessage = useStaffStore.getState().success;
+      showToast(successMessage ?? "Password berhasil diubah!", "success");
+      navigate(ROUTES.staff);
+    } else {
+      const errorMessage = useStaffStore.getState().error;
+      showToast(errorMessage ?? "Password gagal diubah!", "error", {
+        duration: 4000,
+      });
+    }
   };
 
   return (
@@ -49,6 +71,7 @@ export default function StaffChangePasswordPage() {
           { label: "Ubah Password", to: ROUTES.staffChangePassword(":idUser") },
         ]}
         onSave={handleSubmit(onSubmit)}
+        isLoading={isLoading}
       />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
@@ -63,10 +86,10 @@ export default function StaffChangePasswordPage() {
                   {selectedStaff?.display_name || "-"}
                 </h2>
                 <p className="text-sm text-gray-500">
-                  NIM: {selectedStaff?.code || "-"}
+                  NIM: {selectedStaff?.nim || "-"}
                 </p>
                 <p className="text-sm text-gray-500 capitalize">
-                  Role: {selectedStaff?.role || "-"}
+                  Role: {selectedStaff?.role_name || "-"}
                 </p>
               </div>
             </div>
@@ -89,14 +112,14 @@ export default function StaffChangePasswordPage() {
                 )}
               />
               <Controller
-                name="confirmPassword"
+                name="confirm_password"
                 control={control}
                 render={({ field }) => (
                   <PasswordField
                     {...field}
                     label="Konfirmasi Password"
                     placeholder="Masukkan konfirmasi password..."
-                    errorMessage={errors.confirmPassword?.message}
+                    errorMessage={errors.confirm_password?.message}
                   />
                 )}
               />

@@ -9,11 +9,18 @@ import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { icons } from "@/assets/images/Icon";
 import { Input } from "@/components/ui/input";
 import { useStaffStore } from "@/store/staffStore";
-import { staffCreateSchema, StaffCreateFormData } from "@/validations/staff/staff";
+import { useAuthStore } from "@/store/authStore";
+import {
+  staffCreateSchema,
+  StaffCreateFormData,
+} from "@/validations/staff/staff";
+import { showToast } from "@/utils/toast";
+import dayjs from "dayjs";
 
 export default function StaffCreatePage() {
   const navigate = useNavigate();
   const { createStaff } = useStaffStore();
+  const { user } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -24,23 +31,38 @@ export default function StaffCreatePage() {
   } = useForm<StaffCreateFormData>({
     resolver: zodResolver(staffCreateSchema),
     defaultValues: {
-      displayName: "",
+      display_name: "",
       username: "",
       email: "",
       phone: "",
-      dateOfBirth: null,
-      code: "",
+      date_of_birth: null,
+      nim: "",
       address: "",
       password: "",
-      confirmPassword: "",
+      confirm_password: "",
     },
   });
 
   const onSubmit = async (data: StaffCreateFormData) => {
-    const { confirmPassword, ...createData } = data;
-    const success = await createStaff(createData);
+    const payload = {
+      ...data,
+      date_of_birth: data.date_of_birth
+        ? dayjs(data.date_of_birth).format("YYYY-MM-DD")
+        : null,
+      id_client: user?.id_client ?? 0,
+      created_by: user?.id ?? 0,
+    };
+
+    const success = await createStaff(payload);
     if (success) {
+      const successMessage = useStaffStore.getState().success;
+      showToast(successMessage ?? "Data berhasil dibuat!", "success");
       navigate(ROUTES.staff);
+    } else {
+      const errorMessage = useStaffStore.getState().error;
+      showToast(errorMessage ?? "Data gagal dibuat!", "error", {
+        duration: 4000,
+      });
     }
   };
 
@@ -58,16 +80,15 @@ export default function StaffCreatePage() {
           {/* Create Form - 2 Column Layout */}
           <div className="bg-white rounded-lg border p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-
               {/* Row 1: Display Name* | Username* */}
               <Controller
-                name="displayName"
+                name="display_name"
                 control={control}
                 render={({ field }) => (
                   <InputField
                     label="Display Name"
                     required
-                    errorMessage={errors.displayName?.message}
+                    errorMessage={errors.display_name?.message}
                     {...field}
                     value={field.value || ""}
                     onChange={field.onChange}
@@ -124,9 +145,9 @@ export default function StaffCreatePage() {
                 )}
               />
 
-              {/* Row 3: Date Of Birth | Code */}
+              {/* Row 3: Date Of Birth | NIM */}
               <Controller
-                name="dateOfBirth"
+                name="date_of_birth"
                 control={control}
                 render={({ field }) => (
                   <CalendarSelect
@@ -139,15 +160,15 @@ export default function StaffCreatePage() {
                 )}
               />
               <Controller
-                name="code"
+                name="nim"
                 control={control}
                 render={({ field }) => (
                   <InputField
-                    label="Code"
+                    label="NIM"
                     {...field}
                     value={field.value || ""}
                     onChange={field.onChange}
-                    placeholder="Masukkan code..."
+                    placeholder="Masukkan NIM..."
                   />
                 )}
               />
@@ -200,18 +221,21 @@ export default function StaffCreatePage() {
                       </button>
                     </div>
                     {errors.password && (
-                      <p className="text-sm text-red-600">{errors.password.message}</p>
+                      <p className="text-sm text-red-600">
+                        {errors.password.message}
+                      </p>
                     )}
                   </div>
                 )}
               />
               <Controller
-                name="confirmPassword"
+                name="confirm_password"
                 control={control}
                 render={({ field }) => (
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Konfirmasi Password<span className="text-red-600 ml-1">*</span>
+                      Konfirmasi Password
+                      <span className="text-red-600 ml-1">*</span>
                     </label>
                     <div className="relative">
                       <Input
@@ -224,7 +248,9 @@ export default function StaffCreatePage() {
                       />
                       <button
                         type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600"
                       >
                         {showConfirmPassword ? (
@@ -234,13 +260,14 @@ export default function StaffCreatePage() {
                         )}
                       </button>
                     </div>
-                    {errors.confirmPassword && (
-                      <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+                    {errors.confirm_password && (
+                      <p className="text-sm text-red-600">
+                        {errors.confirm_password?.message}
+                      </p>
                     )}
                   </div>
                 )}
               />
-
             </div>
           </div>
         </div>

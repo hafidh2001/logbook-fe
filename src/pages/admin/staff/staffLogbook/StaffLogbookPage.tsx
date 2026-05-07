@@ -3,17 +3,21 @@ import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { useLogbookStore } from "@/store/logbookStore";
+import { useStaffStore } from "@/store/staffStore";
+import { useAuthStore } from "@/store/authStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
+import type { TStaffLogbook } from "@/types/staff";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useEffect } from "react";
-
-type LogbookEntry = Record<string, any>;
+import { DEFAULT_PAGE_SIZE } from "@/constants/table";
+import usePagination from "@/hooks/usePagination";
+import useFilter from "@/hooks/useFilter";
+import { FilterValue } from "@/components/filterPanel";
 
 export default function StaffLogbookPage() {
   const { width } = useWindowDimensions();
@@ -22,16 +26,74 @@ export default function StaffLogbookPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
 
-  const { staffLogbook, isLoading, loadStaffLogbook, reset } = useLogbookStore();
+  const { staffLogbookData, isLoading, loadStaffLogbookList, reset } =
+    useStaffStore();
+  const { user } = useAuthStore();
+
+  // Pagination - page is always read from URL
+  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+    defaultPage: 1,
+    defaultLimit: DEFAULT_PAGE_SIZE,
+  });
+
+  // Filter hook - id_staff is controlled by URL (idUser), other filters are optional
+  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<
+    Omit<Record<string, FilterValue>, "start_date" | "end_date"> & {
+      start_date?: string;
+      end_date?: string;
+    }
+  >({
+    fields: [
+      { key: "id_ppds" },
+      { key: "id_activity" },
+      { key: "id_stase" },
+      { key: "status" },
+      { key: "start_date" },
+      { key: "end_date" },
+    ],
+    onFilterChange: () => setPage(1),
+  });
 
   useEffect(() => {
-    if (idUser) {
-      loadStaffLogbook(idUser);
+    // Runs when URL or filter changes
+    if (user?.id_client && idUser) {
+      loadStaffLogbookList({
+        id_client: user.id_client,
+        id_staff: Number(idUser), // Staff is controlled by URL
+        page,
+        limit,
+        id_ppds: (filterParams.id_ppds as number | null) ?? undefined,
+        id_activity: (filterParams.id_activity as number | null) ?? undefined,
+        id_stase: (filterParams.id_stase as number | null) ?? undefined,
+        status: (filterParams.status as string | null) ?? undefined,
+        start_date: filterParams.start_date ?? undefined,
+        end_date: filterParams.end_date ?? undefined,
+      });
     }
-    return () => reset();
-  }, [idUser, loadStaffLogbook, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, filterParams]);
 
-  const logbooks = staffLogbook?.logbooks || [];
+  useEffect(() => {
+    // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
+    return () => {
+      reset();
+    };
+  }, [reset]);
+
+  // Reset store when sidebar is clicked (URL has no page param)
+  useEffect(() => {
+    const pageParam = searchParams.get("page");
+    // If no page param in URL, reset store
+    if (!pageParam) {
+      reset();
+      // Also force page to 1 in URL if somehow different
+      if (page !== 1) {
+        setPage(1);
+      }
+    }
+  }, [searchParams, reset, page, setPage]);
+
+  const logbooks = staffLogbookData?.list || [];
 
   const handleExport = () => {
     // TODO: Implement export
@@ -42,17 +104,15 @@ export default function StaffLogbookPage() {
     console.log("Search:", query);
   };
 
-  const handleFilterSearch = (data: Record<string, unknown>) => {
-    console.log("Filter search:", data);
+  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
+    setPage(pageIndex + 1);
+    setLimit(pageSize);
   };
 
-  const handleFilterReset = () => {
-    console.log("Filter reset");
-  };
-
-  const handleRowClick = (row: Row<LogbookEntry>) => {
-    console.log("Row clicked:", row.original);
-    navigate(ROUTES.staffLogbookDetail(String(idUser), String(row.original.no)));
+  const handleRowClick = (row: Row<TStaffLogbook>) => {
+    navigate(
+      ROUTES.staffLogbookDetail(String(idUser), String(row.original.id)),
+    );
   };
 
   const getVerifiedBadge = (status: string | null) => {
@@ -74,22 +134,13 @@ export default function StaffLogbookPage() {
     }
     return (
       <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-md">
-        <icons.X className="h-3 w-3" />
-        -
+        <icons.X className="h-3 w-3" />-
       </span>
     );
   };
 
   // Define columns for Logbook table
-  const columns: ColumnDef<LogbookEntry>[] = [
-    {
-      accessorKey: "no",
-      header: "No.",
-      size: 60,
-      cell: ({ row: { original } }) => (
-        <span className="text-center block">{original.no}</span>
-      ),
-    },
+  const columns: ColumnDef<TStaffLogbook>[] = [
     {
       accessorKey: "date",
       header: "Date",
@@ -97,7 +148,7 @@ export default function StaffLogbookPage() {
       cell: ({ row: { original } }) => {
         return original.date ? (
           <span className="whitespace-nowrap">
-            {dayjs(original.date).locale("id").format("DD MMM YYYY – HH:mm")}
+            {dayjs(original.date).locale("id").format("DD MMM YYYY")}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -105,34 +156,54 @@ export default function StaffLogbookPage() {
       },
     },
     {
-      accessorKey: "activity",
-      header: "Activity",
-      size: 200,
+      accessorKey: "ppds_name",
+      header: "Peserta PPDS",
+      size: 180,
       cell: ({ row: { original } }) => (
-        <span className="font-medium">{original.activity ?? "-"}</span>
+        <span className="font-medium">{original.ppds_name ?? "-"}</span>
       ),
     },
     {
-      accessorKey: "ppds",
-      header: "PPDS",
+      accessorKey: "nim",
+      header: "NIM",
+      size: 120,
+      cell: ({ row: { original } }) => original.nim ?? "-",
+    },
+    {
+      accessorKey: "stase_name",
+      header: "Stase",
       size: 150,
+      cell: ({ row: { original } }) => original.stase_name ?? "-",
+    },
+    {
+      accessorKey: "staff_name",
+      header: "Staff Pengajar/DPJP",
+      size: 180,
       cell: ({ row: { original } }) => {
-        return original.ppds ? (
-          <span>{original.ppds}</span>
+        return original.staff_name ? (
+          <span>{original.staff_name}</span>
         ) : (
           <span className="text-gray-400">-</span>
         );
       },
     },
     {
-      accessorKey: "hospital",
-      header: "Hospital",
+      accessorKey: "action_name",
+      header: "Activity",
       size: 180,
+      cell: ({ row: { original } }) => (
+        <span className="font-medium">{original.action_name ?? "-"}</span>
+      ),
+    },
+    {
+      accessorKey: "hospital_name",
+      header: "Hospital",
+      size: 150,
       cell: ({ row: { original } }) => {
-        return original.hospital ? (
+        return original.hospital_name ? (
           <span className="flex items-center gap-1">
             <icons.MapPin className="h-3 w-3 text-gray-400" />
-            {original.hospital}
+            {original.hospital_name}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
@@ -154,19 +225,22 @@ export default function StaffLogbookPage() {
       },
     },
     {
-      accessorKey: "verifiedStatus",
-      header: "Status",
+      accessorKey: "verified_status",
+      header: "Verified Status",
       size: 140,
-      cell: ({ row: { original } }) => getVerifiedBadge(original.verifiedStatus),
+      cell: ({ row: { original } }) =>
+        original.verified_status ? getVerifiedBadge(original.verified_status) : null,
     },
     {
       id: "actions",
       header: "Action",
       size: sm ? 120 : 80,
-      cell: ({ row }) => {
+      cell: ({ row: { original } }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(ROUTES.staffLogbookDetail(String(idUser), String(row.original.no)));
+          navigate(
+            ROUTES.staffLogbookDetail(String(idUser), String(original.id)),
+          );
         };
 
         return (
@@ -201,7 +275,11 @@ export default function StaffLogbookPage() {
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
-          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} />
+          <Filter
+            onSearch={handleFilterSearch}
+            onReset={handleFilterReset}
+            initialStaffId={idUser ? Number(idUser) : undefined}
+          />
 
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
@@ -209,12 +287,15 @@ export default function StaffLogbookPage() {
               data={logbooks}
               columns={columns}
               isLoading={isLoading}
-              isShowNumbering={false}
+              isShowNumbering={true}
               pagination={{
                 enabled: true,
+                mode: "server",
                 initialPageIndex: 0,
-                initialPageSize: 10,
+                initialPageSize: DEFAULT_PAGE_SIZE,
+                pageCount: staffLogbookData?.pagination.pageCount ?? 1,
               }}
+              onPaginationChange={handlePaginationChange}
               onRowClick={handleRowClick}
               noDataText="Tidak ada data logbook"
               className="h-full"

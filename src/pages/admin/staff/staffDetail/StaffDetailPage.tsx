@@ -11,7 +11,9 @@ import { icons } from "@/assets/images/Icon";
 import dayjs from "dayjs";
 import { staffSchema, StaffFormData } from "@/validations/staff/staff";
 import { useStaffStore } from "@/store/staffStore";
+import { useAuthStore } from "@/store/authStore";
 import { useEffect } from "react";
+import { showToast } from "@/utils/toast";
 
 export default function StaffDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
@@ -26,9 +28,11 @@ export default function StaffDetailPage() {
     resetDetail,
   } = useStaffStore();
 
+  const { user } = useAuthStore();
+
   useEffect(() => {
     if (idUser) {
-      loadStaffDetail(idUser);
+      loadStaffDetail(Number(idUser));
     }
     return () => resetDetail();
   }, [idUser, loadStaffDetail, resetDetail]);
@@ -37,33 +41,65 @@ export default function StaffDetailPage() {
     control,
     handleSubmit,
     formState: { errors },
+    reset: resetForm,
   } = useForm<StaffFormData>({
     resolver: zodResolver(staffSchema),
-    defaultValues: {
-      displayName: selectedStaff?.display_name || "",
-      username: selectedStaff?.username || "",
-      email: selectedStaff?.email || "",
-      phone: selectedStaff?.phone || "",
-      dateOfBirth: selectedStaff?.date_of_birth
-        ? dayjs(selectedStaff.date_of_birth, "DD MMMM YYYY").toDate()
-        : null,
-      code: selectedStaff?.code || "",
-      address: selectedStaff?.address || "",
-      role: selectedStaff?.role || "staff",
-      logbookCount: selectedStaff?.logbook_status || "0",
-    },
   });
 
+  useEffect(() => {
+    if (selectedStaff) {
+      resetForm({
+        display_name: selectedStaff.display_name ?? "",
+        username: selectedStaff.username ?? "",
+        email: selectedStaff.email ?? "",
+        phone: selectedStaff.phone ?? "",
+        date_of_birth: selectedStaff.date_of_birth
+          ? dayjs(selectedStaff.date_of_birth).toDate()
+          : null,
+        nim: selectedStaff.nim ?? "",
+        address: selectedStaff.address ?? "",
+      });
+    }
+  }, [selectedStaff, resetForm]);
+
   const onSubmit = async (data: StaffFormData) => {
-    if (idUser) {
-      await updateStaff(idUser, data);
+    if (!idUser) return;
+
+    const payload = {
+      ...data,
+      date_of_birth: data.date_of_birth
+        ? dayjs(data.date_of_birth).format("YYYY-MM-DD")
+        : null,
+      id_user: Number(idUser),
+      updated_by: user?.id ?? 0,
+    };
+
+    const success = await updateStaff(payload);
+    if (success) {
+      const successMessage = useStaffStore.getState().success;
+      showToast(successMessage ?? "Data berhasil diupdate!", "success");
+      navigate(ROUTES.staff);
+    } else {
+      const errorMessage = useStaffStore.getState().error;
+      showToast(errorMessage ?? "Data gagal diupdate!", "error", {
+        duration: 4000,
+      });
     }
   };
 
   const handleDelete = async () => {
-    if (idUser) {
-      await deleteStaff(idUser);
+    if (!idUser) return;
+
+    const success = await deleteStaff(Number(idUser));
+    if (success) {
+      const successMessage = useStaffStore.getState().success;
+      showToast(successMessage ?? "Data berhasil dihapus!", "success");
       navigate(ROUTES.staff);
+    } else {
+      const errorMessage = useStaffStore.getState().error;
+      showToast(errorMessage ?? "Gagal menghapus data!", "error", {
+        duration: 4000,
+      });
     }
   };
 
@@ -88,13 +124,13 @@ export default function StaffDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
               {/* Row 1: Display Name* | Username* */}
               <Controller
-                name="displayName"
+                name="display_name"
                 control={control}
                 render={({ field }) => (
                   <InputField
                     label="Display Name"
                     required
-                    errorMessage={errors.displayName?.message}
+                    errorMessage={errors.display_name?.message}
                     {...field}
                     value={field.value || ""}
                     onChange={field.onChange}
@@ -151,9 +187,9 @@ export default function StaffDetailPage() {
                 )}
               />
 
-              {/* Row 3: Date Of Birth | Code */}
+              {/* Row 3: Date Of Birth | NIM */}
               <Controller
-                name="dateOfBirth"
+                name="date_of_birth"
                 control={control}
                 render={({ field }) => (
                   <CalendarSelect
@@ -166,15 +202,15 @@ export default function StaffDetailPage() {
                 )}
               />
               <Controller
-                name="code"
+                name="nim"
                 control={control}
                 render={({ field }) => (
                   <InputField
-                    label="Code"
+                    label="NIM"
                     {...field}
                     value={field.value || ""}
                     onChange={field.onChange}
-                    placeholder="Masukkan code..."
+                    placeholder="Masukkan NIM..."
                   />
                 )}
               />
@@ -197,35 +233,19 @@ export default function StaffDetailPage() {
               </div>
 
               {/* Row 5: Role (disabled) | Logbook (read-only + button) */}
-              <Controller
-                name="role"
-                control={control}
-                render={({ field }) => (
-                  <InputField
-                    label="Role"
-                    {...field}
-                    value={field.value || ""}
-                    onChange={field.onChange}
-                    disabled
-                    placeholder="Role..."
-                  />
-                )}
+              <InputField
+                label="Role"
+                value={selectedStaff?.role_name || "-"}
+                disabled
+                placeholder="Role..."
               />
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <Controller
-                    name="logbookCount"
-                    control={control}
-                    render={({ field }) => (
-                      <InputField
-                        label="Logbook"
-                        {...field}
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        disabled
-                        placeholder="Jumlah logbook..."
-                      />
-                    )}
+                  <InputField
+                    label="Logbook"
+                    value={String(selectedStaff?.total_logbook ?? 0)}
+                    disabled
+                    placeholder="Jumlah logbook..."
                   />
                 </div>
                 <Button
