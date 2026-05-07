@@ -1289,17 +1289,11 @@ class ApiWebServiceController extends Controller {
             ':role_action' => 'Peserta'
         ];
     
-        // 🔥 optional filter
+        // optional filter
         if (!empty($post['staff'])) {
             $sql      .= ' AND mu.id = :staff';
             $countSql .= ' AND mu.id = :staff';
             $params[':staff'] = $post['staff'];
-        }
-    
-        if (!empty($post['stase'])) {
-            $sql      .= ' AND mu.id_stase = :stase';
-            $countSql .= ' AND mu.id_stase = :stase';
-            $params[':stase'] = $post['stase'];
         }
 
         if (!empty($post['nim'])) {

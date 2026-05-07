@@ -39,12 +39,10 @@ export default function StaffListPage() {
   // Filter hook
   const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<{
     staff?: number | null;
-    stase?: number | null;
     nim?: string | null;
   }>({
     fields: [
       { key: "staff" },
-      { key: "stase" },
       { key: "nim" },
     ],
     onFilterChange: () => setPage(1),

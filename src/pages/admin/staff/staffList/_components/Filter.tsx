@@ -5,15 +5,14 @@ import { useMasterStore } from "@/store/masterStore";
 import { useAuthStore } from "@/store/authStore";
 
 export const Filter = (props: Omit<FilterProps, "fields">) => {
-  const { staffOptions, staseOptions, fetchStaffOptions, fetchStaseOptions } = useMasterStore();
+  const { staffOptions, fetchStaffOptions } = useMasterStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
     if (user?.id_client) {
       fetchStaffOptions({ id_client: user.id_client });
-      fetchStaseOptions({ id_client: user.id_client });
     }
-  }, [user?.id_client, fetchStaffOptions, fetchStaseOptions]);
+  }, [user?.id_client, fetchStaffOptions]);
 
   const filterFields: FilterFieldConfig[] = [
     {
@@ -22,13 +21,6 @@ export const Filter = (props: Omit<FilterProps, "fields">) => {
       type: "select",
       options: staffOptions,
       placeholder: "Pilih Staff...",
-    },
-    {
-      key: "stase",
-      label: "Stase",
-      type: "select",
-      options: staseOptions,
-      placeholder: "Pilih Stase...",
     },
     {
       key: "nim",
