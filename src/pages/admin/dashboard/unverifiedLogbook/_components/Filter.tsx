@@ -47,7 +47,6 @@ export const Filter = ({
       type: "select",
       options: staffOptions,
       placeholder: "Pilih Staff...",
-      disabled: true, // Staff is controlled by URL, not filter
     },
     {
       key: "id_ppds",

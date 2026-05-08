@@ -3,11 +3,9 @@ import { ROUTES } from "@/utils/routes";
 import { useParams, useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { useStaffStore } from "@/store/staffStore";
 import { useAuthStore } from "@/store/authStore";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
-import type { TStaffLogbook } from "@/types/staff";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 import { Button } from "@/components/ui/button";
@@ -19,6 +17,8 @@ import usePagination from "@/hooks/usePagination";
 import useFilter from "@/hooks/useFilter";
 import { FilterValue } from "@/components/filterPanel";
 import { StatusBadge } from "@/components/statusBadge";
+import { useDashboardStore } from "@/store/dashboardStore";
+import { TUnverifiedLogbook } from "@/types/dashboard";
 
 export default function UnverifiedLogbookPage() {
   const { width } = useWindowDimensions();
@@ -27,8 +27,8 @@ export default function UnverifiedLogbookPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
 
-  const { staffLogbookData, isLoading, loadStaffLogbookList, reset } =
-    useStaffStore();
+  const { unverifiedLogbookData, isLoading, loadUnverifiedLogbookList, reset } =
+    useDashboardStore();
   const { user } = useAuthStore();
 
   // Pagination - page is always read from URL
@@ -46,6 +46,7 @@ export default function UnverifiedLogbookPage() {
   >({
     fields: [
       { key: "id_ppds" },
+      { key: "id_staff" },
       { key: "id_activity" },
       { key: "id_stase" },
       { key: "status" },
@@ -57,10 +58,10 @@ export default function UnverifiedLogbookPage() {
 
   useEffect(() => {
     // Runs when URL or filter changes
-    if (user?.id_client && idUser) {
-      loadStaffLogbookList({
+    if (user?.id_client) {
+      loadUnverifiedLogbookList({
         id_client: user.id_client,
-        id_staff: Number(idUser), // Staff is controlled by URL
+        id_staff: (filterParams.id_staff as number | null) ?? undefined,
         page,
         limit,
         id_ppds: (filterParams.id_ppds as number | null) ?? undefined,
@@ -94,8 +95,6 @@ export default function UnverifiedLogbookPage() {
     }
   }, [searchParams, reset, page, setPage]);
 
-  const logbooks = staffLogbookData?.list || [];
-
   const handleExport = () => {
     // TODO: Implement export
   };
@@ -110,14 +109,12 @@ export default function UnverifiedLogbookPage() {
     setLimit(pageSize);
   };
 
-  const handleRowClick = (row: Row<TStaffLogbook>) => {
-    navigate(
-      ROUTES.staffLogbookDetail(String(idUser), String(row.original.id)),
-    );
+  const handleRowClick = (row: Row<TUnverifiedLogbook>) => {
+    navigate(ROUTES.unverifiedLogbookDetail(String(row.original.id)));
   };
 
   // Define columns for Logbook table
-  const columns: ColumnDef<TStaffLogbook>[] = [
+  const columns: ColumnDef<TUnverifiedLogbook>[] = [
     {
       accessorKey: "date",
       header: "Date",
@@ -153,15 +150,13 @@ export default function UnverifiedLogbookPage() {
       cell: ({ row: { original } }) => original.stase_name ?? "-",
     },
     {
-      accessorKey: "staff_name",
+      accessorKey: "staff",
       header: "Staff Pengajar/DPJP",
-      size: 180,
+      size: 150,
       cell: ({ row: { original } }) => {
-        return original.staff_name ? (
-          <span>{original.staff_name}</span>
-        ) : (
-          <span className="text-gray-400">-</span>
-        );
+        const staffList = original.staff;
+        if (!staffList || staffList.length === 0) return "-";
+        return staffList.map((s) => s.name).join(", ");
       },
     },
     {
@@ -219,9 +214,7 @@ export default function UnverifiedLogbookPage() {
       cell: ({ row: { original } }) => {
         const handleView = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate(
-            ROUTES.staffLogbookDetail(String(idUser), String(original.id)),
-          );
+          navigate(ROUTES.unverifiedLogbookDetail(String(original.id)));
         };
 
         return (
@@ -245,9 +238,8 @@ export default function UnverifiedLogbookPage() {
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
         breadcrumbs={[
-          { label: "Staff", to: ROUTES.staff },
-          { label: "Detail", to: ROUTES.staffDetail(String(idUser)) },
-          { label: "Logbook" },
+          { label: "Dashboard", to: ROUTES.dashboard },
+          { label: "Unverified Logbook" },
         ]}
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
@@ -265,7 +257,7 @@ export default function UnverifiedLogbookPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={logbooks}
+              data={unverifiedLogbookData?.list || []}
               columns={columns}
               isLoading={isLoading}
               isShowNumbering={true}
@@ -274,7 +266,7 @@ export default function UnverifiedLogbookPage() {
                 mode: "server",
                 initialPageIndex: 0,
                 initialPageSize: DEFAULT_PAGE_SIZE,
-                pageCount: staffLogbookData?.pagination.pageCount ?? 1,
+                pageCount: unverifiedLogbookData?.pagination.pageCount ?? 1,
               }}
               onPaginationChange={handlePaginationChange}
               onRowClick={handleRowClick}

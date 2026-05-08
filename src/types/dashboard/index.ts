@@ -115,7 +115,7 @@ export type TUnverifiedLogbook = {
   hospital_name: Nullable<string>;
   semester: Nullable<string>;
   stase_name: Nullable<string>;
-  staff_name: Nullable<string>;
+  staff: Array<{ id: number; name: string | null }>;
 };
 
 export interface IUnverifiedLogbookListParams {

@@ -4,10 +4,10 @@ import { ROUTES } from "@/utils/routes";
 import { useParams } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
 import { useEffect } from "react";
-import { useStaffStore } from "@/store/staffStore";
 import { Identitas } from "./_components/Identitas";
 import { Kegiatan } from "./_components/Kegiatan";
 import { Staff } from "./_components/Staff";
+import { useDashboardStore } from "@/store/dashboardStore";
 
 export default function UnverifiedLogbookDetailPage() {
   const { idUser, idLogbook } = useParams<{
@@ -16,20 +16,20 @@ export default function UnverifiedLogbookDetailPage() {
   }>();
 
   const {
-    staffLogbookDetail,
-    isLoadingDetail,
-    loadStaffLogbookDetail,
-    resetLogbookDetail,
-  } = useStaffStore();
+    unverifiedLogbookDetail,
+    isLoading,
+    loadUnverifiedLogbookDetail,
+    reset,
+  } = useDashboardStore();
 
   useEffect(() => {
     if (idLogbook) {
-      loadStaffLogbookDetail(Number(idLogbook));
+      loadUnverifiedLogbookDetail(Number(idLogbook));
     }
-    return () => resetLogbookDetail();
-  }, [idUser, idLogbook, loadStaffLogbookDetail, resetLogbookDetail]);
+    return () => reset();
+  }, [idUser, idLogbook, loadUnverifiedLogbookDetail, reset]);
 
-  if (isLoadingDetail) {
+  if (isLoading) {
     return <LoadingPage />;
   }
 
@@ -37,17 +37,16 @@ export default function UnverifiedLogbookDetailPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[
-          { label: "Staff", to: ROUTES.staff },
-          { label: "Detail", to: ROUTES.staffDetail(String(idUser)) },
-          { label: "Logbook", to: ROUTES.staffLogbook(String(idUser)) },
+          { label: "Dashboard", to: ROUTES.dashboard },
+          { label: "Unverified Logbook", to: ROUTES.unverifiedLogbook },
           { label: "Detail" },
         ]}
       />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
-          <Identitas data={staffLogbookDetail} />
-          <Kegiatan data={staffLogbookDetail} />
-          <Staff data={staffLogbookDetail} />
+          <Identitas data={unverifiedLogbookDetail} />
+          <Kegiatan data={unverifiedLogbookDetail} />
+          <Staff data={unverifiedLogbookDetail} />
 
           {/* Back Button */}
           <div className="flex justify-end">

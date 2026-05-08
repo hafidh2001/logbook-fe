@@ -1,6 +1,6 @@
 import axios from "axios";
-import type { ApiResponse } from "@/types";
-import { TKinerjaDPJPRaw, TKinerjaPPDSRaw, TPpdsBaruRaw, TWaitingVerificationRaw, TPpdsRaw, TLogActivityRaw, TLogbookByStatusRaw } from "@/types/dashboard";
+import type { ApiPaginationResponse, ApiResponse } from "@/types";
+import { TKinerjaDPJPRaw, TKinerjaPPDSRaw, TPpdsBaruRaw, TWaitingVerificationRaw, TPpdsRaw, TLogActivityRaw, TLogbookByStatusRaw, TUnverifiedLogbookDetail, IUnverifiedLogbookListParams, TUnverifiedLogbook } from "@/types/dashboard";
 import { DashboardData, mockDashboard } from "@/data/dashboard";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -244,6 +244,48 @@ export const dashboardApi = {
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Failed to fetch");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getUnverifiedLogbookList(params: IUnverifiedLogbookListParams): Promise<ApiPaginationResponse<TUnverifiedLogbook[]>> {
+    try {
+      const { data: responseData } = await apiClient.post("GetListUnverifiedLogbook", params);
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to get unverified logbook list");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getUnverifiedLogbookDetail(id_logbook: number): Promise<ApiResponse<TUnverifiedLogbookDetail>> {
+    try {
+      const { data: responseData } = await apiClient.post("GetDetailUnverifiedLogbook", { id_logbook });
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to get logbook detail");
       }
 
       return responseData;

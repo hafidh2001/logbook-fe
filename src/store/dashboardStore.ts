@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { dashboardApi } from "@/services/dashboardApi";
-import type { DashboardData } from "@/data/dashboard";
 import {
   TKinerjaDPJPRaw,
   TKinerjaDPJP,
@@ -17,44 +16,11 @@ import {
   TLogbookByStatus,
 } from "@/types/dashboard";
 import { useAuthStore } from "./authStore";
-
-interface DashboardState {
-  dashboardData: DashboardData | null;
-  kinerjaDPJP: TKinerjaDPJP[];
-  kinerjaPPDS: TKinerjaPPDS[];
-  ppdsBaru: TPpdsBaru[];
-  waitingVerification: TWaitingVerification[];
-  ppdsPerStage: TPPDSPerStage[];
-  ppdsPerStase: TPPDSPerStase[];
-  logActivity: TLogActivity[];
-  logbookByStatus: TLogbookByStatus[];
-  logbookTotal: number;
-  logbookPending: number;
-  ppdsActive: number;
-  ppdsInactive: number;
-  staffCount: number;
-  stageCount: number;
-  actionCount: number;
-  isLoading: boolean;
-  error: string | null;
-  hasInitialized: boolean;
-}
-
-interface DashboardActions {
-  loadDashboard: () => Promise<void>;
-  loadKinerjaDPJP: () => Promise<void>;
-  loadKinerjaPPDS: () => Promise<void>;
-  loadPpdsBaru: () => Promise<void>;
-  loadWaitingVerification: () => Promise<void>;
-  loadPPDSPerStageStase: () => Promise<void>;
-  loadLogActivity: () => Promise<void>;
-  loadLogbookByStatus: () => Promise<void>;
-  loadStageCount: () => Promise<void>;
-  loadActionCount: () => Promise<void>;
-  reset: () => void;
-}
-
-type DashboardStore = DashboardState & DashboardActions;
+import {
+  DashboardState,
+  DashboardStore,
+  UnverifiedLogbookData,
+} from "@/types/dashboard/store";
 
 const initialState: DashboardState = {
   dashboardData: null,
@@ -73,6 +39,8 @@ const initialState: DashboardState = {
   staffCount: 0,
   stageCount: 0,
   actionCount: 0,
+  unverifiedLogbookData: null,
+  unverifiedLogbookDetail: null,
   isLoading: false,
   error: null,
   hasInitialized: false,
@@ -338,16 +306,23 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
 
       // Calculate ppds active/inactive and staff count
       // Note: PostgreSQL returns boolean as 't'/'f' strings, not JS booleans
-      const isShowTrue = (val: unknown) => val === true || val === "t" || val === 1;
+      const isShowTrue = (val: unknown) =>
+        val === true || val === "t" || val === 1;
 
       const ppdsActive = rawData.filter(
-        (item) => item.role_name === "ppds" && item.status === "Active" && isShowTrue(item.is_show),
+        (item) =>
+          item.role_name === "ppds" &&
+          item.status === "Active" &&
+          isShowTrue(item.is_show),
       ).length;
       const ppdsInactive = rawData.filter(
         (item) => item.role_name === "ppds" && item.status === "Inactive",
       ).length;
       const staffCount = rawData.filter(
-        (item) => item.role_name === "staff" && item.status === "Active" && isShowTrue(item.is_show),
+        (item) =>
+          item.role_name === "staff" &&
+          item.status === "Active" &&
+          isShowTrue(item.is_show),
       ).length;
 
       // Group by stage (filter out null)
@@ -444,9 +419,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
       const logbookTotal = rawData.reduce((sum, item) => sum + item.count, 0);
 
       // Get pending count
-      const pendingItem = rawData.find(
-        (item) => item.status === "pending",
-      );
+      const pendingItem = rawData.find((item) => item.status === "pending");
       const logbookPending = pendingItem?.count || 0;
 
       // Calculate percentages
@@ -481,7 +454,9 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     if (!user?.id_client) return;
 
     try {
-      const response = await dashboardApi.getDashboardStageCount(user.id_client);
+      const response = await dashboardApi.getDashboardStageCount(
+        user.id_client,
+      );
       set({ stageCount: response.data.count });
     } catch (error) {
       console.error("Failed to load stage count:", error);
@@ -493,10 +468,61 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     if (!user?.id_client) return;
 
     try {
-      const response = await dashboardApi.getDashboardActionCount(user.id_client);
+      const response = await dashboardApi.getDashboardActionCount(
+        user.id_client,
+      );
       set({ actionCount: response.data.count });
     } catch (error) {
       console.error("Failed to load action count:", error);
+    }
+  },
+
+  loadUnverifiedLogbookList: async (params) => {
+    const { user } = useAuthStore.getState();
+
+    set({ isLoading: true, error: null });
+    try {
+      const response = await dashboardApi.getUnverifiedLogbookList({
+        ...params,
+        id_client: user?.id_client ?? 0,
+      });
+      const data: UnverifiedLogbookData = {
+        list: response.data,
+        pagination: {
+          page: response.pagination.page,
+          limit: response.pagination.limit,
+          total: response.total,
+          pageCount: Math.ceil(response.total / response.pagination.limit),
+        },
+      };
+      set({
+        unverifiedLogbookData: data,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to load logbook list",
+        isLoading: false,
+      });
+    }
+  },
+
+  loadUnverifiedLogbookDetail: async (params) => {
+    set({ isLoading: true, error: null, unverifiedLogbookDetail: null });
+    try {
+      const response = await dashboardApi.getUnverifiedLogbookDetail(params);
+      set({ unverifiedLogbookDetail: response.data || null, isLoading: false });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to load logbook detail",
+        isLoading: false,
+      });
     }
   },
 

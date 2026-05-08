@@ -5,7 +5,15 @@ import { ROUTES } from "@/utils/routes";
 
 export const StatCards = () => {
   const navigate = useNavigate();
-  const { ppdsActive, ppdsInactive, staffCount, stageCount, actionCount, logbookTotal, logbookPending } = useDashboardStore();
+  const {
+    ppdsActive,
+    ppdsInactive,
+    staffCount,
+    stageCount,
+    actionCount,
+    logbookTotal,
+    logbookPending,
+  } = useDashboardStore();
 
   const totalPpds = ppdsActive + ppdsInactive;
 
@@ -81,7 +89,10 @@ export const StatCards = () => {
           {logbookTotal}
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Logbook</p>
-        <p className="text-xs text-blue-600 mt-2 cursor-pointer hover:underline truncate text-center">
+        <p
+          className="text-xs text-blue-600 mt-2 cursor-pointer hover:underline truncate text-center"
+          onClick={() => navigate(ROUTES.unverifiedLogbook)}
+        >
           {logbookPending} Unverified
         </p>
       </div>
