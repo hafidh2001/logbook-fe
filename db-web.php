@@ -3116,8 +3116,8 @@ class ApiWebServiceController extends Controller {
                 tl.verified_status,
                 mu.display_name AS ppds_name,
                 mu.code AS nim,
-                ma.name AS action,
-                mh.name AS hospital,
+                ma.name AS action_name,
+                mh.name AS hospital_name,
                 ms.name AS semester,
                 st.name AS stase_name
             FROM t_logbook tl
