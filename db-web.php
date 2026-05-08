@@ -2724,7 +2724,7 @@ class ApiWebServiceController extends Controller {
 
 
     // === DASHBOARD ===
-    public function actionGetDashboard() {
+    public function actionGetDashboardKinerjaDPJP() {
         $rest_json = file_get_contents("php://input");
         $post = json_decode($rest_json, true);
 
@@ -2736,296 +2736,646 @@ class ApiWebServiceController extends Controller {
             Yii::app()->end();
         }
 
-        $id_client = $post['id_client'];
-        $response = [];
+        $sql = "
+            SELECT
+                mu.id,
+                mu.display_name,
+                mu.picture,
+                tls.date_time,
+                tls.status,
+                tls.id_logbook
+            FROM m_user mu
+            INNER JOIN m_role mr ON mr.id = mu.id_role
+            INNER JOIN t_logbook_status tls ON tls.id_user = mu.id
+            WHERE mu.id_client = :id_client
+                AND mu.deleted_at IS NULL
+                AND mu.is_show = true
+                AND mr.name = 'staff'
+        ";
 
-        // dashboard1: ProfileCard / client info
-        $sql_client = 'SELECT id, name FROM m_client WHERE id = :id_client';
-        $client = Yii::app()->db->createCommand($sql_client)
-            ->bindValue(':id_client', $id_client)
-            ->queryRow();
-        $response['dashboard1'] = [
-            'client' => $client['name'] ?? '',
-        ];
-
-        // dashboard2: StatCards / counts (ppds, staff, action, stage, logbook)
-        $sql_users = 'SELECT
-                        mr.name as role_name,
-                        mu.status,
-                        COUNT(*) as total
-                      FROM m_user mu
-                      JOIN m_role mr ON mu.id_role = mr.id
-                      WHERE mu.id_client = :id_client
-                        AND mu.deleted_at IS NULL
-                        AND mr.name IN (\'ppds\', \'staff\')
-                      GROUP BY mr.name, mu.status';
-        $users = Yii::app()->db->createCommand($sql_users)
-            ->bindValue(':id_client', $id_client)
-            ->queryAll();
-
-        $total_ppds_active = 0;
-        $total_ppds_inactive = 0;
-        $total_staff = 0;
-
-        foreach ($users as $u) {
-            if ($u['role_name'] === 'ppds') {
-                if ($u['status'] === 'Active') {
-                    $total_ppds_active = (int)$u['total'];
-                } else if ($u['status'] === 'Inactive') {
-                    $total_ppds_inactive = (int)$u['total'];
-                }
-            } else if ($u['role_name'] === 'staff') {
-                $total_staff = (int)$u['total'];
-            }
-        }
-
-        $sql_actions = 'SELECT COUNT(*) as total FROM m_action WHERE id_client = :id_client';
-        $actions = Yii::app()->db->createCommand($sql_actions)
-            ->bindValue(':id_client', $id_client)
-            ->queryRow();
-
-        $sql_stages = 'SELECT COUNT(*) as total FROM m_stage WHERE id_client = :id_client';
-        $stages = Yii::app()->db->createCommand($sql_stages)
-            ->bindValue(':id_client', $id_client)
-            ->queryRow();
-
-        $sql_logbooks = 'SELECT
-                            COUNT(*) as total_logbook,
-                            SUM(CASE WHEN verified_status = \'verified\' THEN 1 ELSE 0 END) as total_verified,
-                            SUM(CASE WHEN verified_status = \'rejected\' THEN 1 ELSE 0 END) as total_rejected,
-                            SUM(CASE WHEN verified_status = \'revised\' THEN 1 ELSE 0 END) as total_revised,
-                            SUM(CASE WHEN verified_status = \'pending\' THEN 1 ELSE 0 END) as total_pending
-                         FROM t_logbook tl
-                         JOIN m_action ma ON tl.id_action = ma.id
-                         WHERE tl.id_client = :id_client
-                           AND tl.deleted_at IS NULL
-                           AND ma.identifier != \'stase\'';
-        $logbooks = Yii::app()->db->createCommand($sql_logbooks)
-            ->bindValue(':id_client', $id_client)
-            ->queryRow();
-
-        $total_logbook = (int)$logbooks['total_logbook'];
-        $total_verified = (int)$logbooks['total_verified'];
-        $total_rejected = (int)$logbooks['total_rejected'];
-        $total_revised = (int)$logbooks['total_revised'];
-        $total_pending = (int)$logbooks['total_pending'];
-
-        $response['dashboard2'] = [
-            'ppds' => [
-                'active' => $total_ppds_active,
-                'inactive' => $total_ppds_inactive,
-            ],
-            'staff' => $total_staff,
-            'action' => (int)$actions['total'],
-            'stage' => (int)$stages['total'],
-            'logbook' => $total_logbook,
-            'verified' => $total_verified,
-            'rejected' => $total_rejected,
-            'revised' => $total_revised,
-            'pending' => $total_pending,
-            'percentage' => $total_logbook > 0 ? [
-                'verified' => round(($total_verified / $total_logbook) * 100, 2) . '%',
-                'rejected' => round(($total_rejected / $total_logbook) * 100, 2) . '%',
-                'revised' => round(($total_revised / $total_logbook) * 100, 2) . '%',
-                'pending' => round(($total_pending / $total_logbook) * 100, 2) . '%',
-            ] : [
-                'verified' => '0%',
-                'rejected' => '0%',
-                'revised' => '0%',
-                'pending' => '0%',
-            ],
-        ];
-
-        // dashboard3: LogActivity / notifications
-        $sql_notif = 'SELECT id, title, message, date, is_read
-                      FROM t_notif
-                      WHERE id_client = :id_client
-                      ORDER BY date DESC
-                      LIMIT 10';
-        $notifs = Yii::app()->db->createCommand($sql_notif)
-            ->bindValue(':id_client', $id_client)
-            ->queryAll();
-        $response['dashboard3'] = $notifs;
-
-        // dashboard4: WaitingVerification / todo list
-        $current_month = date('n');
-        $current_year = date('Y');
-        $month_start = $current_year . '-' . str_pad($current_month, 2, '0', STR_PAD_LEFT) . '-01';
-
-        $sql_todo = 'SELECT DISTINCT
-                        lb.id,
-                        lb.id_action,
-                        ma.name as action_name,
-                        mu.display_name as ppds_name,
-                        lb.date,
-                        lb.id_category,
-                        (
-                            SELECT mu2.display_name
-                            FROM t_logbook_status tls
-                            JOIN m_user mu2 ON tls.id_user = mu2.id
-                            WHERE tls.id_logbook = lb.id
-                              AND tls.status IN (\'pending\', \'revised\')
-                            ORDER BY tls.date_time DESC
-                            LIMIT 1
-                        ) as staff_name
-                     FROM t_logbook lb
-                     JOIN m_action ma ON lb.id_action = ma.id
-                     JOIN m_user mu ON lb.id_user = mu.id
-                     JOIN t_logbook_status tls ON lb.id = tls.id_logbook
-                     WHERE lb.id_client = :id_client
-                       AND lb.deleted_at IS NULL
-                       AND tls.deleted_at IS NULL
-                       AND tls.status IN (\'pending\', \'revised\')
-                       AND tls.date_time >= :month_start
-                     ORDER BY lb.date DESC';
-        $todos = Yii::app()->db->createCommand($sql_todo)
-            ->bindValue(':id_client', $id_client)
-            ->bindValue(':month_start', $month_start)
-            ->queryAll();
-        $response['dashboard4'] = $todos;
-
-        // dashboard5: PPDSPerStase
-        $sql_ppds_stase = 'SELECT
-                              ms.name as stase_name,
-                              mu.id,
-                              mu.display_name
-                           FROM m_user mu
-                           JOIN m_role mr ON mu.id_role = mr.id
-                           LEFT JOIN m_stase ms ON mu.id_stase = ms.id
-                           WHERE mu.id_client = :id_client
-                             AND mu.deleted_at IS NULL
-                             AND mu.is_show = true
-                             AND mr.name = \'ppds\'';
-        $all_ppds = Yii::app()->db->createCommand($sql_ppds_stase)
-            ->bindValue(':id_client', $id_client)
-            ->queryAll();
-
-        $stase_ppds = [];
-        foreach ($all_ppds as $ppds) {
-            if (!empty($ppds['stase_name'])) {
-                if (!isset($stase_ppds[$ppds['stase_name']])) {
-                    $stase_ppds[$ppds['stase_name']] = [];
-                }
-                $stase_ppds[$ppds['stase_name']][] = [
-                    'id' => $ppds['id'],
-                    'display_name' => $ppds['display_name']
-                ];
-            }
-        }
-        $response['dashboard5'] = $stase_ppds;
-
-        // dashboard6: PPDSPerStage
-        $sql_ppds_stage = 'SELECT
-                              mst.name as stage_name,
-                              mu.id,
-                              mu.display_name
-                           FROM m_user mu
-                           JOIN m_role mr ON mu.id_role = mr.id
-                           LEFT JOIN m_stase ms ON mu.id_stase = ms.id
-                           LEFT JOIN m_stage mst ON ms.id_stage = mst.id
-                           WHERE mu.id_client = :id_client
-                             AND mu.deleted_at IS NULL
-                             AND mu.is_show = true
-                             AND mr.name = \'ppds\'';
-        $all_ppds_stage = Yii::app()->db->createCommand($sql_ppds_stage)
-            ->bindValue(':id_client', $id_client)
-            ->queryAll();
-
-        $stage_ppds = [];
-        foreach ($all_ppds_stage as $ppds) {
-            if (!empty($ppds['stage_name'])) {
-                if (!isset($stage_ppds[$ppds['stage_name']])) {
-                    $stage_ppds[$ppds['stage_name']] = [];
-                }
-                $stage_ppds[$ppds['stage_name']][] = [
-                    'id' => $ppds['id'],
-                    'display_name' => $ppds['display_name']
-                ];
-            }
-        }
-        $response['dashboard6'] = $stage_ppds;
-
-        // dashboard7: KinerjaDPJP / staff performance
-        $sql_staff_perf = 'SELECT
-                              mu.id,
-                              mu.display_name,
-                              mu.picture,
-                              COUNT(CASE WHEN tls.status = \'verified\' THEN 1 END) as verified_count,
-                              COUNT(CASE WHEN tls.status = \'pending\' THEN 1 END) as pending_count,
-                              COUNT(*) as total_count,
-                              CASE
-                                  WHEN COUNT(*) = 0 THEN 0
-                                  ELSE ROUND(COUNT(CASE WHEN tls.status = \'verified\' THEN 1 END)::numeric / COUNT(*), 2)
-                              END as rank
-                           FROM m_user mu
-                           JOIN m_role mr ON mu.id_role = mr.id
-                           LEFT JOIN t_logbook_status tls ON mu.id = tls.id_user
-                           LEFT JOIN t_logbook lb ON tls.id_logbook = lb.id
-                           WHERE mu.id_client = :id_client
-                             AND mu.deleted_at IS NULL
-                             AND mu.is_show = true
-                             AND mr.name = \'staff\'
-                             AND tls.deleted_at IS NULL
-                             AND tls.date_time >= :month_start
-                           GROUP BY mu.id, mu.display_name, mu.picture
-                           ORDER BY rank DESC, verified_count DESC';
-        $staff_perf = Yii::app()->db->createCommand($sql_staff_perf)
-            ->bindValue(':id_client', $id_client)
-            ->bindValue(':month_start', $month_start)
-            ->queryAll();
-        $response['dashboard7'] = $staff_perf;
-
-        // dashboard8: KinerjaPPDS / ppds performance
-        $sql_ppds_perf = 'SELECT
-                              mu.id,
-                              mu.display_name,
-                              mu.picture,
-                              ms.name as stase_name,
-                              COUNT(*) as verified_count
-                           FROM m_user mu
-                           JOIN m_role mr ON mu.id_role = mr.id
-                           LEFT JOIN m_stase ms ON mu.id_stase = ms.id
-                           LEFT JOIN t_logbook lb ON mu.id = lb.id_user
-                           LEFT JOIN m_action ma ON lb.id_action = ma.id
-                           WHERE mu.id_client = :id_client
-                             AND mu.deleted_at IS NULL
-                             AND mu.is_show = true
-                             AND mr.name = \'ppds\'
-                             AND lb.deleted_at IS NULL
-                             AND lb.verified_status = \'verified\'
-                             AND ma.identifier != \'stase\'
-                             AND lb.date >= :month_start
-                           GROUP BY mu.id, mu.display_name, mu.picture, ms.name
-                           ORDER BY verified_count DESC';
-        $ppds_perf = Yii::app()->db->createCommand($sql_ppds_perf)
-            ->bindValue(':id_client', $id_client)
-            ->bindValue(':month_start', $month_start)
-            ->queryAll();
-        $response['dashboard8'] = $ppds_perf;
-
-        // dashboard9: LogbookByStatusChart (sama dengan dashboard2 tapi breakdown)
-        $response['dashboard9'] = [
-            'total' => $total_logbook,
-            'verified' => $total_verified,
-            'rejected' => $total_rejected,
-            'revised' => $total_revised,
-            'pending' => $total_pending,
-            'percentage' => $total_logbook > 0 ? [
-                'verified' => round(($total_verified / $total_logbook) * 100, 2) . '%',
-                'rejected' => round(($total_rejected / $total_logbook) * 100, 2) . '%',
-                'revised' => round(($total_revised / $total_logbook) * 100, 2) . '%',
-                'pending' => round(($total_pending / $total_logbook) * 100, 2) . '%',
-            ] : [
-                'verified' => '0%',
-                'rejected' => '0%',
-                'revised' => '0%',
-                'pending' => '0%',
-            ],
-        ];
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_client', $post['id_client']);
+        $data = $command->queryAll();
 
         echo json_encode([
             'status' => true,
-            'data' => $response
+            'data' => $data
         ]);
     }
+
+    public function actionGetDashboardKinerjaPPDS() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "
+            SELECT
+                mu.id,
+                mu.display_name,
+                mu.picture,
+                ms.name AS stase_name,
+                tl.id AS logbook_id,
+                tl.date,
+                tl.verified_status,
+                ma.identifier
+            FROM m_user mu
+            INNER JOIN m_role mr ON mr.id = mu.id_role
+            LEFT JOIN m_stase ms ON ms.id = mu.id_stase
+            INNER JOIN t_logbook tl ON tl.id_user = mu.id
+            INNER JOIN m_action ma ON ma.id = tl.id_action
+            WHERE mu.id_client = :id_client
+                AND mu.deleted_at IS NULL
+                AND mu.is_show = true
+                AND mr.name = 'ppds'
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_client', $post['id_client']);
+        $data = $command->queryAll();
+
+        echo json_encode([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+
+    public function actionGetDashboardPpdsBaru() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "
+            SELECT
+                mu.id,
+                mu.display_name,
+                mu.created_date
+            FROM m_user mu
+            INNER JOIN m_role mr ON mr.id = mu.id_role
+            WHERE mu.id_client = :id_client
+                AND mu.deleted_at IS NULL
+                AND mr.name = 'ppds'
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_client', $post['id_client']);
+        $data = $command->queryAll();
+
+        echo json_encode([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+
+    public function actionGetDashboardPPDS() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "
+            SELECT
+                mu.id,
+                mu.display_name,
+                mu.status,
+                mu.is_show,
+                ms.name AS stase_name,
+                mst.name AS stage_name,
+                mr.name AS role_name
+            FROM m_user mu
+            INNER JOIN m_role mr ON mr.id = mu.id_role
+            LEFT JOIN m_stase ms ON ms.id = mu.id_stase
+            LEFT JOIN m_stage mst ON mst.id = ms.id_stage
+            WHERE mu.id_client = :id_client
+                AND mu.deleted_at IS NULL
+                AND mr.name IN ('ppds', 'staff')
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_client', $post['id_client']);
+        $data = $command->queryAll();
+
+        echo json_encode([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+
+    public function actionGetDashboardWaitingVerification() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        // Get logbook IDs with pending/revised status
+        $sql = "
+            SELECT DISTINCT tls.id_logbook
+            FROM t_logbook_status tls
+            INNER JOIN t_logbook tl ON tl.id = tls.id_logbook
+            INNER JOIN m_action ma ON ma.id = tl.id_action
+            WHERE tls.id_client = :id_client
+                AND tls.status IN ('pending', 'revised')
+                AND tl.verified = false
+                AND ma.identifier NOT IN ('exam', 'stase')
+                AND tls.deleted_at IS NULL
+                AND tl.deleted_at IS NULL
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_client', $post['id_client']);
+        $logbookIds = $command->queryColumn();
+
+        if (empty($logbookIds)) {
+            echo json_encode([
+                'status' => true,
+                'data' => []
+            ]);
+            Yii::app()->end();
+        }
+
+        // Get logbooks with details
+        $inParams = [];
+        foreach ($logbookIds as $index => $id) {
+            $inParams[":logbook_id_{$index}"] = $id;
+        }
+        $inClause = implode(',', array_keys($inParams));
+
+        $sql2 = "
+            SELECT
+                tl.id,
+                tl.id_action,
+                ma.name AS action_name,
+                mu.display_name AS ppds_name,
+                tl.date,
+                tls_staff.id AS tls_id,
+                tls_staff.status AS tls_status,
+                mu_staff.display_name AS staff_name
+            FROM t_logbook tl
+            INNER JOIN m_action ma ON ma.id = tl.id_action
+            INNER JOIN m_user mu ON mu.id = tl.id_user
+            INNER JOIN t_logbook_status tls_staff ON tls_staff.id_logbook = tl.id
+            INNER JOIN m_user mu_staff ON mu_staff.id = tls_staff.id_user
+            WHERE tl.id IN ({$inClause})
+                AND tl.id_client = :id_client
+                AND tls_staff.status IN ('pending', 'revised')
+                AND tls_staff.deleted_at IS NULL
+            ORDER BY tl.date DESC
+        ";
+
+        $command2 = Yii::app()->db->createCommand($sql2);
+        foreach ($inParams as $key => $value) {
+            $command2->bindValue($key, $value);
+        }
+        $command2->bindValue(':id_client', $post['id_client']);
+        $data = $command2->queryAll();
+
+        echo json_encode([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+
+    public function actionGetDashboardLogbookByStatus() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "
+            SELECT
+                verified_status AS status,
+                COUNT(*) AS count
+            FROM t_logbook tl
+            INNER JOIN m_action ma ON ma.id = tl.id_action
+            WHERE tl.id_client = :id_client
+                AND tl.deleted_at IS NULL
+                AND ma.identifier != 'stase'
+            GROUP BY verified_status
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_client', $post['id_client']);
+        $data = $command->queryAll();
+
+        echo json_encode([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+
+    public function actionGetDashboardStageCount() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "SELECT COUNT(*) AS count FROM m_stage WHERE id_client = :id_client";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_client', $post['id_client']);
+        $result = $command->queryRow();
+
+        echo json_encode([
+            'status' => true,
+            'data' => ['count' => (int)$result['count']]
+        ]);
+    }
+
+    public function actionGetDashboardActionCount() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "SELECT COUNT(*) AS count FROM m_action WHERE id_client = :id_client";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_client', $post['id_client']);
+        $result = $command->queryRow();
+
+        echo json_encode([
+            'status' => true,
+            'data' => ['count' => (int)$result['count']]
+        ]);
+    }
+
+    public function actionGetDashboardLogActivity() {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_client'])) {
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "
+            SELECT
+                date,
+                message
+            FROM t_notif
+            WHERE id_client = :id_client
+            ORDER BY date DESC
+            LIMIT 10
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_client', $post['id_client']);
+        $data = $command->queryAll();
+
+        echo json_encode([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+
+    // public function actionGetDashboard() {
+    //     $rest_json = file_get_contents("php://input");
+    //     $post = json_decode($rest_json, true);
+
+    //     if (!isset($post['id_client'])) {
+    //         echo json_encode([
+    //             'status' => false,
+    //             'message' => 'Invalid parameter!'
+    //         ]);
+    //         Yii::app()->end();
+    //     }
+
+    //     $id_client = $post['id_client'];
+    //     $response = [];
+
+    //     // dashboard1: ProfileCard / client info
+    //     $sql_client = 'SELECT id, name FROM m_client WHERE id = :id_client';
+    //     $client = Yii::app()->db->createCommand($sql_client)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->queryRow();
+    //     $response['dashboard1'] = [
+    //         'client' => $client['name'] ?? '',
+    //     ];
+
+    //     // dashboard2: StatCards / counts (ppds, staff, action, stage, logbook)
+    //     $sql_users = 'SELECT
+    //                     mr.name as role_name,
+    //                     mu.status,
+    //                     COUNT(*) as total
+    //                   FROM m_user mu
+    //                   JOIN m_role mr ON mu.id_role = mr.id
+    //                   WHERE mu.id_client = :id_client
+    //                     AND mu.deleted_at IS NULL
+    //                     AND mr.name IN (\'ppds\', \'staff\')
+    //                   GROUP BY mr.name, mu.status';
+    //     $users = Yii::app()->db->createCommand($sql_users)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->queryAll();
+
+    //     $total_ppds_active = 0;
+    //     $total_ppds_inactive = 0;
+    //     $total_staff = 0;
+
+    //     foreach ($users as $u) {
+    //         if ($u['role_name'] === 'ppds') {
+    //             if ($u['status'] === 'Active') {
+    //                 $total_ppds_active = (int)$u['total'];
+    //             } else if ($u['status'] === 'Inactive') {
+    //                 $total_ppds_inactive = (int)$u['total'];
+    //             }
+    //         } else if ($u['role_name'] === 'staff') {
+    //             $total_staff = (int)$u['total'];
+    //         }
+    //     }
+
+    //     $sql_actions = 'SELECT COUNT(*) as total FROM m_action WHERE id_client = :id_client';
+    //     $actions = Yii::app()->db->createCommand($sql_actions)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->queryRow();
+
+    //     $sql_stages = 'SELECT COUNT(*) as total FROM m_stage WHERE id_client = :id_client';
+    //     $stages = Yii::app()->db->createCommand($sql_stages)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->queryRow();
+
+    //     $sql_logbooks = 'SELECT
+    //                         COUNT(*) as total_logbook,
+    //                         SUM(CASE WHEN verified_status = \'verified\' THEN 1 ELSE 0 END) as total_verified,
+    //                         SUM(CASE WHEN verified_status = \'rejected\' THEN 1 ELSE 0 END) as total_rejected,
+    //                         SUM(CASE WHEN verified_status = \'revised\' THEN 1 ELSE 0 END) as total_revised,
+    //                         SUM(CASE WHEN verified_status = \'pending\' THEN 1 ELSE 0 END) as total_pending
+    //                      FROM t_logbook tl
+    //                      JOIN m_action ma ON tl.id_action = ma.id
+    //                      WHERE tl.id_client = :id_client
+    //                        AND tl.deleted_at IS NULL
+    //                        AND ma.identifier != \'stase\'';
+    //     $logbooks = Yii::app()->db->createCommand($sql_logbooks)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->queryRow();
+
+    //     $total_logbook = (int)$logbooks['total_logbook'];
+    //     $total_verified = (int)$logbooks['total_verified'];
+    //     $total_rejected = (int)$logbooks['total_rejected'];
+    //     $total_revised = (int)$logbooks['total_revised'];
+    //     $total_pending = (int)$logbooks['total_pending'];
+
+    //     $response['dashboard2'] = [
+    //         'ppds' => [
+    //             'active' => $total_ppds_active,
+    //             'inactive' => $total_ppds_inactive,
+    //         ],
+    //         'staff' => $total_staff,
+    //         'action' => (int)$actions['total'],
+    //         'stage' => (int)$stages['total'],
+    //         'logbook' => $total_logbook,
+    //         'verified' => $total_verified,
+    //         'rejected' => $total_rejected,
+    //         'revised' => $total_revised,
+    //         'pending' => $total_pending,
+    //         'percentage' => $total_logbook > 0 ? [
+    //             'verified' => round(($total_verified / $total_logbook) * 100, 2) . '%',
+    //             'rejected' => round(($total_rejected / $total_logbook) * 100, 2) . '%',
+    //             'revised' => round(($total_revised / $total_logbook) * 100, 2) . '%',
+    //             'pending' => round(($total_pending / $total_logbook) * 100, 2) . '%',
+    //         ] : [
+    //             'verified' => '0%',
+    //             'rejected' => '0%',
+    //             'revised' => '0%',
+    //             'pending' => '0%',
+    //         ],
+    //     ];
+
+    //     // dashboard3: LogActivity / notifications
+    //     $sql_notif = 'SELECT id, title, message, date, is_read
+    //                   FROM t_notif
+    //                   WHERE id_client = :id_client
+    //                   ORDER BY date DESC
+    //                   LIMIT 10';
+    //     $notifs = Yii::app()->db->createCommand($sql_notif)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->queryAll();
+    //     $response['dashboard3'] = $notifs;
+
+    //     // dashboard4: WaitingVerification / todo list
+    //     $current_month = date('n');
+    //     $current_year = date('Y');
+    //     $month_start = $current_year . '-' . str_pad($current_month, 2, '0', STR_PAD_LEFT) . '-01';
+
+    //     $sql_todo = 'SELECT DISTINCT
+    //                     lb.id,
+    //                     lb.id_action,
+    //                     ma.name as action_name,
+    //                     mu.display_name as ppds_name,
+    //                     lb.date,
+    //                     lb.id_category,
+    //                     (
+    //                         SELECT mu2.display_name
+    //                         FROM t_logbook_status tls
+    //                         JOIN m_user mu2 ON tls.id_user = mu2.id
+    //                         WHERE tls.id_logbook = lb.id
+    //                           AND tls.status IN (\'pending\', \'revised\')
+    //                         ORDER BY tls.date_time DESC
+    //                         LIMIT 1
+    //                     ) as staff_name
+    //                  FROM t_logbook lb
+    //                  JOIN m_action ma ON lb.id_action = ma.id
+    //                  JOIN m_user mu ON lb.id_user = mu.id
+    //                  JOIN t_logbook_status tls ON lb.id = tls.id_logbook
+    //                  WHERE lb.id_client = :id_client
+    //                    AND lb.deleted_at IS NULL
+    //                    AND tls.deleted_at IS NULL
+    //                    AND tls.status IN (\'pending\', \'revised\')
+    //                    AND tls.date_time >= :month_start
+    //                  ORDER BY lb.date DESC';
+    //     $todos = Yii::app()->db->createCommand($sql_todo)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->bindValue(':month_start', $month_start)
+    //         ->queryAll();
+    //     $response['dashboard4'] = $todos;
+
+    //     // dashboard5: PPDSPerStase
+    //     $sql_ppds_stase = 'SELECT
+    //                           ms.name as stase_name,
+    //                           mu.id,
+    //                           mu.display_name
+    //                        FROM m_user mu
+    //                        JOIN m_role mr ON mu.id_role = mr.id
+    //                        LEFT JOIN m_stase ms ON mu.id_stase = ms.id
+    //                        WHERE mu.id_client = :id_client
+    //                          AND mu.deleted_at IS NULL
+    //                          AND mu.is_show = true
+    //                          AND mr.name = \'ppds\'';
+    //     $all_ppds = Yii::app()->db->createCommand($sql_ppds_stase)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->queryAll();
+
+    //     $stase_ppds = [];
+    //     foreach ($all_ppds as $ppds) {
+    //         if (!empty($ppds['stase_name'])) {
+    //             if (!isset($stase_ppds[$ppds['stase_name']])) {
+    //                 $stase_ppds[$ppds['stase_name']] = [];
+    //             }
+    //             $stase_ppds[$ppds['stase_name']][] = [
+    //                 'id' => $ppds['id'],
+    //                 'display_name' => $ppds['display_name']
+    //             ];
+    //         }
+    //     }
+    //     $response['dashboard5'] = $stase_ppds;
+
+    //     // dashboard6: PPDSPerStage
+    //     $sql_ppds_stage = 'SELECT
+    //                           mst.name as stage_name,
+    //                           mu.id,
+    //                           mu.display_name
+    //                        FROM m_user mu
+    //                        JOIN m_role mr ON mu.id_role = mr.id
+    //                        LEFT JOIN m_stase ms ON mu.id_stase = ms.id
+    //                        LEFT JOIN m_stage mst ON ms.id_stage = mst.id
+    //                        WHERE mu.id_client = :id_client
+    //                          AND mu.deleted_at IS NULL
+    //                          AND mu.is_show = true
+    //                          AND mr.name = \'ppds\'';
+    //     $all_ppds_stage = Yii::app()->db->createCommand($sql_ppds_stage)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->queryAll();
+
+    //     $stage_ppds = [];
+    //     foreach ($all_ppds_stage as $ppds) {
+    //         if (!empty($ppds['stage_name'])) {
+    //             if (!isset($stage_ppds[$ppds['stage_name']])) {
+    //                 $stage_ppds[$ppds['stage_name']] = [];
+    //             }
+    //             $stage_ppds[$ppds['stage_name']][] = [
+    //                 'id' => $ppds['id'],
+    //                 'display_name' => $ppds['display_name']
+    //             ];
+    //         }
+    //     }
+    //     $response['dashboard6'] = $stage_ppds;
+
+    //     // dashboard7: KinerjaDPJP / staff performance
+    //     $sql_staff_perf = 'SELECT
+    //                           mu.id,
+    //                           mu.display_name,
+    //                           mu.picture,
+    //                           COUNT(CASE WHEN tls.status = \'verified\' THEN 1 END) as verified_count,
+    //                           COUNT(CASE WHEN tls.status = \'pending\' THEN 1 END) as pending_count,
+    //                           COUNT(*) as total_count,
+    //                           CASE
+    //                               WHEN COUNT(*) = 0 THEN 0
+    //                               ELSE ROUND(COUNT(CASE WHEN tls.status = \'verified\' THEN 1 END)::numeric / COUNT(*), 2)
+    //                           END as rank
+    //                        FROM m_user mu
+    //                        JOIN m_role mr ON mu.id_role = mr.id
+    //                        LEFT JOIN t_logbook_status tls ON mu.id = tls.id_user
+    //                        LEFT JOIN t_logbook lb ON tls.id_logbook = lb.id
+    //                        WHERE mu.id_client = :id_client
+    //                          AND mu.deleted_at IS NULL
+    //                          AND mu.is_show = true
+    //                          AND mr.name = \'staff\'
+    //                          AND tls.deleted_at IS NULL
+    //                          AND tls.date_time >= :month_start
+    //                        GROUP BY mu.id, mu.display_name, mu.picture
+    //                        ORDER BY rank DESC, verified_count DESC';
+    //     $staff_perf = Yii::app()->db->createCommand($sql_staff_perf)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->bindValue(':month_start', $month_start)
+    //         ->queryAll();
+    //     $response['dashboard7'] = $staff_perf;
+
+    //     // dashboard8: KinerjaPPDS / ppds performance
+    //     $sql_ppds_perf = 'SELECT
+    //                           mu.id,
+    //                           mu.display_name,
+    //                           mu.picture,
+    //                           ms.name as stase_name,
+    //                           COUNT(*) as verified_count
+    //                        FROM m_user mu
+    //                        JOIN m_role mr ON mu.id_role = mr.id
+    //                        LEFT JOIN m_stase ms ON mu.id_stase = ms.id
+    //                        LEFT JOIN t_logbook lb ON mu.id = lb.id_user
+    //                        LEFT JOIN m_action ma ON lb.id_action = ma.id
+    //                        WHERE mu.id_client = :id_client
+    //                          AND mu.deleted_at IS NULL
+    //                          AND mu.is_show = true
+    //                          AND mr.name = \'ppds\'
+    //                          AND lb.deleted_at IS NULL
+    //                          AND lb.verified_status = \'verified\'
+    //                          AND ma.identifier != \'stase\'
+    //                          AND lb.date >= :month_start
+    //                        GROUP BY mu.id, mu.display_name, mu.picture, ms.name
+    //                        ORDER BY verified_count DESC';
+    //     $ppds_perf = Yii::app()->db->createCommand($sql_ppds_perf)
+    //         ->bindValue(':id_client', $id_client)
+    //         ->bindValue(':month_start', $month_start)
+    //         ->queryAll();
+    //     $response['dashboard8'] = $ppds_perf;
+
+    //     // dashboard9: LogbookByStatusChart (sama dengan dashboard2 tapi breakdown)
+    //     $response['dashboard9'] = [
+    //         'total' => $total_logbook,
+    //         'verified' => $total_verified,
+    //         'rejected' => $total_rejected,
+    //         'revised' => $total_revised,
+    //         'pending' => $total_pending,
+    //         'percentage' => $total_logbook > 0 ? [
+    //             'verified' => round(($total_verified / $total_logbook) * 100, 2) . '%',
+    //             'rejected' => round(($total_rejected / $total_logbook) * 100, 2) . '%',
+    //             'revised' => round(($total_revised / $total_logbook) * 100, 2) . '%',
+    //             'pending' => round(($total_pending / $total_logbook) * 100, 2) . '%',
+    //         ] : [
+    //             'verified' => '0%',
+    //             'rejected' => '0%',
+    //             'revised' => '0%',
+    //             'pending' => '0%',
+    //         ],
+    //     ];
+
+    //     echo json_encode([
+    //         'status' => true,
+    //         'data' => $response
+    //     ]);
+    // }
 }

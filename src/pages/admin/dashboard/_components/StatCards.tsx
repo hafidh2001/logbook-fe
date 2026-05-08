@@ -1,21 +1,14 @@
 import { icons } from "@/assets/images/Icon";
+import { useDashboardStore } from "@/store/dashboardStore";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/utils/routes";
 
-interface StatCardsData {
-  active_ppds_count: number;
-  total_ppds: number;
-  inactive_ppds_count: number;
-  activity_count: number;
-  staff_pengajar_count: number;
-  stage_count: number;
-  logbook_count: number;
-  unverified_logbook_count: number;
-}
+export const StatCards = () => {
+  const navigate = useNavigate();
+  const { ppdsActive, ppdsInactive, staffCount, stageCount, actionCount, logbookTotal, logbookPending } = useDashboardStore();
 
-interface StatCardsProps {
-  data: StatCardsData | null;
-}
+  const totalPpds = ppdsActive + ppdsInactive;
 
-export const StatCards = ({ data }: StatCardsProps) => {
   return (
     <div className="flex gap-4 min-w-max lg:min-w-full">
       {/* Active PPDS */}
@@ -26,16 +19,15 @@ export const StatCards = ({ data }: StatCardsProps) => {
           </div>
         </div>
         <div className="flex items-baseline gap-1 justify-center">
-          <span className="text-xl font-bold text-gray-800">
-            {data?.active_ppds_count ?? 0}
-          </span>
-          <span className="text-xs text-gray-500">
-            of {data?.total_ppds ?? 0}
-          </span>
+          <span className="text-xl font-bold text-gray-800">{ppdsActive}</span>
+          <span className="text-xs text-gray-500">of {totalPpds}</span>
         </div>
         <p className="text-xs text-gray-500 mt-1 text-center">Active PPDS</p>
-        <p className="text-xs text-blue-600 mt-2 cursor-pointer hover:underline truncate text-center">
-          {data?.inactive_ppds_count ?? 0} Inactive PPDS
+        <p
+          className="text-xs text-blue-600 mt-2 cursor-pointer hover:underline truncate text-center"
+          onClick={() => navigate(ROUTES.ppdsInactive)}
+        >
+          {ppdsInactive} Inactive PPDS
         </p>
       </div>
 
@@ -47,7 +39,7 @@ export const StatCards = ({ data }: StatCardsProps) => {
           </div>
         </div>
         <span className="text-xl font-bold text-gray-800 block text-center">
-          {data?.activity_count ?? 0}
+          {actionCount}
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Activity</p>
       </div>
@@ -60,7 +52,7 @@ export const StatCards = ({ data }: StatCardsProps) => {
           </div>
         </div>
         <span className="text-xl font-bold text-gray-800 block text-center">
-          {data?.staff_pengajar_count ?? 0}
+          {staffCount}
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Staff Pengajar</p>
       </div>
@@ -73,7 +65,7 @@ export const StatCards = ({ data }: StatCardsProps) => {
           </div>
         </div>
         <span className="text-xl font-bold text-gray-800 block text-center">
-          {data?.stage_count ?? 0}
+          {stageCount}
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Stage</p>
       </div>
@@ -86,11 +78,11 @@ export const StatCards = ({ data }: StatCardsProps) => {
           </div>
         </div>
         <span className="text-xl font-bold text-gray-800 block text-center">
-          {data?.logbook_count ?? 0}
+          {logbookTotal}
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Logbook</p>
         <p className="text-xs text-blue-600 mt-2 cursor-pointer hover:underline truncate text-center">
-          {data?.unverified_logbook_count ?? 0} Unverified
+          {logbookPending} Unverified
         </p>
       </div>
     </div>

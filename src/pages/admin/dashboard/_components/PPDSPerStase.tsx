@@ -1,22 +1,16 @@
 import { PieChart } from "@/components/chart/pieChart";
 import { CardWrapper } from "@/components/card/cardWrapper";
+import { useDashboardStore } from "@/store/dashboardStore";
 import type { ChartData } from "chart.js";
 
-interface PPDSPerStaseItem {
-  stase: string;
-  count: number;
-}
+export const PPDSPerStase = () => {
+  const { ppdsPerStase } = useDashboardStore();
 
-interface PPDSPerStaseProps {
-  data: PPDSPerStaseItem[] | null;
-}
-
-export const PPDSPerStase = ({ data }: PPDSPerStaseProps) => {
   const chartData: ChartData<"pie", number[], string> = {
-    labels: data?.map((item) => item.stase) ?? [],
+    labels: ppdsPerStase.map((item) => item.stase) ?? [],
     datasets: [
       {
-        data: data?.map((item) => item.count) ?? [],
+        data: ppdsPerStase.map((item) => item.count) ?? [],
         backgroundColor: ["#FF6B6B", "#4ECDC4", "#45B7D1"],
         borderWidth: 0,
       },

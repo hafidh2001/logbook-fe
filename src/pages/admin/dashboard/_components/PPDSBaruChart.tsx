@@ -1,22 +1,16 @@
 import { LineChart } from "@/components/chart/lineChart";
 import { CardWrapper } from "@/components/card/cardWrapper";
+import { useDashboardStore } from "@/store/dashboardStore";
 import type { ChartData } from "chart.js";
 
-interface PPDSBaruChartItem {
-  year: string;
-  count: number;
-}
+export const PPDSBaruChart = () => {
+  const { ppdsBaru } = useDashboardStore();
 
-interface PPDSBaruChartProps {
-  data: PPDSBaruChartItem[] | null;
-}
-
-export const PPDSBaruChart = ({ data }: PPDSBaruChartProps) => {
   const chartData: ChartData<"line", number[], string> = {
-    labels: data?.map((item) => item.year) ?? [],
+    labels: ppdsBaru.map((item) => item.year) ?? [],
     datasets: [
       {
-        data: data?.map((item) => item.count) ?? [],
+        data: ppdsBaru.map((item) => item.count) ?? [],
         borderColor: "#14B8A6",
         backgroundColor: "rgba(20, 184, 166, 0.1)",
         fill: true,
@@ -49,6 +43,14 @@ export const PPDSBaruChart = ({ data }: PPDSBaruChartProps) => {
             scales: {
               y: {
                 beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    if (Number.isInteger(value)) {
+                      return value;
+                    }
+                    return "";
+                  },
+                },
               },
             },
           }}

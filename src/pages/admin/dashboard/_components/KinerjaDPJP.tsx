@@ -1,23 +1,25 @@
 import { icons } from "@/assets/images/Icon";
 import { CardWrapper } from "@/components/card/cardWrapper";
+import { useDashboardStore } from "@/store/dashboardStore";
 
-interface KinerjaDPJPItem {
-  name: string;
-  total_logbook: number;
-  pending: number;
-  verified: number;
-}
+export const KinerjaDPJP = () => {
+  const { kinerjaDPJP, isLoading } = useDashboardStore();
 
-interface KinerjaDPJPProps {
-  items: KinerjaDPJPItem[] | null;
-}
+  if (isLoading) {
+    return (
+      <CardWrapper title="Kinerja DPJP">
+        <div className="flex items-center justify-center h-40">
+          <span className="text-gray-400">Memuat...</span>
+        </div>
+      </CardWrapper>
+    );
+  }
 
-export const KinerjaDPJP = ({ items }: KinerjaDPJPProps) => {
   return (
     <CardWrapper title="Kinerja DPJP">
       <div className="max-h-80 overflow-y-auto">
         <div className="space-y-3">
-          {items?.map((item, index) => (
+          {kinerjaDPJP.map((item, index) => (
             <div
               key={index}
               className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
@@ -46,6 +48,11 @@ export const KinerjaDPJP = ({ items }: KinerjaDPJPProps) => {
               </div>
             </div>
           ))}
+          {kinerjaDPJP.length === 0 && (
+            <div className="flex items-center justify-center h-20">
+              <span className="text-gray-400">Tidak ada data</span>
+            </div>
+          )}
         </div>
       </div>
     </CardWrapper>

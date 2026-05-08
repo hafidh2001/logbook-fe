@@ -1,22 +1,16 @@
 import { BarChart } from "@/components/chart/barChart";
 import { CardWrapper } from "@/components/card/cardWrapper";
+import { useDashboardStore } from "@/store/dashboardStore";
 import type { ChartData } from "chart.js";
 
-interface LogbookByStatusItem {
-  status: string;
-  count: number;
-}
+export const LogbookByStatusChart = () => {
+  const { logbookByStatus } = useDashboardStore();
 
-interface LogbookByStatusChartProps {
-  data: LogbookByStatusItem[] | null;
-}
-
-export const LogbookByStatusChart = ({ data }: LogbookByStatusChartProps) => {
   const chartData: ChartData<"bar", number[], string> = {
-    labels: data?.map((item) => item.status) ?? [],
+    labels: logbookByStatus.map((item) => item.status),
     datasets: [
       {
-        data: data?.map((item) => item.count) ?? [],
+        data: logbookByStatus.map((item) => item.count),
         backgroundColor: ["#81C784", "#E57373", "#64B5F6", "#FFD54F"],
         borderRadius: 6,
       },

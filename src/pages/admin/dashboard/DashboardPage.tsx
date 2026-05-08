@@ -17,16 +17,33 @@ import { KinerjaPPDS } from "./_components/KinerjaPPDS";
 
 export default function DashboardPage() {
   const {
-    dashboardData: data,
     isLoading,
     loadDashboard,
+    loadKinerjaDPJP,
+    loadKinerjaPPDS,
+    loadPpdsBaru,
+    loadWaitingVerification,
+    loadPPDSPerStageStase,
+    loadLogActivity,
+    loadLogbookByStatus,
+    loadStageCount,
+    loadActionCount,
     reset,
   } = useDashboardStore();
 
   useEffect(() => {
     loadDashboard();
+    loadKinerjaDPJP();
+    loadKinerjaPPDS();
+    loadPpdsBaru();
+    loadWaitingVerification();
+    loadPPDSPerStageStase();
+    loadLogActivity();
+    loadLogbookByStatus();
+    loadStageCount();
+    loadActionCount();
     return () => reset();
-  }, [loadDashboard, reset]);
+  }, [loadDashboard, loadKinerjaDPJP, loadKinerjaPPDS, loadPpdsBaru, loadWaitingVerification, loadPPDSPerStageStase, loadLogActivity, loadLogbookByStatus, loadStageCount, loadActionCount, reset]);
 
   if (isLoading) {
     return <LoadingPage />;
@@ -47,33 +64,33 @@ export default function DashboardPage() {
             {/* Stat Cards Grid - 70% */}
             <div className="lg:w-[70%] bg-white rounded-lg border overflow-hidden flex justify-center items-center">
               <div className="p-4 w-full overflow-x-auto">
-                <StatCards data={data ?? null} />
+                <StatCards />
               </div>
             </div>
           </div>
 
           {/* Row 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <LogbookByStatusChart data={data?.logbook_by_status ?? null} />
-            <LogActivity items={data?.log_aktivitas ?? null} />
+            <LogbookByStatusChart />
+            <LogActivity />
           </div>
 
           {/* Row 3 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <PPDSPerStage data={data?.ppds_per_stage ?? null} />
-            <PPDSPerStase data={data?.ppds_per_stase ?? null} />
+            <PPDSPerStage />
+            <PPDSPerStase />
           </div>
 
           {/* Row 4 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <WaitingVerification items={data?.menunggu_verifikasi ?? null} />
-            <PPDSBaruChart data={data?.ppds_baru_per_year ?? null} />
+            <WaitingVerification />
+            <PPDSBaruChart />
           </div>
 
           {/* Row 5 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <KinerjaDPJP items={data?.kinerja_dpjp ?? null} />
-            <KinerjaPPDS items={data?.kinerja_ppds ?? null} />
+            <KinerjaDPJP />
+            <KinerjaPPDS />
           </div>
         </div>
       </div>

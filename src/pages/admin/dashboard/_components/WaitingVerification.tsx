@@ -1,22 +1,15 @@
 import { icons } from "@/assets/images/Icon";
 import { CardWrapper } from "@/components/card/cardWrapper";
+import { useDashboardStore } from "@/store/dashboardStore";
 
-interface WaitingVerificationItem {
-  activity: string;
-  staff: string;
-  date: string;
-}
+export const WaitingVerification = () => {
+  const { waitingVerification } = useDashboardStore();
 
-interface WaitingVerificationProps {
-  items: WaitingVerificationItem[] | null;
-}
-
-export const WaitingVerification = ({ items }: WaitingVerificationProps) => {
   return (
     <CardWrapper title="Menunggu Verifikasi">
       <div className="max-h-80 overflow-y-auto">
         <div className="space-y-3">
-          {items?.map((item, index) => (
+          {waitingVerification.map((item, index) => (
             <div
               key={index}
               className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
@@ -38,6 +31,11 @@ export const WaitingVerification = ({ items }: WaitingVerificationProps) => {
               </div>
             </div>
           ))}
+          {waitingVerification.length === 0 && (
+            <div className="flex items-center justify-center h-20">
+              <span className="text-gray-400">Tidak ada data</span>
+            </div>
+          )}
         </div>
       </div>
     </CardWrapper>

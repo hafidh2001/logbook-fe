@@ -1,22 +1,16 @@
 import { DoughnutChart } from "@/components/chart/doughnutChart";
 import { CardWrapper } from "@/components/card/cardWrapper";
+import { useDashboardStore } from "@/store/dashboardStore";
 import type { ChartData } from "chart.js";
 
-interface PPDSPerStageItem {
-  stage: string;
-  count: number;
-}
+export const PPDSPerStage = () => {
+  const { ppdsPerStage } = useDashboardStore();
 
-interface PPDSPerStageProps {
-  data: PPDSPerStageItem[] | null;
-}
-
-export const PPDSPerStage = ({ data }: PPDSPerStageProps) => {
   const chartData: ChartData<"doughnut", number[], string> = {
-    labels: data?.map((item) => item.stage) ?? [],
+    labels: ppdsPerStage.map((item) => item.stage) ?? [],
     datasets: [
       {
-        data: data?.map((item) => item.count) ?? [],
+        data: ppdsPerStage.map((item) => item.count) ?? [],
         backgroundColor: ["#6C63FF", "#81C784", "#64B5F6"],
         borderWidth: 0,
       },
