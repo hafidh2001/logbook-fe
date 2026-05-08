@@ -100,3 +100,65 @@ export interface TLogbookByStatus {
   status: string;
   count: number;
 }
+
+import { Nullable } from "@/types";
+
+export type TUnverifiedLogbook = {
+  id: number;
+  date: Nullable<string>;
+  title: Nullable<string>;
+  notes: Nullable<string>;
+  verified_status: Nullable<string>;
+  ppds_name: Nullable<string>;
+  nim: Nullable<string>;
+  action_name: Nullable<string>;
+  hospital_name: Nullable<string>;
+  semester: Nullable<string>;
+  stase_name: Nullable<string>;
+  staff_name: Nullable<string>;
+};
+
+export interface IUnverifiedLogbookListParams {
+  id_client: number;
+  page?: number;
+  limit?: number;
+  id_ppds?: Nullable<number>;
+  id_staff?: Nullable<number>;
+  id_activity?: Nullable<number>;
+  id_stase?: Nullable<number>;
+  start_date?: Nullable<string>;
+  end_date?: Nullable<string>;
+  status?: Nullable<string>;
+}
+
+export type TUnverifiedLogbookData = {
+  list: TUnverifiedLogbook[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pageCount: number;
+  };
+};
+
+export interface TUnverifiedLogbookDetail {
+  id: number;
+  // user
+  ppds_name: Nullable<string>;
+  nim: Nullable<string>;
+  inisial_code: Nullable<string>;
+
+  // kegiatan
+  date: Nullable<string>;
+  action_name: Nullable<string>;
+  hospital_name: Nullable<string>;
+  notes: Nullable<string>;
+  status_logbook: Nullable<string>;
+
+  // staff
+  staff: Array<{
+    name: string | null;
+    role: string | null;
+    status: string | null;
+  }>;
+}

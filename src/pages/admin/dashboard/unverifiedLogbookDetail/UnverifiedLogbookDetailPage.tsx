@@ -9,7 +9,7 @@ import { Identitas } from "./_components/Identitas";
 import { Kegiatan } from "./_components/Kegiatan";
 import { Staff } from "./_components/Staff";
 
-export default function StaffLogbookDetailPage() {
+export default function UnverifiedLogbookDetailPage() {
   const { idUser, idLogbook } = useParams<{
     idUser: string;
     idLogbook: string;

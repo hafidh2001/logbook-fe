@@ -122,8 +122,3 @@ export interface TStaffLogbookDetail {
     status: string | null;
   }>;
 }
-
-// Params for getting Staff Logbook Detail
-export interface IStaffLogbookDetailParams {
-  id_logbook: number;
-}

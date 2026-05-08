@@ -4,7 +4,6 @@ import type {
   IStaffChangePasswordPayload,
   IStaffListParams,
   IStaffLogbookListParams,
-  IStaffLogbookDetailParams,
   IStaffCreatePayload,
   IStaffPayload,
   TStaff,
@@ -138,9 +137,9 @@ export const staffApi = {
     }
   },
 
-  async getStaffLogbookDetail(params: IStaffLogbookDetailParams): Promise<ApiResponse<TStaffLogbookDetail>> {
+  async getStaffLogbookDetail(id_logbook: number): Promise<ApiResponse<TStaffLogbookDetail>> {
     try {
-      const { data: responseData } = await apiClient.post("GetDetailStaffLogbook", params);
+      const { data: responseData } = await apiClient.post("GetDetailStaffLogbook", { id_logbook });
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Failed to get staff logbook detail");

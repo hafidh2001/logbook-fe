@@ -11,7 +11,9 @@ export const ExampleItemPage = lazyLoad(() => import('./example/exampleItem/Exam
 export const ExampleSubItemPage = lazyLoad(() => import('./example/exampleSubItem/ExampleSubItemPage'));
 
 // Admin Pages - Dashboard
-export const DashboardPage = lazyLoad(() => import('./admin/dashboard/DashboardPage'));
+export const DashboardPage = lazyLoad(() => import('./admin/dashboard/dashboard/DashboardPage'));
+export const UnverifiedLogbookPage = lazyLoad(() => import('./admin/dashboard/unverifiedLogbook/UnverifiedLogbookPage'));
+export const UnverifiedLogbookDetailPage = lazyLoad(() => import('./admin/dashboard/unverifiedLogbookDetail/UnverifiedLogbookDetailPage'));
 
 // Admin Pages - PPDS
 export const PpdsListPage = lazyLoad(() => import('./admin/ppds/ppdsList/PpdsListPage'));

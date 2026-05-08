@@ -39,8 +39,10 @@ import {
   ProfilePage,
   ProfileEditPage,
   StaseFormPage,
+  UnverifiedLogbookPage,
+  PenilaianLogbookDetailPage,
+  UnverifiedLogbookDetailPage,
 } from "@/pages";
-import PenilaianLogbookDetailPage from "@/pages/admin/penilaianLogbook/penilaianLogbookDetail/PenilaianLogbookDetailPage";
 
 function App() {
   const { isInitialized } = useAuthStore();
@@ -102,6 +104,26 @@ function App() {
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <DashboardPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.unverifiedLogbook}
+          element={
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <UnverifiedLogbookPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.unverifiedLogbookDetail(":idLogbook")}
+          element={
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <UnverifiedLogbookDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }

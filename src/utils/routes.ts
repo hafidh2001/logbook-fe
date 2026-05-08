@@ -34,6 +34,14 @@ export class ROUTES {
     return `/admin/dashboard` as const;
   }
 
+  static get unverifiedLogbook() {
+    return `${this.dashboard}/unverified-logbook` as const;
+  }
+
+  static unverifiedLogbookDetail(idLogbook: string) {
+    return `${this.unverifiedLogbook}/${idLogbook}` as const;
+  }
+
   // PPDS Routes
   static get ppds() {
     return `/admin/ppds` as const;

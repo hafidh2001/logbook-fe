@@ -9,7 +9,6 @@ import type {
   IStaffLogbookListParams,
   IStaffChangePasswordPayload,
   TStaffLogbookDetail,
-  IStaffLogbookDetailParams,
 } from "./index";
 
 export interface StaffData {
@@ -48,7 +47,7 @@ export interface StaffActions {
   loadStaffList: (params?: Partial<IStaffListParams>) => Promise<StaffData>;
   loadStaffDetail: (id_user: number) => Promise<void>;
   loadStaffLogbookList: (params: IStaffLogbookListParams) => Promise<void>;
-  loadStaffLogbookDetail: (params: IStaffLogbookDetailParams) => Promise<void>;
+  loadStaffLogbookDetail: (id_logbook: number) => Promise<void>;
   createStaff: (data: IStaffCreatePayload) => Promise<boolean>;
   updateStaff: (data: IStaffPayload) => Promise<boolean>;
   deleteStaff: (id_user: number) => Promise<boolean>;
