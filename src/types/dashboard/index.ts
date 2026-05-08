@@ -128,7 +128,7 @@ export interface IUnverifiedLogbookListParams {
   id_stase?: Nullable<number>;
   start_date?: Nullable<string>;
   end_date?: Nullable<string>;
-  status?: Nullable<string>;
+  // status?: Nullable<string>;
 }
 
 export type TUnverifiedLogbookData = {

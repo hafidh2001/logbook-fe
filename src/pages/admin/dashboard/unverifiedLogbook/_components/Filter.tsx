@@ -15,7 +15,7 @@ export const Filter = ({
     staffOptions,
     staseOptions,
     activityOptions,
-    logbookStatusOptions,
+    // logbookStatusOptions,
     fetchPPDSActiveOptions,
     fetchStaffOptions,
     fetchStaseOptions,
@@ -81,13 +81,13 @@ export const Filter = ({
       type: "calendar",
       placeholder: "Pilih tanggal selesai...",
     },
-    {
-      key: "status",
-      label: "Status",
-      type: "select",
-      options: logbookStatusOptions,
-      placeholder: "Pilih Status...",
-    },
+    // {
+    //   key: "status",
+    //   label: "Status",
+    //   type: "select",
+    //   options: logbookStatusOptions,
+    //   placeholder: "Pilih Status...",
+    // },
   ];
 
   const initialValues = initialStaffOption

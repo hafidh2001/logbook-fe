@@ -49,7 +49,7 @@ export default function UnverifiedLogbookPage() {
       { key: "id_staff" },
       { key: "id_activity" },
       { key: "id_stase" },
-      { key: "status" },
+      // { key: "status" }, --- IGNORE ---
       { key: "start_date" },
       { key: "end_date" },
     ],
@@ -67,7 +67,7 @@ export default function UnverifiedLogbookPage() {
         id_ppds: (filterParams.id_ppds as number | null) ?? undefined,
         id_activity: (filterParams.id_activity as number | null) ?? undefined,
         id_stase: (filterParams.id_stase as number | null) ?? undefined,
-        status: (filterParams.status as string | null) ?? undefined,
+        // status: (filterParams.status as string | null) ?? undefined,
         start_date: filterParams.start_date ?? undefined,
         end_date: filterParams.end_date ?? undefined,
       });
