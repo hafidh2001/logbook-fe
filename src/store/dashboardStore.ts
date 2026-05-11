@@ -530,14 +530,11 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   },
 
   loadExportUnverifiedLogbookList: async ({ filterParams, onProgress, signal }) => {
-    const { user } = useAuthStore.getState();
-
     set({ isExporting: true });
 
     try {
       // Step 1: Get total count from first fetch
       const firstResponse = await dashboardApi.getUnverifiedLogbookList({
-        id_client: user?.id_client ?? 0,
         ...filterParams,
         page: 1,
         limit: 1,
@@ -568,7 +565,6 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
         }
 
         const response = await dashboardApi.getUnverifiedLogbookList({
-          id_client: user?.id_client ?? 0,
           ...filterParams,
           page: 1,
           limit: EXPORT_LIMIT,

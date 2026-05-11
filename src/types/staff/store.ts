@@ -38,6 +38,7 @@ export interface StaffState {
   selectedStaff: TStaffDetail | null;
   isLoading: boolean;
   isLoadingDetail: boolean;
+  isExporting: boolean;
   error: Nullable<string>;
   success: Nullable<string>;
   hasInitialized: boolean;
@@ -52,6 +53,17 @@ export interface StaffActions {
   updateStaff: (data: IStaffPayload) => Promise<boolean>;
   deleteStaff: (id_user: number) => Promise<boolean>;
   changePassword: (data: IStaffChangePasswordPayload) => Promise<boolean>;
+  loadExportStaffList: (params: {
+    filterParams: Partial<IStaffListParams>;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TStaff[]>;
+  loadExportStaffLogbookList: (params: {
+    filterParams: Omit<IStaffLogbookListParams, "page" | "limit">;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TStaffLogbook[]>;
+  cancelExport: () => void;
   reset: () => void;
   resetDetail: () => void;
   resetLogbookDetail: () => void;
