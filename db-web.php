@@ -1809,6 +1809,11 @@ class ApiWebServiceController extends Controller {
         $countSql = "{$baseCte}
             SELECT COUNT(DISTINCT tl.id)
             FROM t_logbook tl
+            LEFT JOIN m_user mu ON tl.id_user = mu.id
+            LEFT JOIN m_action ma ON tl.id_action = ma.id
+            LEFT JOIN m_hospital mh ON tl.id_hospital = mh.id
+            LEFT JOIN m_semester ms ON tl.id_semester = ms.id
+            LEFT JOIN m_stase st ON tl.id_stase = st.id
             LEFT JOIN staff_ids_cte sic ON sic.id_logbook = tl.id
             WHERE
                 tl.id_client = :id_client
@@ -1859,6 +1864,30 @@ class ApiWebServiceController extends Controller {
             $sql      .= ' AND tl.verified_status = :status';
             $countSql .= ' AND tl.verified_status = :status';
             $params[':status'] = $post['status'];
+        }
+
+        // 🔥 search filter - ILIKE across multiple fields
+        if (!empty($post['search'])) {
+            $searchTerm = '%' . $post['search'] . '%';
+            $sql      .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.code ILIKE :search
+                OR tl.title ILIKE :search
+                OR tl.notes ILIKE :search
+                OR ma.name ILIKE :search
+                OR mh.name ILIKE :search
+                OR st.name ILIKE :search
+            )';
+            $countSql .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.code ILIKE :search
+                OR tl.title ILIKE :search
+                OR tl.notes ILIKE :search
+                OR ma.name ILIKE :search
+                OR mh.name ILIKE :search
+                OR st.name ILIKE :search
+            )';
+            $params[':search'] = $searchTerm;
         }
 
         // sorting + pagination
