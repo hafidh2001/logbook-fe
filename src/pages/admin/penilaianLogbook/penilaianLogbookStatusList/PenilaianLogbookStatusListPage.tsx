@@ -21,6 +21,7 @@ import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function PenilaianLogbookStatusListPage() {
   const { width } = useWindowDimensions();
@@ -68,6 +69,17 @@ export default function PenilaianLogbookStatusListPage() {
   // Determine if scored or unscored based on URL path
   const isScored = location.pathname.includes("/scored-logbook");
 
+  // Search state with 500ms debounce
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
+  // Reset page when search changes (only when user types actual search query)
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      setPage(1);
+    }
+  }, [debouncedSearchQuery, setPage]);
+
   useEffect(() => {
     loadPenilaianLogbookByStatus({
       id_action: Number(idLogbookCategory),
@@ -76,6 +88,7 @@ export default function PenilaianLogbookStatusListPage() {
         : PenilaianLogbookStatusEnum.UNSCORED,
       page,
       limit,
+      search: debouncedSearchQuery || undefined,
       id_ppds: filterParams.id_ppds ?? undefined,
       id_staff: filterParams.id_staff ?? undefined,
       id_stase: filterParams.id_stase ?? undefined,
@@ -87,6 +100,7 @@ export default function PenilaianLogbookStatusListPage() {
     filterParams,
     idLogbookCategory,
     isScored,
+    debouncedSearchQuery,
     loadPenilaianLogbookByStatus,
   ]);
 
@@ -236,7 +250,7 @@ export default function PenilaianLogbookStatusListPage() {
   };
 
   const handleSearch = (query: string) => {
-    console.log("Search:", query);
+    setSearchQuery(query);
   };
 
   const handlePaginationChange = (pageIndex: number, pageSize: number) => {

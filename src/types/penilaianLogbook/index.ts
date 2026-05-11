@@ -40,6 +40,7 @@ export interface IPenilaianLogbookStatusListParams {
   type: PenilaianLogbookStatusEnum;
   page?: number;
   limit?: number;
+  search?: string | null;
   id_ppds?: number | null;
   id_staff?: number | null;
   id_stase?: number | null;

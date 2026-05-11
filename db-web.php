@@ -2290,6 +2290,36 @@ class ApiWebServiceController extends Controller {
             $params[':end_date'] = $post['end_date'];
         }
 
+        // 🔥 search filter - ILIKE across multiple fields
+        if (!empty($post['search'])) {
+            $searchTerm = '%' . $post['search'] . '%';
+            $sql      .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.code ILIKE :search
+                OR mu.inisial_code ILIKE :search
+                OR ms.name ILIKE :search
+                OR mst.name ILIKE :search
+                OR mstage.name ILIKE :search
+                OR ma.name ILIKE :search
+                OR mar.role_name ILIKE :search
+                OR mac.name ILIKE :search
+                OR tl.title ILIKE :search
+            )';
+            $countSql .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.code ILIKE :search
+                OR mu.inisial_code ILIKE :search
+                OR ms.name ILIKE :search
+                OR mst.name ILIKE :search
+                OR mstage.name ILIKE :search
+                OR ma.name ILIKE :search
+                OR mar.role_name ILIKE :search
+                OR mac.name ILIKE :search
+                OR tl.title ILIKE :search
+            )';
+            $params[':search'] = $searchTerm;
+        }
+
         $sql .= "
             GROUP BY
                 tl.id,
