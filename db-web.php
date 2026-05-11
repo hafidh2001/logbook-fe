@@ -2600,6 +2600,17 @@ class ApiWebServiceController extends Controller {
             $params[':end_date'] = $post['end_date'];
         }
 
+        // 🔥 search filter - ILIKE across multiple fields
+        if (!empty($post['search'])) {
+            $searchTerm = '%' . $post['search'] . '%';
+            $whereClause .= ' AND (
+                mu.display_name ILIKE :search
+                OR ms.name ILIKE :search
+                OR tl.notes ILIKE :search
+            )';
+            $params[':search'] = $searchTerm;
+        }
+
         $sql = "
             SELECT
                 tl.id,

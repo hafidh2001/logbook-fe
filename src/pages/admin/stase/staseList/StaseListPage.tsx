@@ -20,6 +20,7 @@ import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function StaseListPage() {
   const { width } = useWindowDimensions();
@@ -68,16 +69,28 @@ export default function StaseListPage() {
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
+  // Search state with 500ms debounce
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
+  // Reset page when search changes (only when user types actual search query)
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      setPage(1);
+    }
+  }, [debouncedSearchQuery, setPage]);
+
   useEffect(() => {
     loadStaseList({
       page,
       limit,
+      search: debouncedSearchQuery || undefined,
       id_ppds: filterParams.id_ppds ?? undefined,
       id_stase: filterParams.id_stase ?? undefined,
       start_date: filterParams.start_date ?? undefined,
       end_date: filterParams.end_date ?? undefined,
     });
-  }, [searchParams, filterParams, loadStaseList]);
+  }, [searchParams, filterParams, debouncedSearchQuery, loadStaseList]);
 
   useEffect(() => {
     return () => reset();
@@ -203,7 +216,7 @@ export default function StaseListPage() {
   };
 
   const handleSearch = (query: string) => {
-    console.log("Search:", query);
+    setSearchQuery(query);
   };
 
   const handleDelete = (item: TStaseListItem) => {

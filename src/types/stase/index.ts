@@ -10,6 +10,7 @@ export interface IStaseListParams {
   id_client: number;
   page?: number;
   limit?: number;
+  search?: string | null;
   id_ppds?: number | null;
   id_stase?: number | null;
   start_date?: string | null;
