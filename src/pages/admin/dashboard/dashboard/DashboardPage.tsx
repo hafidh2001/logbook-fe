@@ -18,7 +18,6 @@ import { KinerjaPPDS } from "./_components/KinerjaPPDS";
 export default function DashboardPage() {
   const {
     isLoading,
-    loadDashboard,
     loadKinerjaDPJP,
     loadKinerjaPPDS,
     loadPpdsBaru,
@@ -32,7 +31,6 @@ export default function DashboardPage() {
   } = useDashboardStore();
 
   useEffect(() => {
-    loadDashboard();
     loadKinerjaDPJP();
     loadKinerjaPPDS();
     loadPpdsBaru();
@@ -43,7 +41,18 @@ export default function DashboardPage() {
     loadStageCount();
     loadActionCount();
     return () => reset();
-  }, [loadDashboard, loadKinerjaDPJP, loadKinerjaPPDS, loadPpdsBaru, loadWaitingVerification, loadPPDSPerStageStase, loadLogActivity, loadLogbookByStatus, loadStageCount, loadActionCount, reset]);
+  }, [
+    loadKinerjaDPJP,
+    loadKinerjaPPDS,
+    loadPpdsBaru,
+    loadWaitingVerification,
+    loadPPDSPerStageStase,
+    loadLogActivity,
+    loadLogbookByStatus,
+    loadStageCount,
+    loadActionCount,
+    reset,
+  ]);
 
   if (isLoading) {
     return <LoadingPage />;

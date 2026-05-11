@@ -25,7 +25,6 @@ import {
 import { EXPORT_LIMIT } from "@/constants/export";
 
 const initialState: DashboardState = {
-  dashboardData: null,
   kinerjaDPJP: [],
   kinerjaPPDS: [],
   ppdsBaru: [],
@@ -52,20 +51,20 @@ const initialState: DashboardState = {
 export const useDashboardStore = create<DashboardStore>((set) => ({
   ...initialState,
 
-  loadDashboard: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const data = await dashboardApi.getDashboard();
-      set({ dashboardData: data, isLoading: false, hasInitialized: true });
-    } catch (error) {
-      set({
-        error:
-          error instanceof Error ? error.message : "Failed to load dashboard",
-        isLoading: false,
-        hasInitialized: true,
-      });
-    }
-  },
+  // loadDashboard: async () => {
+  //   set({ isLoading: true, error: null });
+  //   try {
+  //     const data = await dashboardApi.getDashboard();
+  //     set({ dashboardData: data, isLoading: false, hasInitialized: true });
+  //   } catch (error) {
+  //     set({
+  //       error:
+  //         error instanceof Error ? error.message : "Failed to load dashboard",
+  //       isLoading: false,
+  //       hasInitialized: true,
+  //     });
+  //   }
+  // },
 
   loadKinerjaDPJP: async () => {
     const { user } = useAuthStore.getState();

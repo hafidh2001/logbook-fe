@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Delete lockfile and reinstall to fix optional dependency issue on Alpine
+RUN rm -f package-lock.json && npm install
 
 # Copy source code
 COPY . .
@@ -18,10 +18,12 @@ COPY . .
 ARG VITE_DECRYPT_SECRET_KEY
 ARG VITE_API_URL
 ARG VITE_API_TOKEN
+ARG VITE_JWT_SECRET
 
 ENV VITE_DECRYPT_SECRET_KEY=${VITE_DECRYPT_SECRET_KEY}
 ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_API_TOKEN=${VITE_API_TOKEN}
+ENV VITE_JWT_SECRET=${VITE_JWT_SECRET}
 
 # Build the application
 RUN npm run build

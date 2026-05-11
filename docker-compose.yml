@@ -10,6 +10,7 @@ services:
         VITE_DECRYPT_SECRET_KEY: ${VITE_DECRYPT_SECRET_KEY}
         VITE_API_URL: ${VITE_API_URL}
         VITE_API_TOKEN: ${VITE_API_TOKEN}
+        VITE_JWT_SECRET: ${VITE_JWT_SECRET}
     image: hafidh2001/logbook:latest
     container_name: logbook
     ports:

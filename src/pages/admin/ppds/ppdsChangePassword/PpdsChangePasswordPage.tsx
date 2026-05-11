@@ -34,7 +34,7 @@ export default function PpdsChangePasswordPage() {
     resolver: zodResolver(ppdsChangePasswordSchema),
     defaultValues: {
       password: "",
-      confirmPassword: "",
+      confirm_password: "",
     },
   });
 
@@ -45,7 +45,7 @@ export default function PpdsChangePasswordPage() {
       updated_by: user?.id ?? 0,
       id_user: Number(idUser),
       password: data.password,
-      confirm_password: data.confirmPassword,
+      confirm_password: data.confirm_password,
     };
 
     const success = await changePassword(payload);
@@ -107,14 +107,14 @@ export default function PpdsChangePasswordPage() {
                 )}
               />
               <Controller
-                name="confirmPassword"
+                name="confirm_password"
                 control={control}
                 render={({ field }) => (
                   <PasswordField
                     {...field}
                     label="Konfirmasi Password"
                     placeholder="Masukkan konfirmasi password..."
-                    errorMessage={errors.confirmPassword?.message}
+                    errorMessage={errors.confirm_password?.message}
                   />
                 )}
               />

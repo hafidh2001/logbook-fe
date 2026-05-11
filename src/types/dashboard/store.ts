@@ -1,4 +1,3 @@
-import { DashboardData } from "@/data/dashboard";
 import {
   IUnverifiedLogbookListParams,
   TKinerjaDPJP,
@@ -25,7 +24,6 @@ export interface UnverifiedLogbookData {
 }
 
 export interface DashboardState {
-  dashboardData: DashboardData | null;
   kinerjaDPJP: TKinerjaDPJP[];
   kinerjaPPDS: TKinerjaPPDS[];
   ppdsBaru: TPpdsBaru[];
@@ -50,7 +48,6 @@ export interface DashboardState {
 }
 
 export interface DashboardActions {
-  loadDashboard: () => Promise<void>;
   loadKinerjaDPJP: () => Promise<void>;
   loadKinerjaPPDS: () => Promise<void>;
   loadPpdsBaru: () => Promise<void>;

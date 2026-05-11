@@ -1,7 +1,6 @@
 import axios from "axios";
 import type { ApiPaginationResponse, ApiResponse } from "@/types";
 import { TKinerjaDPJPRaw, TKinerjaPPDSRaw, TPpdsBaruRaw, TWaitingVerificationRaw, TPpdsRaw, TLogActivityRaw, TLogbookByStatusRaw, TUnverifiedLogbookDetail, IUnverifiedLogbookListParams, TUnverifiedLogbook } from "@/types/dashboard";
-import { DashboardData, mockDashboard } from "@/data/dashboard";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
@@ -21,9 +20,9 @@ const apiClient = axios.create({
 });
 
 export const dashboardApi = {
-  async getDashboard(): Promise<DashboardData> {
-    return mockDashboard;
-  },
+  // async getDashboard(): Promise<DashboardData> {
+  //   return mockDashboard;
+  // },
 
   async getDashboardKinerjaDPJP(
     idClient: number,
