@@ -34,6 +34,7 @@ export interface IStaffListParams {
   page?: number;
   limit?: number;
   sort?: "asc" | "desc";
+  search?: Nullable<string>;
   staff?: Nullable<number>;
   nim?: Nullable<string>;
 }

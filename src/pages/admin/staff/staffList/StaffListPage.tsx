@@ -20,6 +20,7 @@ import "dayjs/locale/id";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function StaffListPage() {
   const { width } = useWindowDimensions();
@@ -64,13 +65,25 @@ export default function StaffListPage() {
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
+  // Search state with 500ms debounce
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
+  // Reset page when search changes (only when user types actual search query)
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      setPage(1);
+    }
+  }, [debouncedSearchQuery, setPage]);
+
   useEffect(() => {
     loadStaffList({
       page,
       limit,
+      search: debouncedSearchQuery || undefined,
       ...filterParams,
     });
-  }, [searchParams, filterParams, loadStaffList]);
+  }, [searchParams, filterParams, debouncedSearchQuery, loadStaffList]);
 
   useEffect(() => {
     return () => reset();
@@ -194,7 +207,7 @@ export default function StaffListPage() {
   };
 
   const handleSearch = (query: string) => {
-    console.log("Search:", query);
+    setSearchQuery(query);
   };
 
   const handleDelete = (item: TStaff) => {
