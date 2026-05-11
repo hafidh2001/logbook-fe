@@ -1,3 +1,15 @@
+# HAPED NOTE
+step upload project ini ke docker hub haped
+1. make sure using node20
+2. make sure gaada error -> $ npm run lint
+3. $ ./scripts/build-amd64.sh
+4. $ docker push hafidh2001/logbook:amd64
+
+step deploy project ini dari docker hub haped ke server
+1. stop service lama
+2. docker pull hafidh2001/logbook:amd64
+3. docker run -d --name logbook-web -p 8001:80 hafidh2001/logbook:amd64
+
 # Docker Setup
 
 Project ini telah dikonfigurasi untuk berjalan di Docker dengan dukungan multi-architecture (AMD64 dan ARM64).
