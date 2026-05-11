@@ -77,6 +77,11 @@ export interface PpdsActions {
     onProgress?: (progress: number, offset: number, total: number) => void;
     signal?: AbortSignal;
   }) => Promise<TPpds[]>;
+  loadExportPpdsLogbookList: (params: {
+    filterParams: Omit<IPpdsLogbookListParams, "page" | "limit">;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TPpdsLogbook[]>;
   cancelExport: () => void;
 }
 

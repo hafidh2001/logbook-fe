@@ -3,6 +3,7 @@ import type { FilterFieldConfig, FilterProps } from "@/components/filterPanel";
 import { useEffect, useMemo } from "react";
 import { useMasterStore } from "@/store/masterStore";
 import { useAuthStore } from "@/store/authStore";
+import { useLocation } from "react-router-dom";
 
 export const Filter = ({
   initialPpdsId,
@@ -12,40 +13,62 @@ export const Filter = ({
 }) => {
   const {
     ppdsActiveOptions,
+    ppdsInactiveOptions,
     staffOptions,
     staseOptions,
     activityOptions,
     logbookStatusOptions,
     fetchPPDSActiveOptions,
+    fetchPPDSInactiveOptions,
     fetchStaffOptions,
     fetchStaseOptions,
     fetchActivityOptions,
     fetchLogbookStatusOptions,
   } = useMasterStore();
   const { user } = useAuthStore();
+  const location = useLocation();
+
+  const isInactive = location.pathname.includes("/ppds-inactive/");
 
   useEffect(() => {
     if (user?.id_client) {
-      fetchPPDSActiveOptions({ id_client: user.id_client });
+      if (!isInactive) {
+        fetchPPDSActiveOptions({ id_client: user.id_client });
+      } else {
+        fetchPPDSInactiveOptions({ id_client: user.id_client });
+      }
       fetchStaffOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
       fetchActivityOptions({ id_client: user.id_client });
       fetchLogbookStatusOptions();
     }
-  }, [user?.id_client, fetchPPDSActiveOptions, fetchStaffOptions, fetchStaseOptions, fetchActivityOptions, fetchLogbookStatusOptions]);
+  }, [
+    user?.id_client,
+    isInactive,
+    fetchPPDSActiveOptions,
+    fetchPPDSInactiveOptions,
+    fetchStaffOptions,
+    fetchStaseOptions,
+    fetchActivityOptions,
+    fetchLogbookStatusOptions,
+  ]);
 
   // Find the PPDS option that matches initialPpdsId to get correct label
   const initialPpdsOption = useMemo(() => {
     if (!initialPpdsId) return undefined;
-    return ppdsActiveOptions.find(opt => opt.value === initialPpdsId);
-  }, [initialPpdsId, ppdsActiveOptions]);
+    if (!isInactive) {
+      return ppdsActiveOptions.find((opt) => opt.value === initialPpdsId);
+    } else {
+      return ppdsInactiveOptions.find((opt) => opt.value === initialPpdsId);
+    }
+  }, [initialPpdsId, ppdsActiveOptions, ppdsInactiveOptions, isInactive]);
 
   const filterFields: FilterFieldConfig[] = [
     {
       key: "id_ppds",
       label: "PPDS",
       type: "select",
-      options: ppdsActiveOptions,
+      options: !isInactive ? ppdsActiveOptions : ppdsInactiveOptions,
       placeholder: "Pilih PPDS...",
       disabled: true, // PPDS is controlled by URL, not filter
     },

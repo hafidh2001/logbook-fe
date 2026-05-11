@@ -13,12 +13,16 @@ import "dayjs/locale/id";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
 import usePagination from "@/hooks/usePagination";
 import useFilter from "@/hooks/useFilter";
 import { FilterValue } from "@/components/filterPanel";
 import { StatusBadge } from "@/components/statusBadge";
+import { showToast } from "@/utils/toast";
+import { ExportModal } from "@/components/exportModal/ExportModal";
+import { ExportFormat } from "@/components/exportButton";
+import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
 
 export default function PpdsLogbookPage() {
   const { width } = useWindowDimensions();
@@ -28,9 +32,24 @@ export default function PpdsLogbookPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { ppdsLogbookData, isLoading, loadPpdsLogbookList, reset } =
-    usePpdsStore();
+  const {
+    ppdsLogbookData,
+    isLoading,
+    isExporting,
+    loadPpdsLogbookList,
+    loadExportPpdsLogbookList,
+    cancelExport,
+    reset,
+  } = usePpdsStore();
   const { user } = useAuthStore();
+
+  // Export state
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportOffset, setExportOffset] = useState(0);
+  const [exportTotal, setExportTotal] = useState(0);
+  const [isExportComplete, setIsExportComplete] = useState(false);
+  const exportControllerRef = useRef<AbortController | null>(null);
 
   // Pagination - page is always read from URL
   const { page, setPage, limit, setLimit, searchParams } = usePagination({
@@ -104,8 +123,130 @@ export default function PpdsLogbookPage() {
 
   const logbooks = ppdsLogbookData?.list || [];
 
-  const handleExport = () => {
-    // TODO: Implement export
+  const handleExport = async (format: ExportFormat) => {
+    // Create new AbortController for this export
+    exportControllerRef.current = new AbortController();
+
+    setExportProgress(0);
+    setExportOffset(0);
+    setExportTotal(0);
+    setIsExportComplete(false);
+    setShowExportModal(true);
+
+    try {
+      // Use the cloned store method for export - this doesn't affect UI state
+      const allData = await loadExportPpdsLogbookList({
+        filterParams: {
+          id_client: user?.id_client ?? 0,
+          id_ppds: Number(idUser),
+          id_staff: (filterParams.id_staff as number | null) ?? undefined,
+          id_activity: (filterParams.id_activity as number | null) ?? undefined,
+          id_stase: (filterParams.id_stase as number | null) ?? undefined,
+          status: (filterParams.status as string | null) ?? undefined,
+          start_date: filterParams.start_date ?? undefined,
+          end_date: filterParams.end_date ?? undefined,
+        },
+        onProgress: (progress, offset, total) => {
+          setExportProgress(progress);
+          setExportOffset(offset);
+          setExportTotal(total);
+        },
+        signal: exportControllerRef.current.signal,
+      });
+
+      if (allData.length === 0) {
+        showToast("Tidak ada data untuk diekspor", "error");
+        setShowExportModal(false);
+        return;
+      }
+
+      // Define columns for export
+      const exportColumns: ExportColumn<TPpdsLogbook>[] = [
+        { header: "No", accessorKey: "no" },
+        {
+          header: "Tanggal",
+          accessorKey: "date",
+          formatter: (value) =>
+            value ? dayjs(value).locale("id").format("DD MMMM YYYY") : "-",
+        },
+        { header: "Peserta PPDS", accessorKey: "ppds_name" },
+        { header: "NIM", accessorKey: "nim" },
+        { header: "Stase", accessorKey: "stase_name" },
+        {
+          header: "Staff Pengajar/DPJP",
+          accessorKey: "staff",
+          formatter: (value) => {
+            if (!value || !Array.isArray(value) || value.length === 0) return "-";
+            return value.map((s: { name: string | null }) => s.name).filter(Boolean).join(", ");
+          },
+        },
+        { header: "Activity", accessorKey: "action" },
+        { header: "Hospital", accessorKey: "hospital" },
+        { header: "Notes", accessorKey: "notes" },
+        { header: "Verified Status", accessorKey: "verified_status" },
+      ];
+
+      // Prepare data with index number
+      const dataWithIndex = allData.map((item, index) => ({
+        ...item,
+        no: index + 1,
+      }));
+
+      const filename = `logbook_export_${dayjs().format("YYYY-MM-DD")}`;
+
+      if (format === "csv") {
+        exportToCSV({
+          data: dataWithIndex,
+          columns: exportColumns,
+          filename: `${filename}.csv`,
+        });
+      } else if (format === "excel") {
+        await exportToExcel({
+          data: dataWithIndex,
+          columns: exportColumns,
+          filename: `${filename}.xlsx`,
+          sheetName: "Logbook Export",
+        });
+      }
+
+      showToast(
+        `Berhasil mengekspor ${allData.length} data`,
+        "success"
+      );
+
+      // Set complete state - modal stays open until user clicks OK
+      setIsExportComplete(true);
+    } catch (error) {
+      // Check if cancelled
+      if (error instanceof Error && error.message === "EXPORT_CANCELLED") {
+        showToast("Export dibatalkan", "error");
+        setShowExportModal(false);
+        return;
+      }
+      console.error("Export error:", error);
+      showToast(
+        error instanceof Error ? error.message : "Gagal mengekspor data",
+        "error"
+      );
+      setShowExportModal(false);
+    } finally {
+      exportControllerRef.current = null;
+    }
+  };
+
+  const handleCancelExport = () => {
+    if (exportControllerRef.current) {
+      exportControllerRef.current.abort();
+      cancelExport();
+    }
+    setShowExportModal(false);
+    setIsExportComplete(false);
+    exportControllerRef.current = null;
+  };
+
+  const handleOkExport = () => {
+    setShowExportModal(false);
+    setIsExportComplete(false);
   };
 
   const handleSearch = (query: string) => {
@@ -257,6 +398,16 @@ export default function PpdsLogbookPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
+      <ExportModal
+        isShown={showExportModal}
+        progress={exportProgress}
+        offset={exportOffset}
+        total={exportTotal}
+        isComplete={isExportComplete}
+        onCancel={handleCancelExport}
+        onOk={handleOkExport}
+      />
+
       <Topbar
         breadcrumbs={[
           { label: isInactive ? "PPDS Nonaktif" : "PPDS", to: ppdsListRoute },
@@ -266,6 +417,7 @@ export default function PpdsLogbookPage() {
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
         onSearch={handleSearch}
+        isLoading={isExporting}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
