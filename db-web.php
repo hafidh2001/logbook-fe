@@ -951,10 +951,13 @@ class ApiWebServiceController extends Controller {
             WITH staff_ids_cte AS (
                 SELECT
                     tls.id_logbook,
-                    ARRAY_AGG(DISTINCT tls.id_user) AS staff_ids
+                    ARRAY_AGG(DISTINCT tls.id_user) AS staff_ids,
+                    ARRAY_AGG(DISTINCT mu.display_name) FILTER (WHERE mar.role != 'Peserta') AS staff_names
                 FROM t_logbook_status tls
                 INNER JOIN m_action_role mar
                     ON mar.id = tls.id_action_role
+                INNER JOIN m_user mu
+                    ON mu.id = tls.id_user
                 WHERE mar.role != 'Peserta'
                 GROUP BY tls.id_logbook
             )
@@ -1043,25 +1046,37 @@ class ApiWebServiceController extends Controller {
             $params[':status'] = $post['status'];
         }
 
-        // 🔥 search filter - ILIKE across multiple fields
+        // 🔥 search filter - ILIKE across multiple fields + staff search
         if (!empty($post['search'])) {
             $searchTerm = '%' . $post['search'] . '%';
-            $sql      .= ' AND (
-                mu.display_name ILIKE :search
-                OR mu.code ILIKE :search
-                OR tl.notes ILIKE :search
-                OR ma.name ILIKE :search
-                OR mh.name ILIKE :search
-                OR st.name ILIKE :search
-            )';
-            $countSql .= ' AND (
-                mu.display_name ILIKE :search
-                OR mu.code ILIKE :search
-                OR tl.notes ILIKE :search
-                OR ma.name ILIKE :search
-                OR mh.name ILIKE :search
-                OR st.name ILIKE :search
-            )';
+            // Check if search is numeric (staff ID) or text (staff name)
+            if (is_numeric($post['search'])) {
+                // Numeric: search by staff ID in staff_ids array
+                $sql      .= ' AND CAST(:search AS integer) = ANY(sic.staff_ids)';
+                $countSql .= ' AND CAST(:search AS integer) = ANY(sic.staff_ids)';
+            } else {
+                // Text: search by staff name in staff_names array + other fields
+                $sql      .= ' AND (
+                    mu.display_name ILIKE :search
+                    OR mu.code ILIKE :search
+                    OR tl.title ILIKE :search
+                    OR tl.notes ILIKE :search
+                    OR ma.name ILIKE :search
+                    OR mh.name ILIKE :search
+                    OR st.name ILIKE :search
+                    OR EXISTS (SELECT 1 FROM unnest(sic.staff_names) AS sn WHERE sn ILIKE :search)
+                )';
+                $countSql .= ' AND (
+                    mu.display_name ILIKE :search
+                    OR mu.code ILIKE :search
+                    OR tl.title ILIKE :search
+                    OR tl.notes ILIKE :search
+                    OR ma.name ILIKE :search
+                    OR mh.name ILIKE :search
+                    OR st.name ILIKE :search
+                    OR EXISTS (SELECT 1 FROM unnest(sic.staff_names) AS sn WHERE sn ILIKE :search)
+                )';
+            }
             $params[':search'] = $searchTerm;
         }
 
@@ -1866,27 +1881,37 @@ class ApiWebServiceController extends Controller {
             $params[':status'] = $post['status'];
         }
 
-        // 🔥 search filter - ILIKE across multiple fields
+        // 🔥 search filter - ILIKE across multiple fields + staff search
         if (!empty($post['search'])) {
             $searchTerm = '%' . $post['search'] . '%';
-            $sql      .= ' AND (
-                mu.display_name ILIKE :search
-                OR mu.code ILIKE :search
-                OR tl.title ILIKE :search
-                OR tl.notes ILIKE :search
-                OR ma.name ILIKE :search
-                OR mh.name ILIKE :search
-                OR st.name ILIKE :search
-            )';
-            $countSql .= ' AND (
-                mu.display_name ILIKE :search
-                OR mu.code ILIKE :search
-                OR tl.title ILIKE :search
-                OR tl.notes ILIKE :search
-                OR ma.name ILIKE :search
-                OR mh.name ILIKE :search
-                OR st.name ILIKE :search
-            )';
+            // Check if search is numeric (staff ID) or text (staff name)
+            if (is_numeric($post['search'])) {
+                // Numeric: search by staff ID in staff_ids array
+                $sql      .= ' AND CAST(:search AS integer) = ANY(sic.staff_ids)';
+                $countSql .= ' AND CAST(:search AS integer) = ANY(sic.staff_ids)';
+            } else {
+                // Text: search by staff name in staff_names array + other fields
+                $sql      .= ' AND (
+                    mu.display_name ILIKE :search
+                    OR mu.code ILIKE :search
+                    OR tl.title ILIKE :search
+                    OR tl.notes ILIKE :search
+                    OR ma.name ILIKE :search
+                    OR mh.name ILIKE :search
+                    OR st.name ILIKE :search
+                    OR EXISTS (SELECT 1 FROM unnest(sic.staff_names) AS sn WHERE sn ILIKE :search)
+                )';
+                $countSql .= ' AND (
+                    mu.display_name ILIKE :search
+                    OR mu.code ILIKE :search
+                    OR tl.title ILIKE :search
+                    OR tl.notes ILIKE :search
+                    OR ma.name ILIKE :search
+                    OR mh.name ILIKE :search
+                    OR st.name ILIKE :search
+                    OR EXISTS (SELECT 1 FROM unnest(sic.staff_names) AS sn WHERE sn ILIKE :search)
+                )';
+            }
             $params[':search'] = $searchTerm;
         }
 
@@ -2153,10 +2178,13 @@ class ApiWebServiceController extends Controller {
             staff_ids_cte AS (
                 SELECT
                     tls.id_logbook,
-                    ARRAY_AGG(DISTINCT tls.id_user) AS staff_ids
+                    ARRAY_AGG(DISTINCT tls.id_user) AS staff_ids,
+                    ARRAY_AGG(DISTINCT mu.display_name) FILTER (WHERE mar.role != 'Peserta') AS staff_names
                 FROM t_logbook_status tls
                 INNER JOIN m_action_role mar
                     ON mar.id = tls.id_action_role
+                INNER JOIN m_user mu
+                    ON mu.id = tls.id_user
                 WHERE mar.role != 'Peserta'
                 GROUP BY tls.id_logbook
             )
@@ -2290,33 +2318,40 @@ class ApiWebServiceController extends Controller {
             $params[':end_date'] = $post['end_date'];
         }
 
-        // 🔥 search filter - ILIKE across multiple fields
+        // 🔥 search filter - ILIKE across multiple fields + staff search
         if (!empty($post['search'])) {
             $searchTerm = '%' . $post['search'] . '%';
-            $sql      .= ' AND (
-                mu.display_name ILIKE :search
-                OR mu.code ILIKE :search
-                OR mu.inisial_code ILIKE :search
-                OR ms.name ILIKE :search
-                OR mst.name ILIKE :search
-                OR mstage.name ILIKE :search
-                OR ma.name ILIKE :search
-                OR mar.role_name ILIKE :search
-                OR mac.name ILIKE :search
-                OR tl.title ILIKE :search
-            )';
-            $countSql .= ' AND (
-                mu.display_name ILIKE :search
-                OR mu.code ILIKE :search
-                OR mu.inisial_code ILIKE :search
-                OR ms.name ILIKE :search
-                OR mst.name ILIKE :search
-                OR mstage.name ILIKE :search
-                OR ma.name ILIKE :search
-                OR mar.role_name ILIKE :search
-                OR mac.name ILIKE :search
-                OR tl.title ILIKE :search
-            )';
+            if (is_numeric($post['search'])) {
+                $sql      .= ' AND CAST(:search AS integer) = ANY(sic.staff_ids)';
+                $countSql .= ' AND CAST(:search AS integer) = ANY(sic.staff_ids)';
+            } else {
+                $sql      .= ' AND (
+                    mu.display_name ILIKE :search
+                    OR mu.code ILIKE :search
+                    OR mu.inisial_code ILIKE :search
+                    OR ms.name ILIKE :search
+                    OR mst.name ILIKE :search
+                    OR mstage.name ILIKE :search
+                    OR ma.name ILIKE :search
+                    OR mar.role_name ILIKE :search
+                    OR mac.name ILIKE :search
+                    OR tl.title ILIKE :search
+                    OR EXISTS (SELECT 1 FROM unnest(sic.staff_names) AS sn WHERE sn ILIKE :search)
+                )';
+                $countSql .= ' AND (
+                    mu.display_name ILIKE :search
+                    OR mu.code ILIKE :search
+                    OR mu.inisial_code ILIKE :search
+                    OR ms.name ILIKE :search
+                    OR mst.name ILIKE :search
+                    OR mstage.name ILIKE :search
+                    OR ma.name ILIKE :search
+                    OR mar.role_name ILIKE :search
+                    OR mac.name ILIKE :search
+                    OR tl.title ILIKE :search
+                    OR EXISTS (SELECT 1 FROM unnest(sic.staff_names) AS sn WHERE sn ILIKE :search)
+                )';
+            }
             $params[':search'] = $searchTerm;
         }
 
@@ -3272,10 +3307,13 @@ class ApiWebServiceController extends Controller {
             WITH staff_ids_cte AS (
                 SELECT
                     tls.id_logbook,
-                    ARRAY_AGG(DISTINCT tls.id_user) AS staff_ids
+                    ARRAY_AGG(DISTINCT tls.id_user) AS staff_ids,
+                    ARRAY_AGG(DISTINCT mu.display_name) FILTER (WHERE mar.role != 'Peserta') AS staff_names
                 FROM t_logbook_status tls
                 INNER JOIN m_action_role mar
                     ON mar.id = tls.id_action_role
+                INNER JOIN m_user mu
+                    ON mu.id = tls.id_user
                 WHERE mar.role != 'Peserta'
                 GROUP BY tls.id_logbook
             )
@@ -3371,27 +3409,37 @@ class ApiWebServiceController extends Controller {
             $params[':status'] = $post['status'];
         }
 
-        // 🔥 search filter - ILIKE across multiple fields
+        // 🔥 search filter - ILIKE across multiple fields + staff search
         if (!empty($post['search'])) {
             $searchTerm = '%' . $post['search'] . '%';
-            $sql      .= ' AND (
-                mu.display_name ILIKE :search
-                OR mu.code ILIKE :search
-                OR tl.title ILIKE :search
-                OR tl.notes ILIKE :search
-                OR ma.name ILIKE :search
-                OR mh.name ILIKE :search
-                OR st.name ILIKE :search
-            )';
-            $countSql .= ' AND (
-                mu.display_name ILIKE :search
-                OR mu.code ILIKE :search
-                OR tl.title ILIKE :search
-                OR tl.notes ILIKE :search
-                OR ma.name ILIKE :search
-                OR mh.name ILIKE :search
-                OR st.name ILIKE :search
-            )';
+            // Check if search is numeric (staff ID) or text (staff name)
+            if (is_numeric($post['search'])) {
+                // Numeric: search by staff ID in staff_ids array
+                $sql      .= ' AND CAST(:search AS integer) = ANY(sic.staff_ids)';
+                $countSql .= ' AND CAST(:search AS integer) = ANY(sic.staff_ids)';
+            } else {
+                // Text: search by staff name in staff_names array + other fields
+                $sql      .= ' AND (
+                    mu.display_name ILIKE :search
+                    OR mu.code ILIKE :search
+                    OR tl.title ILIKE :search
+                    OR tl.notes ILIKE :search
+                    OR ma.name ILIKE :search
+                    OR mh.name ILIKE :search
+                    OR st.name ILIKE :search
+                    OR EXISTS (SELECT 1 FROM unnest(sic.staff_names) AS sn WHERE sn ILIKE :search)
+                )';
+                $countSql .= ' AND (
+                    mu.display_name ILIKE :search
+                    OR mu.code ILIKE :search
+                    OR tl.title ILIKE :search
+                    OR tl.notes ILIKE :search
+                    OR ma.name ILIKE :search
+                    OR mh.name ILIKE :search
+                    OR st.name ILIKE :search
+                    OR EXISTS (SELECT 1 FROM unnest(sic.staff_names) AS sn WHERE sn ILIKE :search)
+                )';
+            }
             $params[':search'] = $searchTerm;
         }
 
