@@ -20,6 +20,8 @@ import useModal from "@/hooks/useModal";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
 import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
+import { ExportFormat } from "@/components/exportButton";
+import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
 
 export default function PpdsListPage() {
   const { width } = useWindowDimensions();
@@ -82,7 +84,7 @@ export default function PpdsListPage() {
     navigate(ROUTES.ppdsCreate);
   };
 
-  const handleExport = async () => {
+  const handleExport = async (format: ExportFormat) => {
     // Create new AbortController for this export
     exportControllerRef.current = new AbortController();
 
@@ -114,59 +116,48 @@ export default function PpdsListPage() {
         return;
       }
 
-      // Generate CSV
-      const headers = [
-        "No",
-        "Nama",
-        "Username",
-        "Email",
-        "No. Telepon",
-        "Alamat",
-        "Tanggal Lahir",
-        "NIM",
-        "Role",
-        "Stase",
-        "Total Logbook",
+      // Define columns for export
+      const exportColumns: ExportColumn<TPpds>[] = [
+        { header: "No", accessorKey: "no" },
+        { header: "Nama", accessorKey: "display_name" },
+        { header: "Username", accessorKey: "username" },
+        { header: "Email", accessorKey: "email" },
+        { header: "No. Telepon", accessorKey: "phone" },
+        { header: "Alamat", accessorKey: "address" },
+        {
+          header: "Tanggal Lahir",
+          accessorKey: "date_of_birth",
+          formatter: (value) =>
+            value ? dayjs(value).locale("id").format("DD MMMM YYYY") : "-",
+        },
+        { header: "NIM", accessorKey: "nim" },
+        { header: "Role", accessorKey: "role_name" },
+        { header: "Stase", accessorKey: "stase_name" },
+        { header: "Total Logbook", accessorKey: "total_logbook" },
       ];
 
-      const rows = allData.map((item, index) => [
-        index + 1,
-        item.display_name ?? "-",
-        item.username ?? "-",
-        item.email ?? "-",
-        item.phone ?? "-",
-        item.address ?? "-",
-        item.date_of_birth
-          ? dayjs(item.date_of_birth).locale("id").format("DD MMMM YYYY")
-          : "-",
-        item.nim ?? "-",
-        item.role_name ?? "-",
-        item.stase_name ?? "-",
-        item.total_logbook ?? 0,
-      ]);
+      // Prepare data with index number
+      const dataWithIndex = allData.map((item, index) => ({
+        ...item,
+        no: index + 1,
+      }));
 
-      // Convert to CSV
-      const csvContent = [
-        headers.join(","),
-        ...rows.map((row) =>
-          row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
-        ),
-      ].join("\n");
+      const filename = `ppds_export_${dayjs().format("YYYY-MM-DD")}`;
 
-      // Add BOM for UTF-8
-      const BOM = "\uFEFF";
-      const blob = new Blob([BOM + csvContent], {
-        type: "text/csv;charset=utf-8;",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `ppds_export_${dayjs().format("YYYY-MM-DD")}.csv`;
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      if (format === "csv") {
+        exportToCSV({
+          data: dataWithIndex,
+          columns: exportColumns,
+          filename: `${filename}.csv`,
+        });
+      } else if (format === "excel") {
+        await exportToExcel({
+          data: dataWithIndex,
+          columns: exportColumns,
+          filename: `${filename}.xlsx`,
+          sheetName: "PPDS Export",
+        });
+      }
 
       showToast(
         `Berhasil mengekspor ${allData.length} data`,

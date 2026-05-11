@@ -3,6 +3,7 @@ import { icons } from "@/assets/images/Icon";
 import type { ITopbarProps } from "@/types/topbar";
 import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/fields/inputField";
+import { ExportButton } from "@/components/exportButton";
 
 export const Topbar = ({
   breadcrumbs,
@@ -13,6 +14,7 @@ export const Topbar = ({
   onDelete,
   searchPlaceholder = "Search...",
   isLoading = false,
+  exportFormats = ["csv", "excel"],
 }: ITopbarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -64,10 +66,12 @@ export const Topbar = ({
 
         {/* Export */}
         {hasExport && (
-          <Button variant="secondary" onClick={onExport} disabled={isLoading}>
-            <icons.FileDown size={16} />
-            <span className="hidden sm:inline">Export</span>
-          </Button>
+          <ExportButton
+            onExport={onExport!}
+            loading={isLoading}
+            disabled={isLoading}
+            formats={exportFormats}
+          />
         )}
 
         {/* Save */}
