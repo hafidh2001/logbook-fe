@@ -111,6 +111,7 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
         id_client: user?.id_client ?? 0,
         page: params?.page ?? 1,
         limit: params?.limit ?? 10,
+        search: params?.search ?? null,
         ppds: params?.ppds ?? null,
         stase: params?.stase ?? null,
         nim: params?.nim ?? null,

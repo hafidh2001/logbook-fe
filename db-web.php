@@ -1280,7 +1280,33 @@ class ApiWebServiceController extends Controller {
             $countSql .= ' AND mu.code ILIKE :nim';
             $params[':nim'] = '%' . $post['nim'] . '%';
         }
-    
+
+        // 🔥 search filter - ILIKE across multiple fields
+        if (!empty($post['search'])) {
+            $searchTerm = '%' . $post['search'] . '%';
+            $sql      .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.username ILIKE :search
+                OR mu.email ILIKE :search
+                OR mu.phone ILIKE :search
+                OR mu.address ILIKE :search
+                OR mu.code ILIKE :search
+                OR mr.name ILIKE :search
+                OR ms.name ILIKE :search
+            )';
+            $countSql .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.username ILIKE :search
+                OR mu.email ILIKE :search
+                OR mu.phone ILIKE :search
+                OR mu.address ILIKE :search
+                OR mu.code ILIKE :search
+                OR mr.name ILIKE :search
+                OR ms.name ILIKE :search
+            )';
+            $params[':search'] = $searchTerm;
+        }
+
         // sorting + pagination
         $sql .= " ORDER BY 
                     mu.display_name 
@@ -1395,6 +1421,32 @@ class ApiWebServiceController extends Controller {
             $sql      .= ' AND mu.code ILIKE :nim';
             $countSql .= ' AND mu.code ILIKE :nim';
             $params[':nim'] = '%' . $post['nim'] . '%';
+        }
+
+        // 🔥 search filter - ILIKE across multiple fields
+        if (!empty($post['search'])) {
+            $searchTerm = '%' . $post['search'] . '%';
+            $sql      .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.username ILIKE :search
+                OR mu.email ILIKE :search
+                OR mu.phone ILIKE :search
+                OR mu.address ILIKE :search
+                OR mu.code ILIKE :search
+                OR mr.name ILIKE :search
+                OR ms.name ILIKE :search
+            )';
+            $countSql .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.username ILIKE :search
+                OR mu.email ILIKE :search
+                OR mu.phone ILIKE :search
+                OR mu.address ILIKE :search
+                OR mu.code ILIKE :search
+                OR mr.name ILIKE :search
+                OR ms.name ILIKE :search
+            )';
+            $params[':search'] = $searchTerm;
         }
 
         // sorting + pagination
