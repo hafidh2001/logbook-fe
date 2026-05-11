@@ -9,13 +9,18 @@ import type { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PenilaianLogbookStatusEnum } from "@/types";
 import type { TPenilaianLogbookStatusListItem } from "@/types/penilaianLogbook";
 import usePagination from "@/hooks/usePagination";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
 import useFilter from "@/hooks/useFilter";
 import dayjs from "dayjs";
+import "dayjs/locale/id";
+import { showToast } from "@/utils/toast";
+import { ExportModal } from "@/components/exportModal/ExportModal";
+import { ExportFormat } from "@/components/exportButton";
+import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
 
 export default function PenilaianLogbookStatusListPage() {
   const { width } = useWindowDimensions();
@@ -29,7 +34,10 @@ export default function PenilaianLogbookStatusListPage() {
     penilaianLogbookStatusList,
     penilaianLogbookStatusPagination,
     isLoading,
+    isExporting,
     loadPenilaianLogbookByStatus,
+    loadExportPenilaianLogbookByStatus,
+    cancelExport,
     reset,
   } = usePenilaianLogbookStore();
 
@@ -85,6 +93,147 @@ export default function PenilaianLogbookStatusListPage() {
   useEffect(() => {
     return () => reset();
   }, [reset]);
+
+  // Export state
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportOffset, setExportOffset] = useState(0);
+  const [exportTotal, setExportTotal] = useState(0);
+  const [isExportComplete, setIsExportComplete] = useState(false);
+  const exportControllerRef = useRef<AbortController | null>(null);
+
+  const handleExport = async (format: ExportFormat) => {
+    // Create new AbortController for this export
+    exportControllerRef.current = new AbortController();
+
+    setExportProgress(0);
+    setExportOffset(0);
+    setExportTotal(0);
+    setIsExportComplete(false);
+    setShowExportModal(true);
+
+    try {
+      const allData = await loadExportPenilaianLogbookByStatus({
+        filterParams: {
+          id_action: Number(idLogbookCategory),
+          type: isScored
+            ? PenilaianLogbookStatusEnum.SCORED
+            : PenilaianLogbookStatusEnum.UNSCORED,
+          id_ppds: filterParams.id_ppds ?? undefined,
+          id_staff: filterParams.id_staff ?? undefined,
+          id_stase: filterParams.id_stase ?? undefined,
+          start_date: filterParams.start_date ?? undefined,
+          end_date: filterParams.end_date ?? undefined,
+        },
+        onProgress: (progress, offset, total) => {
+          setExportProgress(progress);
+          setExportOffset(offset);
+          setExportTotal(total);
+        },
+        signal: exportControllerRef.current.signal,
+      });
+
+      if (allData.length === 0) {
+        showToast("Tidak ada data untuk diekspor", "error");
+        setShowExportModal(false);
+        return;
+      }
+
+      // Define columns for export
+      const exportColumns: ExportColumn<TPenilaianLogbookStatusListItem>[] = [
+        { header: "No", accessorKey: "no" },
+        {
+          header: "Tanggal",
+          accessorKey: "date",
+          formatter: (value) =>
+            value ? dayjs(value).locale("id").format("DD MMMM YYYY") : "-",
+        },
+        { header: "PPDS", accessorKey: "ppds_name" },
+        { header: "Code", accessorKey: "code" },
+        { header: "Inisial Code", accessorKey: "inisial_code" },
+        { header: "Semester", accessorKey: "semester_name" },
+        { header: "Stase", accessorKey: "stase_name" },
+        { header: "Pin", accessorKey: "stage_name" },
+        {
+          header: "Staff Pengajar/DPJP",
+          accessorKey: "staff",
+          formatter: (value) => {
+            if (!value || !Array.isArray(value) || value.length === 0) return "-";
+            return value.map((s: { name: string | null }) => s.name).filter(Boolean).join(", ");
+          },
+        },
+        { header: "Activity", accessorKey: "action_name" },
+        { header: "Peran", accessorKey: "role_name" },
+        { header: "Category", accessorKey: "category" },
+        { header: "Title", accessorKey: "title" },
+        { header: "Psikomotor", accessorKey: "psikomotor" },
+        { header: "Knowledge", accessorKey: "knowledge" },
+        { header: "Afektif", accessorKey: "afektif" },
+        { header: "Total", accessorKey: "total" },
+      ];
+
+      // Prepare data with index number
+      const dataWithIndex = allData.map((item, index) => ({
+        ...item,
+        no: index + 1,
+      }));
+
+      const filename = `penilaian_logbook_${isScored ? "scored" : "unscored"}_${dayjs().format("YYYY-MM-DD")}`;
+
+      if (format === "csv") {
+        exportToCSV({
+          data: dataWithIndex,
+          columns: exportColumns,
+          filename: `${filename}.csv`,
+        });
+      } else if (format === "excel") {
+        await exportToExcel({
+          data: dataWithIndex,
+          columns: exportColumns,
+          filename: `${filename}.xlsx`,
+          sheetName: "Penilaian Logbook Export",
+        });
+      }
+
+      showToast(
+        `Berhasil mengekspor ${allData.length} data`,
+        "success"
+      );
+
+      // Set complete state - modal stays open until user clicks OK
+      setIsExportComplete(true);
+    } catch (error) {
+      // Check if cancelled
+      if (error instanceof Error && error.message === "EXPORT_CANCELLED") {
+        showToast("Export dibatalkan", "error");
+        setShowExportModal(false);
+        return;
+      }
+      console.error("Export error:", error);
+      showToast(
+        error instanceof Error ? error.message : "Gagal mengekspor data",
+        "error"
+      );
+      setShowExportModal(false);
+    } finally {
+      exportControllerRef.current = null;
+    }
+  };
+
+  const handleCancelExport = () => {
+    if (exportControllerRef.current) {
+      exportControllerRef.current.abort();
+      cancelExport();
+    }
+    setShowExportModal(false);
+    setIsExportComplete(false);
+    exportControllerRef.current = null;
+  };
+
+  const handleOkExport = () => {
+    setShowExportModal(false);
+    setIsExportComplete(false);
+  };
 
   const handleSearch = (query: string) => {
     console.log("Search:", query);
@@ -255,6 +404,16 @@ export default function PenilaianLogbookStatusListPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
+      <ExportModal
+        isShown={showExportModal}
+        progress={exportProgress}
+        offset={exportOffset}
+        total={exportTotal}
+        isComplete={isExportComplete}
+        onCancel={handleCancelExport}
+        onOk={handleOkExport}
+      />
+
       <Topbar
         breadcrumbs={[
           { label: "Penilaian Logbook", to: ROUTES.penilaianLogbook },
@@ -265,7 +424,9 @@ export default function PenilaianLogbookStatusListPage() {
           { label: isScored ? "Scored" : "Unscored" },
         ]}
         searchPlaceholder="Cari logbook..."
+        onExport={handleExport}
         onSearch={handleSearch}
+        isLoading={isExporting}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">

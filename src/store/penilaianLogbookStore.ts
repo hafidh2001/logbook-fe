@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { TPenilaianLogbook, IPenilaianLogbookListParams, IPenilaianLogbookDetailParams, TPenilaianLogbookStatusListItem, IPenilaianLogbookStatusListParams, TPenilaianLogbookDetailByStatus, IPenilaianLogbookDetailByStatusParams } from "@/types/penilaianLogbook";
 import { penilaianLogbookApi } from "@/services/penilaianLogbookApi";
 import { useAuthStore } from "@/store/authStore";
+import { EXPORT_LIMIT } from "@/constants/export";
 
 interface PenilaianLogbookState {
   penilaianList: TPenilaianLogbook[];
@@ -16,6 +17,7 @@ interface PenilaianLogbookState {
   };
   isLoading: boolean;
   isLoadingDetail: boolean;
+  isExporting: boolean;
   error: string | null;
   hasInitialized: boolean;
 }
@@ -25,6 +27,12 @@ interface PenilaianLogbookActions {
   loadPenilaianLogbookDetail: (params: IPenilaianLogbookDetailParams) => Promise<void>;
   loadPenilaianLogbookDetailByStatus: (params: IPenilaianLogbookDetailByStatusParams) => Promise<void>;
   loadPenilaianLogbookByStatus: (params: IPenilaianLogbookStatusListParams) => Promise<void>;
+  loadExportPenilaianLogbookByStatus: (params: {
+    filterParams: Omit<IPenilaianLogbookStatusListParams, "page" | "limit">;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TPenilaianLogbookStatusListItem[]>;
+  cancelExport: () => void;
   reset: () => void;
   resetDetail: () => void;
 }
@@ -44,6 +52,7 @@ const initialState: PenilaianLogbookState = {
   },
   isLoading: false,
   isLoadingDetail: false,
+  isExporting: false,
   error: null,
   hasInitialized: false,
 };
@@ -118,6 +127,73 @@ export const usePenilaianLogbookStore = create<PenilaianLogbookStore>((set) => (
         isLoadingDetail: false,
       });
     }
+  },
+
+  loadExportPenilaianLogbookByStatus: async ({ filterParams, onProgress, signal }) => {
+    set({ isExporting: true });
+
+    try {
+      // Step 1: Get total count from first fetch
+      const firstResponse = await penilaianLogbookApi.getPenilaianLogbookByStatus({
+        ...filterParams,
+        page: 1,
+        limit: 1,
+      });
+
+      // Check if cancelled before continuing
+      if (signal?.aborted) {
+        set({ isExporting: false });
+        throw new Error("EXPORT_CANCELLED");
+      }
+
+      const total = firstResponse.total;
+
+      if (total === 0) {
+        set({ isExporting: false });
+        return [];
+      }
+
+      // Step 2: Batch export with limit
+      const totalBatch = Math.ceil(total / EXPORT_LIMIT);
+      let allData: typeof firstResponse.data = [];
+
+      for (let i = 0; i < totalBatch; i++) {
+        // Check if cancelled before each batch
+        if (signal?.aborted) {
+          set({ isExporting: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        const response = await penilaianLogbookApi.getPenilaianLogbookByStatus({
+          ...filterParams,
+          page: i + 1,
+          limit: EXPORT_LIMIT,
+        });
+
+        // Check if cancelled after each batch
+        if (signal?.aborted) {
+          set({ isExporting: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        allData.push(...response.data);
+
+        // Call progress callback
+        if (onProgress) {
+          onProgress(Math.round(((i + 1) / totalBatch) * 100), allData.length, total);
+        }
+      }
+
+      set({ isExporting: false });
+      return allData;
+    } catch (error) {
+      set({ isExporting: false });
+      throw error;
+    }
+  },
+
+  cancelExport: () => {
+    set({ isExporting: false });
   },
 
   reset: () => set(initialState),
