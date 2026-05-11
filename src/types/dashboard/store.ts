@@ -44,6 +44,7 @@ export interface DashboardState {
   unverifiedLogbookData: TUnverifiedLogbookData | null;
   unverifiedLogbookDetail: TUnverifiedLogbookDetail | null;
   isLoading: boolean;
+  isExporting: boolean;
   error: string | null;
   hasInitialized: boolean;
 }
@@ -63,6 +64,12 @@ export interface DashboardActions {
     params: IUnverifiedLogbookListParams,
   ) => Promise<void>;
   loadUnverifiedLogbookDetail: (id_logbook: number) => Promise<void>;
+  loadExportUnverifiedLogbookList: (params: {
+    filterParams: Omit<IUnverifiedLogbookListParams, "page" | "limit">;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TUnverifiedLogbook[]>;
+  cancelExport: () => void;
   reset: () => void;
 }
 

@@ -14,6 +14,7 @@ import {
   TLogActivity,
   TLogbookByStatusRaw,
   TLogbookByStatus,
+  TUnverifiedLogbook,
 } from "@/types/dashboard";
 import { useAuthStore } from "./authStore";
 import {
@@ -21,6 +22,7 @@ import {
   DashboardStore,
   UnverifiedLogbookData,
 } from "@/types/dashboard/store";
+import { EXPORT_LIMIT } from "@/constants/export";
 
 const initialState: DashboardState = {
   dashboardData: null,
@@ -42,6 +44,7 @@ const initialState: DashboardState = {
   unverifiedLogbookData: null,
   unverifiedLogbookDetail: null,
   isLoading: false,
+  isExporting: false,
   error: null,
   hasInitialized: false,
 };
@@ -524,6 +527,77 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
         isLoading: false,
       });
     }
+  },
+
+  loadExportUnverifiedLogbookList: async ({ filterParams, onProgress, signal }) => {
+    const { user } = useAuthStore.getState();
+
+    set({ isExporting: true });
+
+    try {
+      // Step 1: Get total count from first fetch
+      const firstResponse = await dashboardApi.getUnverifiedLogbookList({
+        id_client: user?.id_client ?? 0,
+        ...filterParams,
+        page: 1,
+        limit: 1,
+      });
+
+      // Check if cancelled before continuing
+      if (signal?.aborted) {
+        set({ isExporting: false });
+        throw new Error("EXPORT_CANCELLED");
+      }
+
+      const total = firstResponse.total;
+
+      if (total === 0) {
+        set({ isExporting: false });
+        return [];
+      }
+
+      // Step 2: Batch export with limit
+      const totalBatch = Math.ceil(total / EXPORT_LIMIT);
+      let allData: TUnverifiedLogbook[] = [];
+
+      for (let i = 0; i < totalBatch; i++) {
+        // Check if cancelled before each batch
+        if (signal?.aborted) {
+          set({ isExporting: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        const response = await dashboardApi.getUnverifiedLogbookList({
+          id_client: user?.id_client ?? 0,
+          ...filterParams,
+          page: 1,
+          limit: EXPORT_LIMIT,
+        });
+
+        // Check if cancelled after each batch
+        if (signal?.aborted) {
+          set({ isExporting: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        allData.push(...response.data);
+
+        // Call progress callback
+        if (onProgress) {
+          onProgress(Math.round(((i + 1) / totalBatch) * 100), allData.length, total);
+        }
+      }
+
+      set({ isExporting: false });
+      return allData;
+    } catch (error) {
+      set({ isExporting: false });
+      throw error;
+    }
+  },
+
+  cancelExport: () => {
+    set({ isExporting: false });
   },
 
   reset: () => set(initialState),
