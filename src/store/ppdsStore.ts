@@ -301,7 +301,7 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
 
         const response = await ppdsApi.getPpdsList({
           id_client: user?.id_client ?? 0,
-          page: 1,
+          page: i + 1,
           limit: EXPORT_LIMIT,
           ppds: filterParams.ppds ?? null,
           stase: filterParams.stase ?? null,
@@ -372,7 +372,7 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
 
         const response = await ppdsApi.getPpdsInactiveList({
           id_client: user?.id_client ?? 0,
-          page: 1,
+          page: i + 1,
           limit: EXPORT_LIMIT,
           ppds: filterParams.ppds ?? null,
           stase: filterParams.stase ?? null,
@@ -447,7 +447,7 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
 
         const response = await ppdsApi.getPpdsLogbookList({
           id_client: user?.id_client ?? 0,
-          page: 1,
+          page: i + 1,
           limit: EXPORT_LIMIT,
           id_ppds: filterParams.id_ppds ?? undefined,
           id_staff: filterParams.id_staff ?? undefined,

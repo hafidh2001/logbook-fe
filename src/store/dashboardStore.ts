@@ -566,7 +566,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
 
         const response = await dashboardApi.getUnverifiedLogbookList({
           ...filterParams,
-          page: 1,
+          page: i + 1,
           limit: EXPORT_LIMIT,
         });
 

@@ -232,7 +232,7 @@ export const useStaffStore = create<StaffStore>((set) => ({
         const response = await staffApi.getStaffList({
           id_client: user?.id_client ?? 0,
           ...filterParams,
-          page: 1,
+          page: i + 1,
           limit: EXPORT_LIMIT,
         });
 
@@ -295,7 +295,7 @@ export const useStaffStore = create<StaffStore>((set) => ({
 
         const response = await staffApi.getStaffLogbookList({
           ...filterParams,
-          page: 1,
+          page: i + 1,
           limit: EXPORT_LIMIT,
         });
 

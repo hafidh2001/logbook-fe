@@ -22,6 +22,7 @@ export interface StaseState {
   selectedStase: TStaseDetail | null;
   isLoading: boolean;
   isLoadingDetail: boolean;
+  isExporting: boolean;
   error: Nullable<string>;
   success: Nullable<string>;
   hasInitialized: boolean;
@@ -33,6 +34,12 @@ export interface StaseActions {
   createStase: (data: IStaseCreatePayload) => Promise<boolean>;
   updateStase: (data: IStaseUpdatePayload) => Promise<boolean>;
   deleteStase: (id_logbook: number) => Promise<boolean>;
+  loadExportStaseList: (params: {
+    filterParams: Partial<IStaseListParams>;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TStaseListItem[]>;
+  cancelExport: () => void;
   reset: () => void;
   resetDetail: () => void;
 }

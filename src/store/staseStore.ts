@@ -6,6 +6,7 @@ import type {
   StaseState,
   StaseStore,
 } from "@/types/stase/store";
+import { EXPORT_LIMIT } from "@/constants/export";
 
 const initialState: StaseState = {
   staseData: {
@@ -20,6 +21,7 @@ const initialState: StaseState = {
   selectedStase: null,
   isLoading: false,
   isLoadingDetail: false,
+  isExporting: false,
   error: null,
   success: null,
   hasInitialized: false,
@@ -126,6 +128,77 @@ export const useStaseStore = create<StaseStore>((set) => ({
       });
       return false;
     }
+  },
+
+  loadExportStaseList: async ({ filterParams, onProgress, signal }) => {
+    const { user } = useAuthStore.getState();
+
+    set({ isExporting: true });
+
+    try {
+      // Step 1: Get total count from first fetch
+      const firstResponse = await staseApi.getStaseList({
+        id_client: user?.id_client ?? 0,
+        ...filterParams,
+        page: 1,
+        limit: 1,
+      });
+
+      // Check if cancelled before continuing
+      if (signal?.aborted) {
+        set({ isExporting: false });
+        throw new Error("EXPORT_CANCELLED");
+      }
+
+      const total = firstResponse.total;
+
+      if (total === 0) {
+        set({ isExporting: false });
+        return [];
+      }
+
+      // Step 2: Batch export with limit
+      const totalBatch = Math.ceil(total / EXPORT_LIMIT);
+      let allData: typeof firstResponse.data = [];
+
+      for (let i = 0; i < totalBatch; i++) {
+        // Check if cancelled before each batch
+        if (signal?.aborted) {
+          set({ isExporting: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        const response = await staseApi.getStaseList({
+          id_client: user?.id_client ?? 0,
+          ...filterParams,
+          page: i + 1,
+          limit: EXPORT_LIMIT,
+        });
+
+        // Check if cancelled after each batch
+        if (signal?.aborted) {
+          set({ isExporting: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        allData.push(...response.data);
+
+        // Call progress callback
+        if (onProgress) {
+          onProgress(Math.round(((i + 1) / totalBatch) * 100), allData.length, total);
+        }
+      }
+
+      set({ isExporting: false });
+      return allData;
+    } catch (error) {
+      set({ isExporting: false });
+      throw error;
+    }
+  },
+
+  cancelExport: () => {
+    set({ isExporting: false });
   },
 
   reset: () => set(initialState),
