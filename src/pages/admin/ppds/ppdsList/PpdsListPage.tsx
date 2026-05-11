@@ -22,6 +22,7 @@ import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function PpdsListPage() {
   const { width } = useWindowDimensions();
@@ -48,6 +49,10 @@ export default function PpdsListPage() {
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
+  // Search state with 2 second debounce
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
   // Pagination - page is always read from URL
   const { page, setPage, limit, setLimit, searchParams } = usePagination({
     defaultPage: 1,
@@ -56,21 +61,27 @@ export default function PpdsListPage() {
 
   // Filter hook
   const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<
-    Omit<IPpdsListParams, "id_client" | "page" | "limit">
+    Omit<IPpdsListParams, "id_client" | "page" | "limit" | "search">
   >({
     fields: [{ key: "ppds" }, { key: "stase" }, { key: "nim" }],
     onFilterChange: () => setPage(1),
   });
 
+  // Reset page when search changes
   useEffect(() => {
-    // Runs when URL or filter changes
+    setPage(1);
+  }, [debouncedSearchQuery, setPage]);
+
+  useEffect(() => {
+    // Runs when URL, filter, or search changes
     loadPpdsList({
       page,
       limit,
+      search: debouncedSearchQuery || undefined,
       ...filterParams,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, filterParams]);
+  }, [searchParams, filterParams, debouncedSearchQuery]);
 
   useEffect(() => {
     // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
@@ -200,8 +211,8 @@ export default function PpdsListPage() {
   };
 
   const handleSearch = (query: string) => {
-    // TODO: Implement search
-    console.log("Search:", query);
+    // Update search query - will be debounced in useEffect
+    setSearchQuery(query);
   };
 
   const handlePaginationChange = (pageIndex: number, pageSize: number) => {

@@ -23,6 +23,12 @@ export const Topbar = ({
     onSearch?.(searchQuery);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    // Trigger live search on every change
+    onSearch?.(value);
+  };
+
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       onSearch?.(searchQuery);
@@ -47,7 +53,7 @@ export const Topbar = ({
           <form onSubmit={handleSearch} className="w-full">
             <InputField
               value={searchQuery}
-              onChange={(value) => setSearchQuery(value)}
+              onChange={handleSearchChange}
               onKeyDown={handleSearchKeyDown}
               placeholder={searchPlaceholder}
               startIcon={<icons.Search size={16} className="text-gray-400" />}

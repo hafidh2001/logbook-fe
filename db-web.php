@@ -623,41 +623,67 @@ class ApiWebServiceController extends Controller {
             ':is_show'   => true,
             ':role_name' => 'ppds'
         ];
-    
+
         // 🔥 optional filter
         if (!empty($post['ppds'])) {
             $sql      .= ' AND mu.id = :ppds';
             $countSql .= ' AND mu.id = :ppds';
             $params[':ppds'] = $post['ppds'];
         }
-    
+
         if (!empty($post['stase'])) {
             $sql      .= ' AND mu.id_stase = :stase';
             $countSql .= ' AND mu.id_stase = :stase';
             $params[':stase'] = $post['stase'];
         }
-    
+
         if (!empty($post['nim'])) {
             $sql      .= ' AND mu.code ILIKE :nim';
             $countSql .= ' AND mu.code ILIKE :nim';
             $params[':nim'] = '%' . $post['nim'] . '%';
         }
-    
+
+        // 🔥 search filter - ILIKE across multiple fields
+        if (!empty($post['search'])) {
+            $searchTerm = '%' . $post['search'] . '%';
+            $sql      .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.username ILIKE :search
+                OR mu.email ILIKE :search
+                OR mu.phone ILIKE :search
+                OR mu.address ILIKE :search
+                OR mu.code ILIKE :search
+                OR mr.name ILIKE :search
+                OR ms.name ILIKE :search
+            )';
+            $countSql .= ' AND (
+                mu.display_name ILIKE :search
+                OR mu.username ILIKE :search
+                OR mu.email ILIKE :search
+                OR mu.phone ILIKE :search
+                OR mu.address ILIKE :search
+                OR mu.code ILIKE :search
+                OR mr.name ILIKE :search
+                OR ms.name ILIKE :search
+            )';
+            $params[':search'] = $searchTerm;
+        }
+
         // sorting + pagination
-        $sql .= " ORDER BY 
-                    mu.display_name 
-                    $sort 
-                LIMIT :limit 
+        $sql .= " ORDER BY
+                    mu.display_name
+                    $sort
+                LIMIT :limit
                 OFFSET :offset";
-    
+
         $command      = Yii::app()->db->createCommand($sql);
         $countCommand = Yii::app()->db->createCommand($countSql);
-        
+
         foreach ($params as $key => $val) {
             $command->bindValue($key, $val);
             $countCommand->bindValue($key, $val);
         }
-    
+
         $command->bindValue(':limit', $limit, PDO::PARAM_INT);
         $command->bindValue(':offset', $offset, PDO::PARAM_INT);
     

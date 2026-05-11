@@ -40,6 +40,7 @@ export interface IPpdsListParams {
   id_client: number;
   page: number;
   limit: number;
+  search?: Nullable<string>;
   status?: Nullable<string>;
   ppds?: Nullable<number>;
   stase?: Nullable<number>;
