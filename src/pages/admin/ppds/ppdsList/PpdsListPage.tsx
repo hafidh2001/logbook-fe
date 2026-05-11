@@ -67,9 +67,12 @@ export default function PpdsListPage() {
     onFilterChange: () => setPage(1),
   });
 
-  // Reset page when search changes
+  // Reset page when search changes (only when user types actual search query)
   useEffect(() => {
-    setPage(1);
+    // Only reset page when there's an actual search query
+    if (debouncedSearchQuery) {
+      setPage(1);
+    }
   }, [debouncedSearchQuery, setPage]);
 
   useEffect(() => {
