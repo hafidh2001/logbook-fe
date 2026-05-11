@@ -1,8 +1,23 @@
 import { create } from "zustand";
-import type { PpdsStore, PpdsData, PpdsLogbookData, PpdsInactiveData } from "@/types/ppds/store";
-import type { TPpds, TPpdsDetail, IPpdsPayload, IPpdsCreatePayload, IPpdsChangePasswordPayload, TPpdsLogbookDetail, IPpdsLogbookDetailParams, IPpdsListParams } from "@/types/ppds";
+import type {
+  PpdsStore,
+  PpdsData,
+  PpdsLogbookData,
+  PpdsInactiveData,
+} from "@/types/ppds/store";
+import type {
+  TPpds,
+  TPpdsDetail,
+  IPpdsPayload,
+  IPpdsCreatePayload,
+  IPpdsChangePasswordPayload,
+  TPpdsLogbookDetail,
+  IPpdsLogbookDetailParams,
+  IPpdsListParams,
+} from "@/types/ppds";
 import { ppdsApi } from "@/services/ppdsApi";
 import { useAuthStore } from "@/store/authStore";
+import { EXPORT_LIMIT } from "@/constants/export";
 
 const initialState = {
   ppdsData: {
@@ -19,6 +34,7 @@ const initialState = {
   ppdsLogbookDetail: null as TPpdsLogbookDetail | null,
   selectedPpds: null as TPpdsDetail | null,
   isLoading: false,
+  isExporting: false,
   error: null as string | null,
   success: null as string | null,
   hasInitialized: false,
@@ -117,7 +133,9 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error ? error.message : "Failed to load inactive PPDS list",
+          error instanceof Error
+            ? error.message
+            : "Failed to load inactive PPDS list",
         isLoading: false,
         hasInitialized: true,
       });
@@ -137,9 +155,20 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
           pageCount: Math.ceil(response.total / response.pagination.limit) || 1,
         },
       };
-      set({ ppdsLogbookData: logbookData, isLoading: false, hasInitialized: true });
+      set({
+        ppdsLogbookData: logbookData,
+        isLoading: false,
+        hasInitialized: true,
+      });
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : "Failed to load logbook list", isLoading: false, hasInitialized: true });
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to load logbook list",
+        isLoading: false,
+        hasInitialized: true,
+      });
     }
   },
 
@@ -205,7 +234,8 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
       return true;
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to change password",
+        error:
+          error instanceof Error ? error.message : "Failed to change password",
         isLoading: false,
       });
       return false;
@@ -220,17 +250,95 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error ? error.message : "Failed to load logbook detail",
+          error instanceof Error
+            ? error.message
+            : "Failed to load logbook detail",
         isLoading: false,
       });
     }
   },
 
-  resetLogbookDetail: () => set({
-    ppdsLogbookDetail: null,
-    isLoading: false,
-    error: null,
-  }),
+  loadExportPpdsList: async ({ filterParams, onProgress, signal }) => {
+    const { user } = useAuthStore.getState();
+
+    set({ isExporting: true });
+
+    try {
+      // Step 1: Get total count from first fetch
+      const firstResponse = await ppdsApi.getPpdsList({
+        id_client: user?.id_client ?? 0,
+        page: 1,
+        limit: 1,
+        ppds: filterParams.ppds ?? null,
+        stase: filterParams.stase ?? null,
+        nim: filterParams.nim ?? null,
+      });
+
+      // Check if cancelled before continuing
+      if (signal?.aborted) {
+        set({ isExporting: false });
+        throw new Error("EXPORT_CANCELLED");
+      }
+
+      const total = firstResponse.total;
+
+      if (total === 0) {
+        set({ isExporting: false });
+        return [];
+      }
+
+      // Step 2: Batch export with limit
+      const totalBatch = Math.ceil(total / EXPORT_LIMIT);
+      let allData: TPpds[] = [];
+
+      for (let i = 0; i < totalBatch; i++) {
+        // Check if cancelled before each batch
+        if (signal?.aborted) {
+          set({ isExporting: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        const response = await ppdsApi.getPpdsList({
+          id_client: user?.id_client ?? 0,
+          page: 1,
+          limit: EXPORT_LIMIT,
+          ppds: filterParams.ppds ?? null,
+          stase: filterParams.stase ?? null,
+          nim: filterParams.nim ?? null,
+        });
+
+        // Check if cancelled after each batch
+        if (signal?.aborted) {
+          set({ isExporting: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        allData.push(...response.data);
+
+        // Call progress callback - offset represents what's about to be/has been fetched
+        if (onProgress) {
+          onProgress(Math.round(((i + 1) / totalBatch) * 100), allData.length, total);
+        }
+      }
+
+      set({ isExporting: false });
+      return allData;
+    } catch (error) {
+      set({ isExporting: false });
+      throw error;
+    }
+  },
+
+  cancelExport: () => {
+    set({ isExporting: false });
+  },
+
+  resetLogbookDetail: () =>
+    set({
+      ppdsLogbookDetail: null,
+      isLoading: false,
+      error: null,
+    }),
 
   reset: () => set(initialState),
 }));

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Topbar } from "@/components/layout/Topbar";
 import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,7 @@ import useFilter from "@/hooks/useFilter";
 import useModal from "@/hooks/useModal";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
 import { showToast } from "@/utils/toast";
+import { ExportModal } from "@/components/exportModal/ExportModal";
 
 export default function PpdsListPage() {
   const { width } = useWindowDimensions();
@@ -26,8 +27,24 @@ export default function PpdsListPage() {
 
   const navigate = useNavigate();
 
-  const { ppdsData, isLoading, loadPpdsList, deletePpds, reset } =
-    usePpdsStore();
+  const {
+    ppdsData,
+    isLoading,
+    isExporting,
+    loadPpdsList,
+    deletePpds,
+    reset,
+    loadExportPpdsList,
+    cancelExport,
+  } = usePpdsStore();
+
+  // Export state
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportOffset, setExportOffset] = useState(0);
+  const [exportTotal, setExportTotal] = useState(0);
+  const [isExportComplete, setIsExportComplete] = useState(false);
+  const exportControllerRef = useRef<AbortController | null>(null);
 
   // Pagination - page is always read from URL
   const { page, setPage, limit, setLimit, searchParams } = usePagination({
@@ -65,8 +82,130 @@ export default function PpdsListPage() {
     navigate(ROUTES.ppdsCreate);
   };
 
-  const handleExport = () => {
-    // TODO: Implement export
+  const handleExport = async () => {
+    // Create new AbortController for this export
+    exportControllerRef.current = new AbortController();
+
+    setExportProgress(0);
+    setExportOffset(0);
+    setExportTotal(0);
+    setIsExportComplete(false);
+    setShowExportModal(true);
+
+    try {
+      // Use the cloned store method for export - this doesn't affect UI state
+      const allData = await loadExportPpdsList({
+        filterParams: {
+          ppds: (filterParams.ppds as number | null) ?? null,
+          stase: (filterParams.stase as number | null) ?? null,
+          nim: (filterParams.nim as string | null) ?? null,
+        },
+        onProgress: (progress, offset, total) => {
+          setExportProgress(progress);
+          setExportOffset(offset);
+          setExportTotal(total);
+        },
+        signal: exportControllerRef.current.signal,
+      });
+
+      if (allData.length === 0) {
+        showToast("Tidak ada data untuk diekspor", "error");
+        setShowExportModal(false);
+        return;
+      }
+
+      // Generate CSV
+      const headers = [
+        "No",
+        "Nama",
+        "Username",
+        "Email",
+        "No. Telepon",
+        "Alamat",
+        "Tanggal Lahir",
+        "NIM",
+        "Role",
+        "Stase",
+        "Total Logbook",
+      ];
+
+      const rows = allData.map((item, index) => [
+        index + 1,
+        item.display_name ?? "-",
+        item.username ?? "-",
+        item.email ?? "-",
+        item.phone ?? "-",
+        item.address ?? "-",
+        item.date_of_birth
+          ? dayjs(item.date_of_birth).locale("id").format("DD MMMM YYYY")
+          : "-",
+        item.nim ?? "-",
+        item.role_name ?? "-",
+        item.stase_name ?? "-",
+        item.total_logbook ?? 0,
+      ]);
+
+      // Convert to CSV
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row) =>
+          row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+        ),
+      ].join("\n");
+
+      // Add BOM for UTF-8
+      const BOM = "\uFEFF";
+      const blob = new Blob([BOM + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `ppds_export_${dayjs().format("YYYY-MM-DD")}.csv`;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      showToast(
+        `Berhasil mengekspor ${allData.length} data`,
+        "success"
+      );
+
+      // Set complete state - modal stays open until user clicks OK
+      setIsExportComplete(true);
+    } catch (error) {
+      // Check if cancelled
+      if (error instanceof Error && error.message === "EXPORT_CANCELLED") {
+        showToast("Export dibatalkan", "error");
+        setShowExportModal(false);
+        return;
+      }
+      console.error("Export error:", error);
+      showToast(
+        error instanceof Error ? error.message : "Gagal mengekspor data",
+        "error"
+      );
+      setShowExportModal(false);
+    } finally {
+      exportControllerRef.current = null;
+    }
+  };
+
+  const handleCancelExport = () => {
+    if (exportControllerRef.current) {
+      exportControllerRef.current.abort();
+      cancelExport();
+    }
+    setShowExportModal(false);
+    setIsExportComplete(false);
+    exportControllerRef.current = null;
+  };
+
+  const handleOkExport = () => {
+    setShowExportModal(false);
+    setIsExportComplete(false);
   };
 
   const handleSearch = (query: string) => {
@@ -210,6 +349,7 @@ export default function PpdsListPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleView}
+                disabled={isExporting}
                 className="bg-blue-600 text-white hover:bg-blue-700"
               >
                 <icons.Eye className="h-4 w-4" />
@@ -219,6 +359,7 @@ export default function PpdsListPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleChangePassword}
+                disabled={isExporting}
                 className="bg-yellow-500 text-white hover:bg-yellow-600"
               >
                 <icons.Lock className="h-4 w-4" />
@@ -231,6 +372,7 @@ export default function PpdsListPage() {
                   e.stopPropagation();
                   toggleDelete();
                 }}
+                disabled={isExporting}
                 className="bg-red-600 text-white hover:bg-red-700"
               >
                 <icons.Trash className="h-4 w-4" />
@@ -245,12 +387,23 @@ export default function PpdsListPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
+      <ExportModal
+        isShown={showExportModal}
+        progress={exportProgress}
+        offset={exportOffset}
+        total={exportTotal}
+        isComplete={isExportComplete}
+        onCancel={handleCancelExport}
+        onOk={handleOkExport}
+      />
+
       <Topbar
         breadcrumbs={[{ label: "PPDS", to: ROUTES.ppds }]}
         searchPlaceholder="Cari PPDS..."
         onCreate={handleCreate}
         onExport={handleExport}
         onSearch={handleSearch}
+        isLoading={isExporting}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">

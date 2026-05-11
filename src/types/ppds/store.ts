@@ -49,6 +49,7 @@ export interface PpdsState {
   ppdsLogbookDetail: TPpdsLogbookDetail | null;
   selectedPpds: TPpdsDetail | null;
   isLoading: boolean;
+  isExporting: boolean;
   error: Nullable<string>;
   success: Nullable<string>;
   hasInitialized: boolean;
@@ -66,6 +67,12 @@ export interface PpdsActions {
   changePassword: (data: IPpdsChangePasswordPayload) => Promise<boolean>;
   reset: () => void;
   resetLogbookDetail: () => void;
+  loadExportPpdsList: (params: {
+    filterParams: Partial<IPpdsListParams>;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TPpds[]>;
+  cancelExport: () => void;
 }
 
 export type PpdsStore = PpdsState & PpdsActions;
