@@ -72,6 +72,11 @@ export interface PpdsActions {
     onProgress?: (progress: number, offset: number, total: number) => void;
     signal?: AbortSignal;
   }) => Promise<TPpds[]>;
+  loadExportPpdsInactiveList: (params: {
+    filterParams: Partial<IPpdsListParams>;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TPpds[]>;
   cancelExport: () => void;
 }
 
