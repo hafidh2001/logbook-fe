@@ -2590,7 +2590,8 @@ class ApiWebServiceController extends Controller {
         $staffSql = "
             SELECT
                 mu.display_name AS name,
-                mar.role AS role
+                mar.role AS role,
+                tls.status
             FROM t_logbook_status tls
             INNER JOIN m_action_role mar
                 ON mar.id = tls.id_action_role

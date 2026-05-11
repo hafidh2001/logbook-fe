@@ -1,8 +1,9 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
+import { StatusBadge } from "@/components/statusBadge";
 import { TPenilaianLogbookDetailByStatus } from "@/types/penilaianLogbook";
 
 interface Props {
-  data: TPenilaianLogbookDetailByStatus;
+  data: TPenilaianLogbookDetailByStatus | null;
 }
 
 export const Staff = ({ data }: Props) => {
@@ -17,7 +18,14 @@ export const Staff = ({ data }: Props) => {
   return (
     <CardWrapper title="Staff" contentClassName="flex flex-col gap-3">
       {data?.staff.map(
-        (item: { name: string | null; role: string | null }, index: number) => (
+        (
+          item: {
+            name: string | null;
+            role: string | null;
+            status: string | null;
+          },
+          index: number,
+        ) => (
           <div key={index} className="flex items-center gap-4">
             <div className="flex-1">
               <span className="text-sm font-semibold text-gray-800 block">
@@ -25,6 +33,7 @@ export const Staff = ({ data }: Props) => {
               </span>
               <span className="text-sm text-gray-600">{item.name ?? "-"}</span>
             </div>
+            <StatusBadge status={item.status ?? null} />
           </div>
         ),
       )}

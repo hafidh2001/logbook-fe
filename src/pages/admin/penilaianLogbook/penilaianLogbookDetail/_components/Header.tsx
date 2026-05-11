@@ -2,7 +2,7 @@ import { icons } from "@/assets/images/Icon";
 import { TPenilaianLogbookDetailByStatus } from "@/types/penilaianLogbook";
 
 interface Props {
-  data: TPenilaianLogbookDetailByStatus;
+  data: TPenilaianLogbookDetailByStatus | null;
 }
 
 export const Header = ({ data }: Props) => {

@@ -3,7 +3,7 @@ import { TPenilaianLogbookDetailByStatus } from "@/types/penilaianLogbook";
 import dayjs from "dayjs";
 
 interface Props {
-  data: TPenilaianLogbookDetailByStatus;
+  data: TPenilaianLogbookDetailByStatus | null;
 }
 
 export const Kegiatan = ({ data }: Props) => {

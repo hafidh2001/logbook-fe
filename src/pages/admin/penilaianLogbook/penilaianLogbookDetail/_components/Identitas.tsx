@@ -2,7 +2,7 @@ import { CardWrapper } from "@/components/card/cardWrapper";
 import { TPenilaianLogbookDetailByStatus } from "@/types/penilaianLogbook";
 
 interface Props {
-  data: TPenilaianLogbookDetailByStatus;
+  data: TPenilaianLogbookDetailByStatus | null;
 }
 
 export const Identitas = ({ data }: Props) => {

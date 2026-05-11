@@ -50,11 +50,12 @@ export interface IPenilaianLogbookStatusListParams {
 
 export type TPenilaianLogbookDetailByStatus = Omit<
   TPenilaianLogbookStatusListItem,
-  "staff_name"
+  "staff"
 > & {
   staff: Array<{
     name: string | null;
     role: string | null;
+    status: string | null;
   }>;
   notes: string | null;
   email: string | null;
