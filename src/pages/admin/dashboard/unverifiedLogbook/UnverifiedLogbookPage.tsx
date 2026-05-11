@@ -23,6 +23,7 @@ import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function UnverifiedLogbookPage() {
   const { width } = useWindowDimensions();
@@ -75,14 +76,26 @@ export default function UnverifiedLogbookPage() {
     onFilterChange: () => setPage(1),
   });
 
+  // Search state with 500ms debounce
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
+  // Reset page when search changes (only when user types actual search query)
   useEffect(() => {
-    // Runs when URL or filter changes
+    if (debouncedSearchQuery) {
+      setPage(1);
+    }
+  }, [debouncedSearchQuery, setPage]);
+
+  useEffect(() => {
+    // Runs when URL, filter, or search changes
     if (user?.id_client) {
       loadUnverifiedLogbookList({
         id_client: user.id_client,
         id_staff: (filterParams.id_staff as number | null) ?? undefined,
         page,
         limit,
+        search: debouncedSearchQuery || undefined,
         id_ppds: (filterParams.id_ppds as number | null) ?? undefined,
         id_activity: (filterParams.id_activity as number | null) ?? undefined,
         id_stase: (filterParams.id_stase as number | null) ?? undefined,
@@ -92,7 +105,7 @@ export default function UnverifiedLogbookPage() {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, filterParams]);
+  }, [searchParams, filterParams, debouncedSearchQuery]);
 
   useEffect(() => {
     // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
@@ -240,8 +253,7 @@ export default function UnverifiedLogbookPage() {
   };
 
   const handleSearch = (query: string) => {
-    // TODO: Implement search
-    console.log("Search:", query);
+    setSearchQuery(query);
   };
 
   const handlePaginationChange = (pageIndex: number, pageSize: number) => {

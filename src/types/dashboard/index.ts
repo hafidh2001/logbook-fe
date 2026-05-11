@@ -122,6 +122,7 @@ export interface IUnverifiedLogbookListParams {
   id_client: number;
   page?: number;
   limit?: number;
+  search?: Nullable<string>;
   id_ppds?: Nullable<number>;
   id_staff?: Nullable<number>;
   id_activity?: Nullable<number>;
