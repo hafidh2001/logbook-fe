@@ -66,7 +66,6 @@ export default function PpdsChangePasswordPage() {
       <Topbar
         breadcrumbs={[
           { label: "PPDS", to: ROUTES.ppds },
-          { label: "Detail", to: ROUTES.ppdsDetail(idUser || "") },
           { label: "Ubah Password" },
         ]}
         onSave={handleSubmit(onSubmit)}

@@ -7,7 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { icons } from "@/assets/images/Icon";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/fields/passwordField";
-import { changePasswordSchema, ChangePasswordFormData } from "@/validations/common/changePassword";
+import {
+  changePasswordSchema,
+  ChangePasswordFormData,
+} from "@/validations/common/changePassword";
 import { useStaffStore } from "@/store/staffStore";
 import { useAuthStore } from "@/store/authStore";
 import { useEffect } from "react";
@@ -17,7 +20,13 @@ export default function StaffChangePasswordPage() {
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
 
-  const { selectedStaff, loadStaffDetail, resetDetail, changePassword, isLoading } = useStaffStore();
+  const {
+    selectedStaff,
+    loadStaffDetail,
+    resetDetail,
+    changePassword,
+    isLoading,
+  } = useStaffStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -67,8 +76,7 @@ export default function StaffChangePasswordPage() {
       <Topbar
         breadcrumbs={[
           { label: "Staff", to: ROUTES.staff },
-          { label: "Detail", to: ROUTES.staffDetail(":idUser") },
-          { label: "Ubah Password", to: ROUTES.staffChangePassword(":idUser") },
+          { label: "Ubah Password" },
         ]}
         onSave={handleSubmit(onSubmit)}
         isLoading={isLoading}
@@ -128,10 +136,7 @@ export default function StaffChangePasswordPage() {
 
           {/* Back Button */}
           <div className="mt-4 flex justify-end">
-            <Button
-              variant="secondary"
-              onClick={() => window.history.back()}
-            >
+            <Button variant="secondary" onClick={() => window.history.back()}>
               <icons.ArrowLeft className="h-4 w-4" />
               Kembali
             </Button>
