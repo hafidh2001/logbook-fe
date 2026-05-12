@@ -11,16 +11,14 @@ import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useState, useEffect, useRef } from "react";
 import { ConfirmationModal } from "@/components/confirmationModal";
 import type { TStaseListItem } from "@/types/stase";
-import usePagination from "@/hooks/usePagination";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
-import useFilter from "@/hooks/useFilter";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParams } from "@/hooks/useUrlParams";
 
 export default function StaseListPage() {
   const { width } = useWindowDimensions();
@@ -39,27 +37,30 @@ export default function StaseListPage() {
     reset,
   } = useStaseStore();
 
-  // Pagination - page is always read from URL
-  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+  // ========== URL PARAMS (using useUrlParams hook) ==========
+  const {
+    page,
+    limit,
+    search,
+    debouncedSearch,
+    filters,
+    setLimit,
+    setSearch,
+    setFilters,
+    resetParams,
+    getNumberParam,
+  } = useUrlParams({
     defaultPage: 1,
     defaultLimit: DEFAULT_PAGE_SIZE,
+    filterKeys: ["id_ppds", "id_stase", "start_date", "end_date"],
+    searchDebounceMs: 500,
   });
 
-  // Filter hook
-  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<{
-    id_ppds?: number | null;
-    id_stase?: number | null;
-    start_date?: string;
-    end_date?: string;
-  }>({
-    fields: [
-      { key: "id_ppds" },
-      { key: "id_stase" },
-      { key: "start_date" },
-      { key: "end_date" },
-    ],
-    onFilterChange: () => setPage(1),
-  });
+  // Extract filter values from URL
+  const id_ppds = getNumberParam("id_ppds");
+  const id_stase = getNumberParam("id_stase");
+  const start_date = filters.start_date || undefined;
+  const end_date = filters.end_date || undefined;
 
   // Export state
   const [showExportModal, setShowExportModal] = useState(false);
@@ -68,28 +69,42 @@ export default function StaseListPage() {
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
-  // Search state with 500ms debounce
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  // ========== HANDLERS ==========
 
-  // Reset page when search changes (only when user types actual search query)
-  useEffect(() => {
-    if (debouncedSearchQuery) {
-      setPage(1);
-    }
-  }, [debouncedSearchQuery, setPage]);
+  const handleFilterChange = (newFilters: {
+    id_ppds?: number | null;
+    id_stase?: number | null;
+    start_date?: string;
+    end_date?: string;
+  }) => {
+    setFilters(newFilters);
+  };
+
+  const handleFilterReset = () => {
+    resetParams();
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearch(query);
+  };
+
+  const handlePaginationChange = (_pageIndex: number, pageSize: number) => {
+    setLimit(pageSize, false);
+  };
+
+  // ========== DATA FETCHING ==========
 
   useEffect(() => {
     loadStaseList({
       page,
       limit,
-      search: debouncedSearchQuery || undefined,
-      id_ppds: filterParams.id_ppds ?? undefined,
-      id_stase: filterParams.id_stase ?? undefined,
-      start_date: filterParams.start_date ?? undefined,
-      end_date: filterParams.end_date ?? undefined,
+      search: debouncedSearch || undefined,
+      id_ppds: id_ppds ?? undefined,
+      id_stase: id_stase ?? undefined,
+      start_date,
+      end_date,
     });
-  }, [searchParams, filterParams, debouncedSearchQuery, loadStaseList]);
+  }, [page, limit, debouncedSearch, id_ppds, id_stase, start_date, end_date, loadStaseList]);
 
   useEffect(() => {
     return () => reset();
@@ -117,10 +132,10 @@ export default function StaseListPage() {
     try {
       const allData = await loadExportStaseList({
         filterParams: {
-          id_ppds: filterParams.id_ppds ?? undefined,
-          id_stase: filterParams.id_stase ?? undefined,
-          start_date: filterParams.start_date ?? undefined,
-          end_date: filterParams.end_date ?? undefined,
+          id_ppds: id_ppds ?? undefined,
+          id_stase: id_stase ?? undefined,
+          start_date,
+          end_date,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);
@@ -212,10 +227,6 @@ export default function StaseListPage() {
     setIsExportComplete(false);
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
-
   const handleDelete = (item: TStaseListItem) => {
     setDeleteModal({ open: true, item });
   };
@@ -232,10 +243,10 @@ export default function StaseListPage() {
         loadStaseList({
           page,
           limit,
-          id_ppds: filterParams.id_ppds ?? undefined,
-          id_stase: filterParams.id_stase ?? undefined,
-          start_date: filterParams.start_date ?? undefined,
-          end_date: filterParams.end_date ?? undefined,
+          id_ppds: id_ppds ?? undefined,
+          id_stase: id_stase ?? undefined,
+          start_date,
+          end_date,
         });
       } else {
         const errorMessage = useStaseStore.getState().error;
@@ -249,11 +260,6 @@ export default function StaseListPage() {
 
   const handleDeleteCancel = () => {
     setDeleteModal({ open: false, item: null });
-  };
-
-  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
-    setPage(pageIndex + 1);
-    setLimit(pageSize);
   };
 
   const handleRowClick = (row: Row<TStaseListItem>) => {
@@ -373,13 +379,14 @@ export default function StaseListPage() {
         searchPlaceholder="Cari stase..."
         onCreate={handleCreate}
         onExport={handleExport}
-        onSearch={handleSearch}
+        onSearch={handleSearchChange}
         isLoading={isExporting}
+        initialSearchValue={search}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
-          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} />
+          <Filter onChange={handleFilterChange} onReset={handleFilterReset} />
 
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
