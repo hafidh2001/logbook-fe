@@ -4,7 +4,7 @@ import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { TPpds, IPpdsListParams } from "@/types/ppds";
+import { TPpds } from "@/types/ppds";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
 import dayjs from "dayjs";
@@ -13,14 +13,12 @@ import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { usePpdsStore } from "@/store/ppdsStore";
-import usePagination from "@/hooks/usePagination";
-import useFilter from "@/hooks/useFilter";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
 import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParams } from "@/hooks/useUrlParams";
 
 export default function PpdsInactiveListPage() {
   const { width } = useWindowDimensions();
@@ -45,42 +43,65 @@ export default function PpdsInactiveListPage() {
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
-  // Search state with 500ms debounce
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
-
-  // Pagination - page is always read from URL
-  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+  // ========== URL PARAMS (using useUrlParams hook) ==========
+  const {
+    page,
+    limit,
+    search,
+    debouncedSearch,
+    filters,
+    setLimit,
+    setSearch,
+    setFilters,
+    resetParams,
+    getNumberParam,
+  } = useUrlParams({
     defaultPage: 1,
     defaultLimit: DEFAULT_PAGE_SIZE,
+    filterKeys: ["ppds", "stase", "nim"],
+    searchDebounceMs: 500,
   });
 
-  // Filter hook
-  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<
-    Omit<IPpdsListParams, "id_client" | "page" | "limit" | "search">
-  >({
-    fields: [{ key: "ppds" }, { key: "stase" }, { key: "nim" }],
-    onFilterChange: () => setPage(1),
-  });
+  // Extract filter values from URL
+  const ppds = getNumberParam("ppds");
+  const stase = getNumberParam("stase");
+  const nim = filters.nim || undefined;
 
-  // Reset page when search changes (only when user types actual search query)
-  useEffect(() => {
-    // Only reset page when there's an actual search query
-    if (debouncedSearchQuery) {
-      setPage(1);
-    }
-  }, [debouncedSearchQuery, setPage]);
+  // ========== HANDLERS ==========
+
+  const handleFilterChange = (newFilters: {
+    ppds?: number | null;
+    stase?: number | null;
+    nim?: string | null;
+  }) => {
+    setFilters(newFilters);
+  };
+
+  const handleFilterReset = () => {
+    resetParams();
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearch(query);
+  };
+
+  const handlePaginationChange = (_pageIndex: number, pageSize: number) => {
+    // BaseTable handles page changes via URL internally
+    setLimit(pageSize, false);
+  };
+
+  // ========== DATA FETCHING ==========
 
   useEffect(() => {
-    // Runs when URL, filter, or search changes
     loadPpdsInactiveList({
       page,
       limit,
-      search: debouncedSearchQuery || undefined,
-      ...filterParams,
+      search: debouncedSearch || undefined,
+      ppds: ppds ?? undefined,
+      stase: stase ?? undefined,
+      nim: nim,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, filterParams, debouncedSearchQuery]);
+  }, [page, limit, debouncedSearch, ppds, stase, nim, loadPpdsInactiveList]);
 
   useEffect(() => {
     // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
@@ -102,9 +123,9 @@ export default function PpdsInactiveListPage() {
       // Use the cloned store method for export - this doesn't affect UI state
       const allData = await loadExportPpdsInactiveList({
         filterParams: {
-          ppds: (filterParams.ppds as number | null) ?? null,
-          stase: (filterParams.stase as number | null) ?? null,
-          nim: (filterParams.nim as string | null) ?? null,
+          ppds: ppds ?? null,
+          stase: stase ?? null,
+          nim: nim ?? null,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);
@@ -202,15 +223,7 @@ export default function PpdsInactiveListPage() {
     setIsExportComplete(false);
   };
 
-  const handleSearch = (query: string) => {
-    // Update search query - will be debounced in useEffect
-    setSearchQuery(query);
-  };
-
-  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
-    setPage(pageIndex + 1);
-    setLimit(pageSize);
-  };
+  // ========== COLUMNS ==========
 
   const handleRowClick = (row: Row<TPpds>) => {
     navigate(ROUTES.ppdsInactiveDetail(String(row.original.id)));
@@ -324,12 +337,13 @@ export default function PpdsInactiveListPage() {
         breadcrumbs={[{ label: "PPDS Nonaktif" }]}
         searchPlaceholder="Cari PPDS..."
         onExport={handleExport}
-        onSearch={handleSearch}
+        onSearch={handleSearchChange}
         isLoading={isExporting}
+        initialSearchValue={search}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
-          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} />
+          <Filter onChange={handleFilterChange} onReset={handleFilterReset} />
 
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable

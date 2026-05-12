@@ -15,15 +15,12 @@ import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useEffect, useRef, useState } from "react";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
-import usePagination from "@/hooks/usePagination";
-import useFilter from "@/hooks/useFilter";
-import { FilterValue } from "@/components/filterPanel";
 import { StatusBadge } from "@/components/statusBadge";
 import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParams } from "@/hooks/useUrlParams";
 
 export default function PpdsLogbookPage() {
   const { width } = useWindowDimensions();
@@ -51,61 +48,99 @@ export default function PpdsLogbookPage() {
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
-  // Search state with 500ms debounce
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
-
-  // Pagination - page is always read from URL
-  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+  // ========== URL PARAMS (using useUrlParams hook) ==========
+  // Note: id_ppds is NOT a filter key because it's controlled by URL (idUser)
+  const {
+    page,
+    limit,
+    search,
+    debouncedSearch,
+    filters,
+    setLimit,
+    setSearch,
+    setFilters,
+    resetParams,
+    getNumberParam,
+  } = useUrlParams({
     defaultPage: 1,
     defaultLimit: DEFAULT_PAGE_SIZE,
-  });
-
-  // Filter hook - id_ppds is NOT included because it's controlled by URL (idUser)
-  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<
-    Omit<Record<string, FilterValue>, "start_date" | "end_date"> & {
-      start_date?: string;
-      end_date?: string;
-    }
-  >({
-    fields: [
-      { key: "id_staff" },
-      { key: "id_activity" },
-      { key: "id_stase" },
-      { key: "status" },
-      { key: "start_date" },
-      { key: "end_date" },
+    filterKeys: [
+      "id_staff",
+      "id_activity",
+      "id_stase",
+      "status",
+      "start_date",
+      "end_date",
     ],
-    onFilterChange: () => setPage(1),
+    searchDebounceMs: 500,
   });
 
-  // Reset page when search changes (only when user types actual search query)
-  useEffect(() => {
-    // Only reset page when there's an actual search query
-    if (debouncedSearchQuery) {
-      setPage(1);
-    }
-  }, [debouncedSearchQuery, setPage]);
+  // Extract filter values from URL
+  const id_staff = getNumberParam("id_staff");
+  const id_activity = getNumberParam("id_activity");
+  const id_stase = getNumberParam("id_stase");
+  const status = filters.status || undefined;
+  const start_date = filters.start_date || undefined;
+  const end_date = filters.end_date || undefined;
+
+  // ========== HANDLERS ==========
+
+  const handleFilterChange = (newFilters: {
+    id_staff?: number | null;
+    id_activity?: number | null;
+    id_stase?: number | null;
+    status?: string | null;
+    start_date?: string;
+    end_date?: string;
+  }) => {
+    setFilters(newFilters);
+  };
+
+  const handleFilterReset = () => {
+    resetParams();
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearch(query);
+  };
+
+  const handlePaginationChange = (_pageIndex: number, pageSize: number) => {
+    // BaseTable handles page changes via URL internally
+    setLimit(pageSize, false);
+  };
+
+  // ========== DATA FETCHING ==========
 
   useEffect(() => {
-    // Runs when URL, filter, or search changes
-    if (user?.id_client) {
+    if (user?.id_client && idUser) {
       loadPpdsLogbookList({
         id_client: user.id_client,
         id_ppds: Number(idUser),
         page,
         limit,
-        search: debouncedSearchQuery || undefined,
-        id_staff: (filterParams.id_staff as number | null) ?? undefined,
-        id_activity: (filterParams.id_activity as number | null) ?? undefined,
-        id_stase: (filterParams.id_stase as number | null) ?? undefined,
-        status: (filterParams.status as string | null) ?? undefined,
-        start_date: filterParams.start_date ?? undefined,
-        end_date: filterParams.end_date ?? undefined,
+        search: debouncedSearch || undefined,
+        id_staff: id_staff ?? undefined,
+        id_activity: id_activity ?? undefined,
+        id_stase: id_stase ?? undefined,
+        status: status ?? undefined,
+        start_date,
+        end_date,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, filterParams, debouncedSearchQuery]);
+  }, [
+    page,
+    limit,
+    debouncedSearch,
+    id_staff,
+    id_activity,
+    id_stase,
+    status,
+    start_date,
+    end_date,
+    user?.id_client,
+    idUser,
+    loadPpdsLogbookList,
+  ]);
 
   useEffect(() => {
     // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
@@ -114,27 +149,17 @@ export default function PpdsLogbookPage() {
     };
   }, [reset]);
 
-  // Reset store when sidebar is clicked (URL has no page param)
-  useEffect(() => {
-    const pageParam = searchParams.get("page");
-    // If no page param in URL, reset store
-    if (!pageParam) {
-      reset();
-      // Also force page to 1 in URL if somehow different
-      if (page !== 1) {
-        setPage(1);
-      }
-    }
-  }, [searchParams, reset, page, setPage]);
-
   const isInactive = location.pathname.includes("/ppds-inactive/");
 
   const ppdsListRoute = isInactive ? ROUTES.ppdsInactive : ROUTES.ppds;
   const ppdsDetailRoute = isInactive
     ? ROUTES.ppdsInactiveDetail(idUser || "")
     : ROUTES.ppdsDetail(idUser || "");
+  const ppdsLogbookRoute = isInactive
+    ? ROUTES.ppdsInactiveLogbook(idUser || "")
+    : ROUTES.ppdsLogbook(idUser || "");
 
-  const logbooks = ppdsLogbookData?.list || [];
+  // ========== EXPORT ==========
 
   const handleExport = async (format: ExportFormat) => {
     // Create new AbortController for this export
@@ -151,12 +176,12 @@ export default function PpdsLogbookPage() {
         filterParams: {
           id_client: user?.id_client ?? 0,
           id_ppds: Number(idUser),
-          id_staff: (filterParams.id_staff as number | null) ?? undefined,
-          id_activity: (filterParams.id_activity as number | null) ?? undefined,
-          id_stase: (filterParams.id_stase as number | null) ?? undefined,
-          status: (filterParams.status as string | null) ?? undefined,
-          start_date: filterParams.start_date ?? undefined,
-          end_date: filterParams.end_date ?? undefined,
+          id_staff: id_staff ?? undefined,
+          id_activity: id_activity ?? undefined,
+          id_stase: id_stase ?? undefined,
+          status: status ?? undefined,
+          start_date,
+          end_date,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);
@@ -187,8 +212,12 @@ export default function PpdsLogbookPage() {
           header: "Staff Pengajar/DPJP",
           accessorKey: "staff",
           formatter: (value) => {
-            if (!value || !Array.isArray(value) || value.length === 0) return "-";
-            return value.map((s: { name: string | null }) => s.name).filter(Boolean).join(", ");
+            if (!value || !Array.isArray(value) || value.length === 0)
+              return "-";
+            return value
+              .map((s: { name: string | null }) => s.name)
+              .filter(Boolean)
+              .join(", ");
           },
         },
         { header: "Activity", accessorKey: "action" },
@@ -220,10 +249,7 @@ export default function PpdsLogbookPage() {
         });
       }
 
-      showToast(
-        `Berhasil mengekspor ${allData.length} data`,
-        "success"
-      );
+      showToast(`Berhasil mengekspor ${allData.length} data`, "success");
 
       // Set complete state - modal stays open until user clicks OK
       setIsExportComplete(true);
@@ -237,7 +263,7 @@ export default function PpdsLogbookPage() {
       console.error("Export error:", error);
       showToast(
         error instanceof Error ? error.message : "Gagal mengekspor data",
-        "error"
+        "error",
       );
       setShowExportModal(false);
     } finally {
@@ -260,14 +286,7 @@ export default function PpdsLogbookPage() {
     setIsExportComplete(false);
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
-
-  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
-    setPage(pageIndex + 1);
-    setLimit(pageSize);
-  };
+  // ========== COLUMNS ==========
 
   const handleRowClick = (row: Row<TPpdsLogbook>) => {
     const detailRoute = isInactive
@@ -422,18 +441,19 @@ export default function PpdsLogbookPage() {
         breadcrumbs={[
           { label: isInactive ? "PPDS Nonaktif" : "PPDS", to: ppdsListRoute },
           { label: "Detail", to: ppdsDetailRoute },
-          { label: "Logbook" },
+          { label: "Logbook", to: ppdsLogbookRoute },
         ]}
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
-        onSearch={handleSearch}
+        onSearch={handleSearchChange}
         isLoading={isExporting}
+        initialSearchValue={search}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
           <Filter
-            onSearch={handleFilterSearch}
+            onChange={handleFilterChange}
             onReset={handleFilterReset}
             initialPpdsId={idUser ? Number(idUser) : undefined}
           />
@@ -441,7 +461,7 @@ export default function PpdsLogbookPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
-              data={logbooks}
+              data={ppdsLogbookData?.list || []}
               columns={columns}
               isLoading={isLoading}
               isShowNumbering={true}

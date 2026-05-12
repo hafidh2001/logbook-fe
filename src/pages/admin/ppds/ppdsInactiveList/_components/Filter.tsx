@@ -1,10 +1,27 @@
 import { FilterPanel } from "@/components/filterPanel";
-import type { FilterFieldConfig, FilterProps } from "@/components/filterPanel";
-import { useEffect } from "react";
+import type { FilterFieldConfig, FilterValue } from "@/components/filterPanel";
+import { useEffect, useMemo } from "react";
 import { useMasterStore } from "@/store/masterStore";
 import { useAuthStore } from "@/store/authStore";
+import { useSearchParams } from "react-router-dom";
 
-export const Filter = (props: Omit<FilterProps, "fields">) => {
+type FilterChangeHandler = (filters: {
+  ppds?: number | null;
+  stase?: number | null;
+  nim?: string | null;
+}) => void;
+
+type FilterResetHandler = () => void;
+
+export const Filter = ({
+  onChange,
+  onReset,
+}: {
+  onChange: FilterChangeHandler;
+  onReset: FilterResetHandler;
+}) => {
+  const [searchParams] = useSearchParams();
+
   const { ppdsInactiveOptions, staseOptions, fetchPPDSInactiveOptions, fetchStaseOptions } = useMasterStore();
   const { user } = useAuthStore();
 
@@ -14,6 +31,13 @@ export const Filter = (props: Omit<FilterProps, "fields">) => {
       fetchStaseOptions({ id_client: user.id_client });
     }
   }, [user?.id_client, fetchPPDSInactiveOptions, fetchStaseOptions]);
+
+  // Read current filter values from URL
+  const currentFilters = useMemo(() => ({
+    ppds: searchParams.get("ppds") ? Number(searchParams.get("ppds")) : null,
+    stase: searchParams.get("stase") ? Number(searchParams.get("stase")) : null,
+    nim: searchParams.get("nim") || undefined,
+  }), [searchParams]);
 
   const filterFields: FilterFieldConfig[] = [
     {
@@ -38,5 +62,64 @@ export const Filter = (props: Omit<FilterProps, "fields">) => {
     },
   ];
 
-  return <FilterPanel fields={filterFields} {...props} />;
+  // Build sync values from URL params - these will sync when URL changes (back navigation)
+  const syncValues = useMemo((): Record<string, FilterValue> | undefined => {
+    const values: Record<string, FilterValue> = {};
+
+    // PPDS option from URL
+    if (currentFilters.ppds) {
+      const ppdsOpt = ppdsInactiveOptions.find(opt => opt.value === currentFilters.ppds);
+      if (ppdsOpt) values.ppds = ppdsOpt;
+    }
+    // Stase option from URL
+    if (currentFilters.stase) {
+      const staseOpt = staseOptions.find(opt => opt.value === currentFilters.stase);
+      if (staseOpt) values.stase = staseOpt;
+    }
+    // NIM is an input field, pass as string
+    if (currentFilters.nim) {
+      values.nim = currentFilters.nim;
+    }
+
+    return Object.keys(values).length > 0 ? values : undefined;
+  }, [currentFilters, ppdsInactiveOptions, staseOptions]);
+
+  const handleSearch = (data: Record<string, FilterValue>) => {
+    // Helper to convert select FilterValue to number value
+    const getSelectValue = (key: string): number | null => {
+      const val = data[key];
+      if (val && typeof val === "object" && "value" in val) {
+        return (val as { value: number }).value ?? null;
+      }
+      return null;
+    };
+
+    // Helper to get string value for input type
+    const getStringValue = (key: string): string | null => {
+      const val = data[key];
+      if (typeof val === "string") return val || null;
+      return null;
+    };
+
+    const filters = {
+      ppds: getSelectValue("ppds"),
+      stase: getSelectValue("stase"),
+      nim: getStringValue("nim"),
+    };
+
+    onChange(filters);
+  };
+
+  const handleReset = () => {
+    onReset();
+  };
+
+  return (
+    <FilterPanel
+      fields={filterFields}
+      onSearch={handleSearch}
+      onReset={handleReset}
+      syncValues={syncValues}
+    />
+  );
 };
