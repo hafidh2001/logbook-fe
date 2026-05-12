@@ -12,16 +12,14 @@ import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useEffect, useRef, useState } from "react";
 import { PenilaianLogbookStatusEnum } from "@/types";
 import type { TPenilaianLogbookStatusListItem } from "@/types/penilaianLogbook";
-import usePagination from "@/hooks/usePagination";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
-import useFilter from "@/hooks/useFilter";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParams } from "@/hooks/useUrlParams";
 
 export default function PenilaianLogbookStatusListPage() {
   const { width } = useWindowDimensions();
@@ -42,43 +40,74 @@ export default function PenilaianLogbookStatusListPage() {
     reset,
   } = usePenilaianLogbookStore();
 
-  // Pagination - page is always read from URL
-  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+  // ========== URL PARAMS (using useUrlParams hook) ==========
+  const {
+    page,
+    limit,
+    search,
+    debouncedSearch,
+    filters,
+    setLimit,
+    setSearch,
+    setFilters,
+    resetParams,
+    getNumberParam,
+  } = useUrlParams({
     defaultPage: 1,
     defaultLimit: DEFAULT_PAGE_SIZE,
+    filterKeys: ["id_ppds", "id_staff", "id_stase", "start_date", "end_date"],
+    searchDebounceMs: 500,
   });
 
-  // Filter hook
-  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<{
+  // Extract filter values from URL
+  const id_ppds = getNumberParam("id_ppds");
+  const id_staff = getNumberParam("id_staff");
+  const id_stase = getNumberParam("id_stase");
+  const start_date = filters.start_date || undefined;
+  const end_date = filters.end_date || undefined;
+
+  // Determine if scored or unscored based on URL path
+  const isScored = location.pathname.includes("/scored-logbook");
+
+  // ========== HANDLERS ==========
+
+  const handleFilterChange = (newFilters: {
     id_ppds?: number | null;
     id_staff?: number | null;
     id_stase?: number | null;
     start_date?: string;
     end_date?: string;
-  }>({
-    fields: [
-      { key: "id_ppds" },
-      { key: "id_staff" },
-      { key: "id_stase" },
-      { key: "start_date" },
-      { key: "end_date" },
-    ],
-    onFilterChange: () => setPage(1),
-  });
+  }) => {
+    setFilters(newFilters);
+  };
 
-  // Determine if scored or unscored based on URL path
-  const isScored = location.pathname.includes("/scored-logbook");
+  const handleFilterReset = () => {
+    resetParams();
+  };
 
-  // Search state with 500ms debounce
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const handleSearchChange = (query: string) => {
+    setSearch(query);
+  };
 
-  // Reset page when search changes (only when user types actual search query)
-  useEffect(() => {
-    if (debouncedSearchQuery) {
-      setPage(1);
-    }
-  }, [debouncedSearchQuery, setPage]);
+  const handlePaginationChange = (_pageIndex: number, pageSize: number) => {
+    // BaseTable handles page changes via URL internally
+    setLimit(pageSize, false);
+  };
+
+  const handleRowClick = (row: Row<TPenilaianLogbookStatusListItem>) => {
+    const detailRoute = isScored
+      ? ROUTES.penilaianLogbookScoredLogbookDetail(
+          idLogbookCategory || "",
+          String(row.original.id),
+        )
+      : ROUTES.penilaianLogbookUnscoredLogbookDetail(
+          idLogbookCategory || "",
+          String(row.original.id),
+        );
+    navigate(detailRoute);
+  };
+
+  // ========== DATA FETCHING ==========
 
   useEffect(() => {
     loadPenilaianLogbookByStatus({
@@ -88,19 +117,24 @@ export default function PenilaianLogbookStatusListPage() {
         : PenilaianLogbookStatusEnum.UNSCORED,
       page,
       limit,
-      search: debouncedSearchQuery || undefined,
-      id_ppds: filterParams.id_ppds ?? undefined,
-      id_staff: filterParams.id_staff ?? undefined,
-      id_stase: filterParams.id_stase ?? undefined,
-      start_date: filterParams.start_date ?? undefined,
-      end_date: filterParams.end_date ?? undefined,
+      search: debouncedSearch || undefined,
+      id_ppds: id_ppds ?? undefined,
+      id_staff: id_staff ?? undefined,
+      id_stase: id_stase ?? undefined,
+      start_date,
+      end_date,
     });
   }, [
-    searchParams,
-    filterParams,
+    page,
+    limit,
+    debouncedSearch,
+    id_ppds,
+    id_staff,
+    id_stase,
+    start_date,
+    end_date,
     idLogbookCategory,
     isScored,
-    debouncedSearchQuery,
     loadPenilaianLogbookByStatus,
   ]);
 
@@ -131,11 +165,11 @@ export default function PenilaianLogbookStatusListPage() {
           type: isScored
             ? PenilaianLogbookStatusEnum.SCORED
             : PenilaianLogbookStatusEnum.UNSCORED,
-          id_ppds: filterParams.id_ppds ?? undefined,
-          id_staff: filterParams.id_staff ?? undefined,
-          id_stase: filterParams.id_stase ?? undefined,
-          start_date: filterParams.start_date ?? undefined,
-          end_date: filterParams.end_date ?? undefined,
+          id_ppds: id_ppds ?? undefined,
+          id_staff: id_staff ?? undefined,
+          id_stase: id_stase ?? undefined,
+          start_date,
+          end_date,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);
@@ -169,8 +203,12 @@ export default function PenilaianLogbookStatusListPage() {
           header: "Staff Pengajar/DPJP",
           accessorKey: "staff",
           formatter: (value) => {
-            if (!value || !Array.isArray(value) || value.length === 0) return "-";
-            return value.map((s: { name: string | null }) => s.name).filter(Boolean).join(", ");
+            if (!value || !Array.isArray(value) || value.length === 0)
+              return "-";
+            return value
+              .map((s: { name: string | null }) => s.name)
+              .filter(Boolean)
+              .join(", ");
           },
         },
         { header: "Activity", accessorKey: "action_name" },
@@ -206,10 +244,7 @@ export default function PenilaianLogbookStatusListPage() {
         });
       }
 
-      showToast(
-        `Berhasil mengekspor ${allData.length} data`,
-        "success"
-      );
+      showToast(`Berhasil mengekspor ${allData.length} data`, "success");
 
       // Set complete state - modal stays open until user clicks OK
       setIsExportComplete(true);
@@ -223,7 +258,7 @@ export default function PenilaianLogbookStatusListPage() {
       console.error("Export error:", error);
       showToast(
         error instanceof Error ? error.message : "Gagal mengekspor data",
-        "error"
+        "error",
       );
       setShowExportModal(false);
     } finally {
@@ -246,27 +281,7 @@ export default function PenilaianLogbookStatusListPage() {
     setIsExportComplete(false);
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
-
-  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
-    setPage(pageIndex + 1);
-    setLimit(pageSize);
-  };
-
-  const handleRowClick = (row: Row<TPenilaianLogbookStatusListItem>) => {
-    const detailRoute = isScored
-      ? ROUTES.penilaianLogbookScoredLogbookDetail(
-          idLogbookCategory || "",
-          String(row.original.id),
-        )
-      : ROUTES.penilaianLogbookUnscoredLogbookDetail(
-          idLogbookCategory || "",
-          String(row.original.id),
-        );
-    navigate(detailRoute);
-  };
+  // ========== COLUMNS ==========
 
   const columns: ColumnDef<TPenilaianLogbookStatusListItem>[] = [
     {
@@ -326,7 +341,7 @@ export default function PenilaianLogbookStatusListPage() {
       cell: ({ row: { original } }) => {
         const staffList = original.staff;
         if (!staffList || staffList.length === 0) return "-";
-        return staffList.map(s => s.name).join(", ");
+        return staffList.map((s) => s.name).join(", ");
       },
     },
     {
@@ -432,17 +447,23 @@ export default function PenilaianLogbookStatusListPage() {
             label: "Status",
             to: ROUTES.penilaianLogbookDetail(idLogbookCategory || ""),
           },
-          { label: isScored ? "Scored" : "Unscored" },
+          {
+            label: isScored ? "Scored" : "Unscored",
+            to: isScored
+              ? ROUTES.penilaianLogbookScoredLogbook(idLogbookCategory || "")
+              : ROUTES.penilaianLogbookUnscoredLogbook(idLogbookCategory || ""),
+          },
         ]}
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
-        onSearch={handleSearch}
+        onSearch={handleSearchChange}
         isLoading={isExporting}
+        initialSearchValue={search}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
-          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} />
+          <Filter onChange={handleFilterChange} onReset={handleFilterReset} />
 
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
