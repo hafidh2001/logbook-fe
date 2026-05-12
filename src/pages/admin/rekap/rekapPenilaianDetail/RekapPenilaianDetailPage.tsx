@@ -22,7 +22,7 @@ export default function RekapPenilaianDetailPage() {
 
   useEffect(() => {
     if (idUser) {
-      loadRekapPenilaianDetail(idUser);
+      loadRekapPenilaianDetail(Number(idUser));
     }
     return () => resetDetail();
   }, [idUser, loadRekapPenilaianDetail, resetDetail]);

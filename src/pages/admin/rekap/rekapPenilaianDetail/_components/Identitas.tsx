@@ -46,7 +46,7 @@ export const Identitas = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-28">Stase</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.stage ?? "-"}
+          {data?.stase ?? "-"}
         </span>
       </div>
       {/* Row 4 */}

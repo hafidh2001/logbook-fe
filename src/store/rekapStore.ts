@@ -1,114 +1,59 @@
 import { create } from "zustand";
 import { rekapApi } from "@/services/rekapApi";
+import type { RekapPenilaianStore } from "@/types/rekap/store";
 
-interface RekapState {
-  rekapLogbook: any[];
-  rekapLogbookDetail: any | null;
-  rekapPenilaian: any[];
-  rekapPenilaianDetail: any | null;
-  rekapReport: any[];
-  rekapReportDetail: any | null;
-  isLoading: boolean;
-  isLoadingDetail: boolean;
-  error: string | null;
-  hasInitialized: boolean;
-}
-
-interface RekapActions {
-  loadRekapLogbook: () => Promise<void>;
-  loadRekapLogbookDetail: (id: string) => Promise<void>;
-  loadRekapPenilaian: () => Promise<void>;
-  loadRekapPenilaianDetail: (id: string) => Promise<void>;
-  loadRekapReport: () => Promise<void>;
-  loadRekapReportDetail: (id: string) => Promise<void>;
-  reset: () => void;
-  resetDetail: () => void;
-}
-
-type RekapStore = RekapState & RekapActions;
-
-const initialState: RekapState = {
-  rekapLogbook: [],
-  rekapLogbookDetail: null,
-  rekapPenilaian: [],
-  rekapPenilaianDetail: null,
-  rekapReport: [],
-  rekapReportDetail: null,
+const initialState = {
+  rekapPenilaian: [] as any[],
+  rekapPenilaianPagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    pageCount: 0,
+  },
+  rekapPenilaianDetail: null as any | null,
   isLoading: false,
   isLoadingDetail: false,
-  error: null,
-  hasInitialized: false,
+  error: null as string | null,
 };
 
-export const useRekapStore = create<RekapStore>((set) => ({
+export const useRekapStore = create<RekapPenilaianStore>((set) => ({
   ...initialState,
 
-  loadRekapLogbook: async () => {
+  loadRekapPenilaian: async (params) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await rekapApi.getRekapLogbook();
-      set({ rekapLogbook: data, isLoading: false, hasInitialized: true });
+      const response = await rekapApi.getRekapPenilaianList(params);
+      set({
+        rekapPenilaian: response.data,
+        rekapPenilaianPagination: {
+          page: response.pagination.page,
+          limit: response.pagination.limit,
+          total: response.total,
+          pageCount: Math.ceil(response.total / response.pagination.limit),
+        },
+        isLoading: false,
+      });
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : "Failed to load rekap logbook", isLoading: false, hasInitialized: true });
+      set({
+        error: error instanceof Error ? error.message : "Failed to load rekap penilaian",
+        isLoading: false,
+      });
     }
   },
 
-  loadRekapLogbookDetail: async (id: string) => {
-    set({ isLoadingDetail: true, error: null, rekapLogbookDetail: null });
-    try {
-      const data = await rekapApi.getRekapLogbookById(id);
-      set({ rekapLogbookDetail: data, isLoadingDetail: false });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : "Failed to load rekap logbook detail", isLoadingDetail: false });
-    }
-  },
-
-  loadRekapPenilaian: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const data = await rekapApi.getRekapPenilaian();
-      set({ rekapPenilaian: data, isLoading: false, hasInitialized: true });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : "Failed to load rekap penilaian", isLoading: false, hasInitialized: true });
-    }
-  },
-
-  loadRekapPenilaianDetail: async (id: string) => {
+  loadRekapPenilaianDetail: async (id_logbook: number) => {
     set({ isLoadingDetail: true, error: null, rekapPenilaianDetail: null });
     try {
-      const data = await rekapApi.getRekapPenilaianById(id);
-      set({ rekapPenilaianDetail: data, isLoadingDetail: false });
+      const response = await rekapApi.getRekapPenilaianDetail(id_logbook);
+      set({ rekapPenilaianDetail: response.data, isLoadingDetail: false });
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : "Failed to load rekap penilaian detail", isLoadingDetail: false });
-    }
-  },
-
-  loadRekapReport: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const data = await rekapApi.getRekapReport();
-      set({ rekapReport: data, isLoading: false, hasInitialized: true });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : "Failed to load rekap report", isLoading: false, hasInitialized: true });
-    }
-  },
-
-  loadRekapReportDetail: async (id: string) => {
-    set({ isLoadingDetail: true, error: null, rekapReportDetail: null });
-    try {
-      const data = await rekapApi.getRekapReportById(id);
-      set({ rekapReportDetail: data, isLoadingDetail: false });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : "Failed to load rekap report detail", isLoadingDetail: false });
+      set({
+        error: error instanceof Error ? error.message : "Failed to load rekap penilaian detail",
+        isLoadingDetail: false,
+      });
     }
   },
 
   reset: () => set(initialState),
-  resetDetail: () => set({
-    rekapLogbookDetail: null,
-    rekapPenilaianDetail: null,
-    rekapReportDetail: null,
-    isLoadingDetail: false,
-    error: null,
-  }),
+  resetDetail: () => set({ rekapPenilaianDetail: null, isLoadingDetail: false }),
 }));

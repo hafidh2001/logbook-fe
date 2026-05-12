@@ -20,6 +20,9 @@ class ApiWebServiceController extends Controller {
         echo("HALO MAS HAPED");die;
     }
     
+
+
+    // === AUTH STAGE ===
     public function actionLogin() {
         $rest_json = file_get_contents("php://input");
         $post = json_decode($rest_json, true);
@@ -184,9 +187,10 @@ class ApiWebServiceController extends Controller {
         }
         Yii::app()->end();
     }
+    // === AUTH STAGE===
     
     
-    
+
     // === MASTER STAGE ===
     // option : ppds (Active) | staff (?)
     public function actionGetMasterUser() {
@@ -2026,7 +2030,6 @@ class ApiWebServiceController extends Controller {
 
 
 
-
     // === PENILAIAN LOGBOOK STAGE ===
     public function actionGetListPenilaianLogbook() {
         $rest_json = file_get_contents("php://input");
@@ -2617,7 +2620,7 @@ class ApiWebServiceController extends Controller {
 
     
 
-    // === STASE ===
+    // === STASE STAGE ===
     public function actionGetListStase()
     {
         $rest_json = file_get_contents("php://input");
@@ -2929,11 +2932,11 @@ class ApiWebServiceController extends Controller {
         }
         Yii::app()->end();
     }
-    // === STASE ===
+    // === STASE STAGE ===
 
 
 
-    // === DASHBOARD ===
+    // === DASHBOARD STAGE===
     public function actionGetDashboardKinerjaDPJP() {
         $rest_json = file_get_contents("php://input");
         $post = json_decode($rest_json, true);
@@ -3600,4 +3603,243 @@ class ApiWebServiceController extends Controller {
             'data'   => $data
         ]);
     }
+    // === DASHBOARD STAGE ===
+
+
+
+    // === REKAP STAGE ===
+    public function actionGetListRekapReport() {
+
+    }
+    
+    public function actionGetDetailRekapReport() {
+
+    }
+
+    public function actionGetListRekapPenilaian()
+    {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        $page   = isset($post['page']) ? (int)$post['page'] : 1;
+        $limit  = isset($post['limit']) ? (int)$post['limit'] : 10;
+        $offset = ($page - 1) * $limit;
+
+        // sorting (default DESC - newest first)
+        $sort = (isset($post['sort']) && strtolower($post['sort']) === 'asc') ? 'ASC' : 'DESC';
+
+        $baseWhere = "
+            FROM v_ppds_scoring_fixed
+            WHERE 1=1
+        ";
+
+        $sql = "
+            SELECT
+                id_logbook,
+                id_client,
+                ppds,
+                nim,
+                inisial_code,
+                semester,
+                stase,
+                pin,
+                staff,
+                action,
+                date_logbook,
+                title,
+                notes,
+                peran,
+                category,
+                ROUND(psikomotor::numeric, 2) AS psikomotor,
+                ROUND(knowledge::numeric, 2) AS knowledge,
+                ROUND(afektif::numeric, 2) AS afektif,
+                ROUND(total::numeric, 2) AS total,
+                uuid
+            {$baseWhere}
+        ";
+
+        $countSql = "
+            SELECT COUNT(*) {$baseWhere}
+        ";
+
+        $params = [];
+
+        if (!empty($post['id_client'])) {
+            $sql      .= ' AND id_client = :id_client';
+            $countSql .= ' AND id_client = :id_client';
+            $params[':id_client'] = $post['id_client'];
+        }
+
+        if (!empty($post['ppds_name'])) {
+            $sql      .= ' AND ppds = :ppds_name';
+            $countSql .= ' AND ppds = :ppds_name';
+            $params[':ppds_name'] = $post['ppds_name'];
+        }
+
+        if (!empty($post['staff_name'])) {
+            $sql      .= ' AND staff = :staff_name';
+            $countSql .= ' AND staff = :staff_name';
+            $params[':staff_name'] = $post['staff_name'];
+        }
+
+        if (!empty($post['activity_name'])) {
+            $sql      .= ' AND action = :activity_name';
+            $countSql .= ' AND action = :activity_name';
+            $params[':activity_name'] = $post['activity_name'];
+        }
+
+        if (!empty($post['stase_name'])) {
+            $sql      .= ' AND stase = :stase_name';
+            $countSql .= ' AND stase = :stase_name';
+            $params[':stase_name'] = $post['stase_name'];
+        }
+
+        if (!empty($post['start_date'])) {
+            $sql      .= ' AND date_logbook >= :start_date';
+            $countSql .= ' AND date_logbook >= :start_date';
+            $params[':start_date'] = $post['start_date'];
+        }
+
+        if (!empty($post['end_date'])) {
+            $sql      .= ' AND date_logbook <= :end_date';
+            $countSql .= ' AND date_logbook <= :end_date';
+            $params[':end_date'] = $post['end_date'];
+        }
+
+        // 🔥 search filter - ILIKE across multiple fields
+        if (!empty($post['search'])) {
+            $searchTerm = '%' . $post['search'] . '%';
+            $sql      .= ' AND (
+                ppds ILIKE :search
+                OR nim ILIKE :search
+                OR inisial_code ILIKE :search
+                OR semester ILIKE :search
+                OR stase ILIKE :search
+                OR pin ILIKE :search
+                OR staff ILIKE :search
+                OR action ILIKE :search
+                OR title ILIKE :search
+                OR notes ILIKE :search
+                OR peran ILIKE :search
+                OR category ILIKE :search
+            )';
+            $countSql .= ' AND (
+                ppds ILIKE :search
+                OR nim ILIKE :search
+                OR inisial_code ILIKE :search
+                OR semester ILIKE :search
+                OR stase ILIKE :search
+                OR pin ILIKE :search
+                OR staff ILIKE :search
+                OR action ILIKE :search
+                OR title ILIKE :search
+                OR notes ILIKE :search
+                OR peran ILIKE :search
+                OR category ILIKE :search
+            )';
+            $params[':search'] = $searchTerm;
+        }
+
+        $sql .= "
+            ORDER BY
+                date_logbook
+                {$sort}
+            LIMIT :limit
+            OFFSET :offset
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $countCommand = Yii::app()->db->createCommand($countSql);
+
+        foreach ($params as $key => $value) {
+            $command->bindValue($key, $value);
+            $countCommand->bindValue($key, $value);
+        }
+
+        $command->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $command->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $data = $command->queryAll();
+        $total = $countCommand->queryScalar();
+
+        echo json_encode([
+            'status'  => true,
+            'message'  => 'Success',
+            'data'     => $data,
+            'total'    => (int)$total,
+            'pagination' => [
+                'page'  => $page,
+                'limit' => $limit,
+            ],
+        ]);
+    }
+    
+    public function actionGetDetailRekapPenilaian()
+    {
+        $rest_json = file_get_contents("php://input");
+        $post = json_decode($rest_json, true);
+
+        if (!isset($post['id_logbook'])) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Invalid parameter!'
+            ]);
+            Yii::app()->end();
+        }
+
+        $sql = "
+            SELECT
+                id_logbook,
+                id_client,
+                ppds,
+                nim,
+                inisial_code,
+                semester,
+                stase,
+                pin,
+                staff,
+                action,
+                date_logbook,
+                title,
+                notes,
+                peran,
+                category,
+                ROUND(psikomotor::numeric, 2) AS psikomotor,
+                ROUND(knowledge::numeric, 2) AS knowledge,
+                ROUND(afektif::numeric, 2) AS afektif,
+                ROUND(total::numeric, 2) AS total,
+                uuid
+            FROM v_ppds_scoring_fixed
+            WHERE id_logbook = :id_logbook
+            LIMIT 1
+        ";
+
+        $command = Yii::app()->db->createCommand($sql);
+        $command->bindValue(':id_logbook', $post['id_logbook'], PDO::PARAM_INT);
+        $data = $command->queryRow();
+
+        if (!$data) {
+            echo json_encode([
+                'status'  => false,
+                'message' => 'Data not found'
+            ]);
+            Yii::app()->end();
+        }
+
+        echo json_encode([
+            'status'  => true,
+            'message' => 'Success',
+            'data'    => $data,
+        ]);
+    }
+
+    public function actionGetListRekapLogbook() {
+        // v_logbook_summary_general
+    }
+        
+    public function actionGetDetailRekapLogbook() {
+        // v_logbook_summary_general
+        
+    }
+    // === REKAP STAGE ===
 }
