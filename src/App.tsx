@@ -30,8 +30,8 @@ import {
   PenilaianLogbookListPage,
   PenilaianLogbookStatusPage,
   PenilaianLogbookStatusListPage,
-  RekapReportPage,
-  RekapReportDetailPage,
+  // RekapReportPage,
+  // RekapReportDetailPage,
   RekapPenilaianPage,
   RekapPenilaianDetailPage,
   RekapLogbookPage,
@@ -396,7 +396,7 @@ function App() {
         />
 
         {/* Rekap Routes */}
-        <Route
+        {/* <Route
           path={ROUTES.rekapReport}
           element={
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
@@ -415,7 +415,7 @@ function App() {
               </AdminLayout>
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path={ROUTES.rekapPenilaian}
           element={
