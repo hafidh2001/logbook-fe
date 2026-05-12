@@ -1,6 +1,7 @@
 import { Nullable } from "@/types";
-import type { IRekapPenilaianListParams, TRekapPenilaianItem } from "@/types/rekap";
+import type { IRekapPenilaianListParams, TRekapPenilaianItem, IRekapLogbookListParams, TRekapLogbookItem } from "@/types/rekap";
 
+// ============= Rekap Penilaian Store =============
 export interface RekapPenilaianState {
   rekapPenilaian: TRekapPenilaianItem[];
   rekapPenilaianPagination: {
@@ -30,3 +31,33 @@ export interface RekapPenilaianActions {
 }
 
 export type RekapPenilaianStore = RekapPenilaianState & RekapPenilaianActions;
+
+// ============= Rekap Logbook Store =============
+export interface RekapLogbookState {
+  rekapLogbook: TRekapLogbookItem[];
+  rekapLogbookPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pageCount: number;
+  };
+  rekapLogbookDetail: TRekapLogbookItem | null;
+  isLoading: boolean;
+  isLoadingDetail: boolean;
+  isExporting: boolean;
+  error: Nullable<string>;
+}
+
+export interface RekapLogbookActions {
+  loadRekapLogbook: (params: IRekapLogbookListParams) => Promise<void>;
+  loadRekapLogbookDetail: (id: number) => Promise<void>;
+  loadExportRekapLogbook: (params: {
+    filterParams: Partial<IRekapLogbookListParams>;
+    onProgress?: (progress: number, offset: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TRekapLogbookItem[]>;
+  resetLogbook: () => void;
+  resetLogbookDetail: () => void;
+}
+
+export type RekapLogbookStore = RekapLogbookState & RekapLogbookActions;

@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { ApiPaginationResponse, ApiResponse } from "@/types";
-import type { IRekapPenilaianListParams, TRekapPenilaianItem } from "@/types/rekap";
+import type { IRekapPenilaianListParams, TRekapPenilaianItem, IRekapLogbookListParams, TRekapLogbookItem } from "@/types/rekap";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
@@ -19,6 +19,7 @@ const apiClient = axios.create({
   timeout: 30000,
 });
 
+// ============= Rekap Penilaian API =============
 export const rekapApi = {
   async getRekapPenilaianList(
     params: IRekapPenilaianListParams
@@ -57,6 +58,59 @@ export const rekapApi = {
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Failed to fetch rekap penilaian detail");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  // ============= Rekap Logbook API =============
+  async getRekapLogbookList(
+    params: IRekapLogbookListParams
+  ): Promise<ApiPaginationResponse<TRekapLogbookItem[]>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetListRekapLogbook",
+        params
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch rekap logbook");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getRekapLogbookDetail(
+    id: number
+  ): Promise<ApiResponse<TRekapLogbookItem>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetDetailRekapLogbook",
+        { id }
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch rekap logbook detail");
       }
 
       return responseData;

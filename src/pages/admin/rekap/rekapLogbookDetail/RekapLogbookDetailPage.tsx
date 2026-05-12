@@ -17,15 +17,15 @@ export default function RekapLogbookDetailPage() {
     rekapLogbookDetail: data,
     isLoadingDetail,
     loadRekapLogbookDetail,
-    resetDetail,
+    resetLogbookDetail,
   } = useRekapStore();
 
   useEffect(() => {
     if (idUser) {
-      loadRekapLogbookDetail(idUser);
+      loadRekapLogbookDetail(Number(idUser));
     }
-    return () => resetDetail();
-  }, [idUser, loadRekapLogbookDetail, resetDetail]);
+    return () => resetLogbookDetail();
+  }, [idUser, loadRekapLogbookDetail, resetLogbookDetail]);
 
   const handleBack = () => {
     navigate(ROUTES.rekapLogbook);

@@ -12,7 +12,7 @@ export const Staff = ({ data }: Props) => {
     >
       <span className="text-sm text-gray-500 w-24">Staff Pengajar</span>
       <span className="text-sm font-medium text-gray-800">
-        {data?.staff_pengajar ?? "-"}
+        {data?.staff ?? "-"}
       </span>
     </CardWrapper>
   );
