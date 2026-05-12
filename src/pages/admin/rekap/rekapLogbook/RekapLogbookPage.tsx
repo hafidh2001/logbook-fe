@@ -12,16 +12,13 @@ import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useEffect, useRef, useState } from "react";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
-import usePagination from "@/hooks/usePagination";
-import useFilter from "@/hooks/useFilter";
-import { FilterValue } from "@/components/filterPanel";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParams } from "@/hooks/useUrlParams";
 import type { TRekapLogbookItem } from "@/types/rekap";
 
 export default function RekapLogbookPage() {
@@ -48,40 +45,58 @@ export default function RekapLogbookPage() {
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
-  // Pagination - page is always read from URL
-  const { page, setPage, limit, setLimit } = usePagination({
+  // ========== URL PARAMS (using useUrlParams hook) ==========
+  // Note: Rekap uses string-based filters (name as value), not numeric IDs
+  const {
+    page,
+    limit,
+    search,
+    debouncedSearch,
+    filters,
+    setLimit,
+    setSearch,
+    setFilters,
+    resetParams,
+  } = useUrlParams({
     defaultPage: 1,
     defaultLimit: DEFAULT_PAGE_SIZE,
-  });
-
-  // Filter hook
-  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<
-    Omit<Record<string, FilterValue>, "start_date" | "end_date"> & {
-      start_date?: string;
-      end_date?: string;
-    }
-  >({
-    fields: [
-      { key: "ppds_name" },
-      { key: "staff_name" },
-      { key: "activity_name" },
-      { key: "stase_name" },
-      { key: "start_date" },
-      { key: "end_date" },
+    filterKeys: [
+      "ppds_name",
+      "staff_name",
+      "activity_name",
+      "stase_name",
+      "start_date",
+      "end_date",
     ],
-    onFilterChange: () => setPage(1),
+    searchDebounceMs: 500,
   });
 
-  // Search state with 500ms debounce
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  // Extract filter values from URL (string-based for Rekap)
+  const ppds_name = filters.ppds_name as string | undefined;
+  const staff_name = filters.staff_name as string | undefined;
+  const activity_name = filters.activity_name as string | undefined;
+  const stase_name = filters.stase_name as string | undefined;
+  const start_date = filters.start_date as string | undefined;
+  const end_date = filters.end_date as string | undefined;
 
-  // Reset page when search changes
-  useEffect(() => {
-    if (debouncedSearchQuery) {
-      setPage(1);
-    }
-  }, [debouncedSearchQuery, setPage]);
+  // ========== HANDLERS ==========
+
+  const handleFilterChange = (newFilters: {
+    ppds_name?: string | null;
+    staff_name?: string | null;
+    activity_name?: string | null;
+    stase_name?: string | null;
+    start_date?: string;
+    end_date?: string;
+  }) => {
+    setFilters(newFilters);
+  };
+
+  const handleFilterReset = () => {
+    resetParams();
+  };
+
+  // ========== DATA FETCHING ==========
 
   useEffect(() => {
     if (user?.id_client) {
@@ -89,17 +104,27 @@ export default function RekapLogbookPage() {
         id_client: user.id_client,
         page,
         limit,
-        search: debouncedSearchQuery || undefined,
-        ppds_name: (filterParams.ppds_name as string | null) ?? undefined,
-        staff_name: (filterParams.staff_name as string | null) ?? undefined,
-        activity_name: (filterParams.activity_name as string | null) ?? undefined,
-        stase_name: (filterParams.stase_name as string | null) ?? undefined,
-        start_date: filterParams.start_date ?? undefined,
-        end_date: filterParams.end_date ?? undefined,
+        search: debouncedSearch || undefined,
+        ppds_name: ppds_name ?? undefined,
+        staff_name: staff_name ?? undefined,
+        activity_name: activity_name ?? undefined,
+        stase_name: stase_name ?? undefined,
+        start_date,
+        end_date,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, filterParams, debouncedSearchQuery]);
+  }, [
+    page,
+    limit,
+    debouncedSearch,
+    ppds_name,
+    staff_name,
+    activity_name,
+    stase_name,
+    start_date,
+    end_date,
+  ]);
 
   useEffect(() => {
     return () => resetLogbook();
@@ -118,12 +143,12 @@ export default function RekapLogbookPage() {
       const allData = await loadExportRekapLogbook({
         filterParams: {
           id_client: user?.id_client ?? 0,
-          ppds_name: (filterParams.ppds_name as string | null) ?? undefined,
-          staff_name: (filterParams.staff_name as string | null) ?? undefined,
-          activity_name: (filterParams.activity_name as string | null) ?? undefined,
-          stase_name: (filterParams.stase_name as string | null) ?? undefined,
-          start_date: filterParams.start_date ?? undefined,
-          end_date: filterParams.end_date ?? undefined,
+          ppds_name: ppds_name ?? undefined,
+          staff_name: staff_name ?? undefined,
+          activity_name: activity_name ?? undefined,
+          stase_name: stase_name ?? undefined,
+          start_date,
+          end_date,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);
@@ -187,10 +212,7 @@ export default function RekapLogbookPage() {
         });
       }
 
-      showToast(
-        `Berhasil mengekspor ${allData.length} data`,
-        "success"
-      );
+      showToast(`Berhasil mengekspor ${allData.length} data`, "success");
 
       // Set complete state - modal stays open until user clicks OK
       setIsExportComplete(true);
@@ -204,7 +226,7 @@ export default function RekapLogbookPage() {
       console.error("Export error:", error);
       showToast(
         error instanceof Error ? error.message : "Gagal mengekspor data",
-        "error"
+        "error",
       );
       setShowExportModal(false);
     } finally {
@@ -228,12 +250,11 @@ export default function RekapLogbookPage() {
   };
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
+    setSearch(query);
   };
 
-  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
-    setPage(pageIndex + 1);
-    setLimit(pageSize);
+  const handlePaginationChange = (_pageIndex: number, pageSize: number) => {
+    setLimit(pageSize, false);
   };
 
   const handleRowClick = (row: Row<TRekapLogbookItem>) => {
@@ -275,11 +296,14 @@ export default function RekapLogbookPage() {
       accessorKey: "date",
       header: "Date",
       size: 150,
-      cell: ({ row: { original } }) => original.date ? (
-        <span className="whitespace-nowrap">
-          {dayjs(original.date).locale("id").format("DD MMM YYYY")}
-        </span>
-      ) : "-",
+      cell: ({ row: { original } }) =>
+        original.date ? (
+          <span className="whitespace-nowrap">
+            {dayjs(original.date).locale("id").format("DD MMM YYYY")}
+          </span>
+        ) : (
+          "-"
+        ),
     },
     {
       accessorKey: "ppds",
@@ -394,16 +418,20 @@ export default function RekapLogbookPage() {
       />
 
       <Topbar
-        breadcrumbs={[{ label: "Rekap" }, { label: "Logbook" }]}
+        breadcrumbs={[
+          { label: "Rekap" },
+          { label: "Logbook", to: ROUTES.rekapLogbook },
+        ]}
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
         onSearch={handleSearch}
         isLoading={isExporting}
+        initialSearchValue={search}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
-          <Filter onSearch={handleFilterSearch} onReset={handleFilterReset} />
+          <Filter onChange={handleFilterChange} onReset={handleFilterReset} />
 
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">

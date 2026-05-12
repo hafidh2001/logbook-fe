@@ -1,7 +1,7 @@
 import { Topbar } from "@/components/layout/Topbar";
 import { LoadingPage } from "@/components/layout/Loading";
 import { ROUTES } from "@/utils/routes";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useRekapStore } from "@/store/rekapStore";
 import { icons } from "@/assets/images/Icon";
 import { useEffect } from "react";
@@ -11,7 +11,6 @@ import { Staff } from "./_components/Staff";
 
 export default function RekapLogbookDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
-  const navigate = useNavigate();
 
   const {
     rekapLogbookDetail: data,
@@ -26,10 +25,6 @@ export default function RekapLogbookDetailPage() {
     }
     return () => resetLogbookDetail();
   }, [idUser, loadRekapLogbookDetail, resetLogbookDetail]);
-
-  const handleBack = () => {
-    navigate(ROUTES.rekapLogbook);
-  };
 
   if (isLoadingDetail) {
     return <LoadingPage />;
@@ -58,7 +53,7 @@ export default function RekapLogbookDetailPage() {
           {/* Back Button */}
           <div className="flex justify-end">
             <button
-              onClick={handleBack}
+              onClick={() => window.history.back()}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <icons.ArrowLeft className="h-4 w-4" />
