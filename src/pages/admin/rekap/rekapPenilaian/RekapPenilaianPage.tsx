@@ -10,7 +10,7 @@ import type { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import usePagination from "@/hooks/usePagination";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
 import useFilter from "@/hooks/useFilter";
@@ -18,6 +18,11 @@ import { FilterValue } from "@/components/filterPanel";
 import { useDebounce } from "@/hooks/useDebounce";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
+import { showToast } from "@/utils/toast";
+import { ExportModal } from "@/components/exportModal/ExportModal";
+import { ExportFormat } from "@/components/exportButton";
+import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
+import type { TRekapPenilaianItem } from "@/types/rekap";
 
 export default function RekapPenilaianPage() {
   const { width } = useWindowDimensions();
@@ -29,12 +34,22 @@ export default function RekapPenilaianPage() {
     rekapPenilaian,
     rekapPenilaianPagination,
     isLoading,
+    isExporting,
     loadRekapPenilaian,
+    loadExportRekapPenilaian,
+    cancelExport,
     reset,
   } = useRekapStore();
 
+  // Export state
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportOffset, setExportOffset] = useState(0);
+  const [isExportComplete, setIsExportComplete] = useState(false);
+  const exportControllerRef = useRef<AbortController | null>(null);
+
   // Pagination - page is always read from URL
-  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+  const { page, setPage, limit, setLimit } = usePagination({
     defaultPage: 1,
     defaultLimit: DEFAULT_PAGE_SIZE,
   });
@@ -90,19 +105,126 @@ export default function RekapPenilaianPage() {
     return () => reset();
   }, [reset]);
 
-  // Reset store when sidebar is clicked (URL has no page param)
-  useEffect(() => {
-    const pageParam = searchParams.get("page");
-    if (!pageParam) {
-      reset();
-      if (page !== 1) {
-        setPage(1);
-      }
-    }
-  }, [searchParams, reset, page, setPage]);
+  const handleExport = async (format: ExportFormat) => {
+    // Create new AbortController for this export
+    exportControllerRef.current = new AbortController();
 
-  const handleExport = () => {
-    // TODO: Implement export
+    setExportProgress(0);
+    setExportOffset(0);
+    setIsExportComplete(false);
+    setShowExportModal(true);
+
+    try {
+      const allData = await loadExportRekapPenilaian({
+        filterParams: {
+          id_client: user?.id_client ?? 0,
+          ppds_name: (filterParams.ppds_name as string | null) ?? undefined,
+          staff_name: (filterParams.staff_name as string | null) ?? undefined,
+          activity_name: (filterParams.activity_name as string | null) ?? undefined,
+          stase_name: (filterParams.stase_name as string | null) ?? undefined,
+          start_date: filterParams.start_date ?? undefined,
+          end_date: filterParams.end_date ?? undefined,
+        },
+        onProgress: (progress, offset) => {
+          setExportProgress(progress);
+          setExportOffset(offset);
+        },
+        signal: exportControllerRef.current.signal,
+      });
+
+      if (allData.length === 0) {
+        showToast("Tidak ada data untuk diekspor", "error");
+        setShowExportModal(false);
+        return;
+      }
+
+      // Define columns for export
+      const exportColumns: ExportColumn<TRekapPenilaianItem>[] = [
+        { header: "No", accessorKey: "no" },
+        {
+          header: "Tanggal",
+          accessorKey: "date_logbook",
+          formatter: (value) =>
+            value ? dayjs(value).locale("id").format("DD MMMM YYYY") : "-",
+        },
+        { header: "PPDS", accessorKey: "ppds" },
+        { header: "NIM", accessorKey: "nim" },
+        { header: "Inisial Code", accessorKey: "inisial_code" },
+        { header: "Semester", accessorKey: "semester" },
+        { header: "Stase", accessorKey: "stase" },
+        { header: "PIN", accessorKey: "pin" },
+        { header: "Staff Pengajar/DPJP", accessorKey: "staff" },
+        { header: "Action", accessorKey: "action" },
+        { header: "Peran", accessorKey: "peran" },
+        { header: "Category", accessorKey: "category" },
+        { header: "Title", accessorKey: "title" },
+        { header: "Psikomotor", accessorKey: "psikomotor" },
+        { header: "Knowledge", accessorKey: "knowledge" },
+        { header: "Afektif", accessorKey: "afektif" },
+        { header: "Total", accessorKey: "total" },
+      ];
+
+      // Prepare data with index number
+      const dataWithIndex = allData.map((item, index) => ({
+        ...item,
+        no: index + 1,
+      }));
+
+      const filename = `rekap_penilaian_${dayjs().format("YYYY-MM-DD")}`;
+
+      if (format === "csv") {
+        exportToCSV({
+          data: dataWithIndex,
+          columns: exportColumns,
+          filename: `${filename}.csv`,
+        });
+      } else if (format === "excel") {
+        await exportToExcel({
+          data: dataWithIndex,
+          columns: exportColumns,
+          filename: `${filename}.xlsx`,
+          sheetName: "Rekap Penilaian Export",
+        });
+      }
+
+      showToast(
+        `Berhasil mengekspor ${allData.length} data`,
+        "success"
+      );
+
+      // Set complete state - modal stays open until user clicks OK
+      setIsExportComplete(true);
+    } catch (error) {
+      // Check if cancelled
+      if (error instanceof Error && error.message === "EXPORT_CANCELLED") {
+        showToast("Export dibatalkan", "error");
+        setShowExportModal(false);
+        return;
+      }
+      console.error("Export error:", error);
+      showToast(
+        error instanceof Error ? error.message : "Gagal mengekspor data",
+        "error"
+      );
+      setShowExportModal(false);
+    } finally {
+      exportControllerRef.current = null;
+    }
+  };
+
+  const handleCancelExport = () => {
+    if (exportControllerRef.current) {
+      exportControllerRef.current.abort();
+      cancelExport();
+    }
+    setShowExportModal(false);
+    setIsExportComplete(false);
+    exportControllerRef.current = null;
+  };
+
+  const handleOkExport = () => {
+    setShowExportModal(false);
+    setIsExportComplete(false);
   };
 
   const handleSearch = (query: string) => {
@@ -114,7 +236,7 @@ export default function RekapPenilaianPage() {
     setLimit(pageSize);
   };
 
-  const handleRowClick = (row: Row<typeof rekapPenilaian[number]>) => {
+  const handleRowClick = (row: Row<TRekapPenilaianItem>) => {
     navigate(ROUTES.rekapPenilaianDetail(String(row.original.id_logbook)));
   };
 
@@ -124,7 +246,7 @@ export default function RekapPenilaianPage() {
   };
 
   // Define columns for Rekap Penilaian table
-  const columns: ColumnDef<typeof rekapPenilaian[number]>[] = [
+  const columns: ColumnDef<TRekapPenilaianItem>[] = [
     {
       accessorKey: "date_logbook",
       header: "Date",
@@ -265,12 +387,22 @@ export default function RekapPenilaianPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
+      <ExportModal
+        isShown={showExportModal}
+        progress={exportProgress}
+        offset={exportOffset}
+        total={rekapPenilaianPagination.total}
+        isComplete={isExportComplete}
+        onCancel={handleCancelExport}
+        onOk={handleOkExport}
+      />
+
       <Topbar
         breadcrumbs={[{ label: "Rekap" }, { label: "Penilaian" }]}
         searchPlaceholder="Cari penilaian..."
         onExport={handleExport}
         onSearch={handleSearch}
-        isLoading={isLoading}
+        isLoading={isExporting}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">

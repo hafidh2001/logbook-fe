@@ -3636,7 +3636,6 @@ class ApiWebServiceController extends Controller {
         $sql = "
             SELECT
                 id_logbook,
-                id_client,
                 ppds,
                 nim,
                 inisial_code,
@@ -3653,8 +3652,7 @@ class ApiWebServiceController extends Controller {
                 ROUND(psikomotor::numeric, 2) AS psikomotor,
                 ROUND(knowledge::numeric, 2) AS knowledge,
                 ROUND(afektif::numeric, 2) AS afektif,
-                ROUND(total::numeric, 2) AS total,
-                uuid
+                ROUND(total::numeric, 2) AS total
             {$baseWhere}
         ";
 

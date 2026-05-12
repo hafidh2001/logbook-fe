@@ -12,12 +12,19 @@ export interface RekapPenilaianState {
   rekapPenilaianDetail: TRekapPenilaianItem | null;
   isLoading: boolean;
   isLoadingDetail: boolean;
+  isExporting: boolean;
   error: Nullable<string>;
 }
 
 export interface RekapPenilaianActions {
   loadRekapPenilaian: (params: IRekapPenilaianListParams) => Promise<void>;
   loadRekapPenilaianDetail: (id_logbook: number) => Promise<void>;
+  loadExportRekapPenilaian: (params: {
+    filterParams: Partial<IRekapPenilaianListParams>;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TRekapPenilaianItem[]>;
+  cancelExport: () => void;
   reset: () => void;
   resetDetail: () => void;
 }

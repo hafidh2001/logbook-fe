@@ -2,7 +2,6 @@ import { Nullable } from "@/types";
 
 export type TRekapPenilaianItem = {
   id_logbook: number;
-  id_client: number;
   ppds: Nullable<string>;
   nim: Nullable<string>;
   inisial_code: Nullable<string>;
@@ -20,7 +19,6 @@ export type TRekapPenilaianItem = {
   knowledge: Nullable<number>;
   afektif: Nullable<number>;
   total: Nullable<number>;
-  uuid: Nullable<string>;
 };
 
 export interface IRekapPenilaianListParams {
