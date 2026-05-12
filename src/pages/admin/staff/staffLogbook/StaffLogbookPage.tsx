@@ -15,15 +15,12 @@ import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useEffect, useRef, useState } from "react";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
-import usePagination from "@/hooks/usePagination";
-import useFilter from "@/hooks/useFilter";
-import { FilterValue } from "@/components/filterPanel";
 import { StatusBadge } from "@/components/statusBadge";
 import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParams } from "@/hooks/useUrlParams";
 
 export default function StaffLogbookPage() {
   const { width } = useWindowDimensions();
@@ -43,60 +40,90 @@ export default function StaffLogbookPage() {
   } = useStaffStore();
   const { user } = useAuthStore();
 
-  // Pagination - page is always read from URL
-  const { page, setPage, limit, setLimit, searchParams } = usePagination({
+  // ========== URL PARAMS (using useUrlParams hook) ==========
+  // Note: id_staff is NOT a filter key because it's controlled by URL (idUser)
+  const {
+    page,
+    limit,
+    search,
+    debouncedSearch,
+    filters,
+    setLimit,
+    setSearch,
+    setFilters,
+    resetParams,
+    getNumberParam,
+  } = useUrlParams({
     defaultPage: 1,
     defaultLimit: DEFAULT_PAGE_SIZE,
-  });
-
-  // Filter hook - id_staff is controlled by URL (idUser), other filters are optional
-  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<
-    Omit<Record<string, FilterValue>, "start_date" | "end_date"> & {
-      start_date?: string;
-      end_date?: string;
-    }
-  >({
-    fields: [
-      { key: "id_ppds" },
-      { key: "id_activity" },
-      { key: "id_stase" },
-      { key: "status" },
-      { key: "start_date" },
-      { key: "end_date" },
+    filterKeys: [
+      "id_ppds",
+      "id_activity",
+      "id_stase",
+      "status",
+      "start_date",
+      "end_date",
     ],
-    onFilterChange: () => setPage(1),
+    searchDebounceMs: 500,
   });
 
-  // Search state with 500ms debounce
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  // Extract filter values from URL
+  const id_ppds = getNumberParam("id_ppds");
+  const id_activity = getNumberParam("id_activity");
+  const id_stase = getNumberParam("id_stase");
+  const status = filters.status || undefined;
+  const start_date = filters.start_date || undefined;
+  const end_date = filters.end_date || undefined;
 
-  // Reset page when search changes (only when user types actual search query)
-  useEffect(() => {
-    if (debouncedSearchQuery) {
-      setPage(1);
-    }
-  }, [debouncedSearchQuery, setPage]);
+  // ========== HANDLERS ==========
+
+  const handleFilterChange = (newFilters: {
+    id_ppds?: number | null;
+    id_activity?: number | null;
+    id_stase?: number | null;
+    status?: string | null;
+    start_date?: string;
+    end_date?: string;
+  }) => {
+    setFilters(newFilters);
+  };
+
+  const handleFilterReset = () => {
+    resetParams();
+  };
+
+  // ========== DATA FETCHING ==========
 
   useEffect(() => {
-    // Runs when URL, filter, or search changes
     if (user?.id_client && idUser) {
       loadStaffLogbookList({
         id_client: user.id_client,
-        id_staff: Number(idUser), // Staff is controlled by URL
+        id_staff: Number(idUser),
         page,
         limit,
-        search: debouncedSearchQuery || undefined,
-        id_ppds: (filterParams.id_ppds as number | null) ?? undefined,
-        id_activity: (filterParams.id_activity as number | null) ?? undefined,
-        id_stase: (filterParams.id_stase as number | null) ?? undefined,
-        status: (filterParams.status as string | null) ?? undefined,
-        start_date: filterParams.start_date ?? undefined,
-        end_date: filterParams.end_date ?? undefined,
+        search: debouncedSearch || undefined,
+        id_ppds: id_ppds ?? undefined,
+        id_activity: id_activity ?? undefined,
+        id_stase: id_stase ?? undefined,
+        status: status ?? undefined,
+        start_date,
+        end_date,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, filterParams, debouncedSearchQuery]);
+  }, [
+    page,
+    limit,
+    debouncedSearch,
+    id_ppds,
+    id_activity,
+    id_stase,
+    status,
+    start_date,
+    end_date,
+    user?.id_client,
+    idUser,
+    loadStaffLogbookList,
+  ]);
 
   useEffect(() => {
     // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
@@ -104,19 +131,6 @@ export default function StaffLogbookPage() {
       reset();
     };
   }, [reset]);
-
-  // Reset store when sidebar is clicked (URL has no page param)
-  useEffect(() => {
-    const pageParam = searchParams.get("page");
-    // If no page param in URL, reset store
-    if (!pageParam) {
-      reset();
-      // Also force page to 1 in URL if somehow different
-      if (page !== 1) {
-        setPage(1);
-      }
-    }
-  }, [searchParams, reset, page, setPage]);
 
   const logbooks = staffLogbookData?.list || [];
 
@@ -141,12 +155,12 @@ export default function StaffLogbookPage() {
         filterParams: {
           id_client: user?.id_client ?? 0,
           id_staff: Number(idUser),
-          id_ppds: (filterParams.id_ppds as number | null) ?? undefined,
-          id_activity: (filterParams.id_activity as number | null) ?? undefined,
-          id_stase: (filterParams.id_stase as number | null) ?? undefined,
-          status: (filterParams.status as string | null) ?? undefined,
-          start_date: filterParams.start_date ?? undefined,
-          end_date: filterParams.end_date ?? undefined,
+          id_ppds: id_ppds ?? undefined,
+          id_activity: id_activity ?? undefined,
+          id_stase: id_stase ?? undefined,
+          status: status ?? undefined,
+          start_date,
+          end_date,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);
@@ -203,10 +217,7 @@ export default function StaffLogbookPage() {
         });
       }
 
-      showToast(
-        `Berhasil mengekspor ${allData.length} data`,
-        "success"
-      );
+      showToast(`Berhasil mengekspor ${allData.length} data`, "success");
 
       // Set complete state - modal stays open until user clicks OK
       setIsExportComplete(true);
@@ -220,7 +231,7 @@ export default function StaffLogbookPage() {
       console.error("Export error:", error);
       showToast(
         error instanceof Error ? error.message : "Gagal mengekspor data",
-        "error"
+        "error",
       );
       setShowExportModal(false);
     } finally {
@@ -243,13 +254,12 @@ export default function StaffLogbookPage() {
     setIsExportComplete(false);
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
+  const handleSearchChange = (query: string) => {
+    setSearch(query);
   };
 
-  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
-    setPage(pageIndex + 1);
-    setLimit(pageSize);
+  const handlePaginationChange = (_pageIndex: number, pageSize: number) => {
+    setLimit(pageSize, false);
   };
 
   const handleRowClick = (row: Row<TStaffLogbook>) => {
@@ -399,18 +409,19 @@ export default function StaffLogbookPage() {
         breadcrumbs={[
           { label: "Staff", to: ROUTES.staff },
           { label: "Detail", to: ROUTES.staffDetail(String(idUser)) },
-          { label: "Logbook" },
+          { label: "Logbook", to: ROUTES.staffLogbook(String(idUser)) },
         ]}
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
-        onSearch={handleSearch}
+        onSearch={handleSearchChange}
         isLoading={isExporting}
+        initialSearchValue={search}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
           <Filter
-            onSearch={handleFilterSearch}
+            onChange={handleFilterChange}
             onReset={handleFilterReset}
             initialStaffId={idUser ? Number(idUser) : undefined}
           />
