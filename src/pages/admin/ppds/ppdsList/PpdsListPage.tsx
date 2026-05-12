@@ -45,7 +45,6 @@ export default function PpdsListPage() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportOffset, setExportOffset] = useState(0);
-  const [exportTotal, setExportTotal] = useState(0);
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
@@ -104,7 +103,6 @@ export default function PpdsListPage() {
 
     setExportProgress(0);
     setExportOffset(0);
-    setExportTotal(0);
     setIsExportComplete(false);
     setShowExportModal(true);
 
@@ -116,10 +114,9 @@ export default function PpdsListPage() {
           stase: (filterParams.stase as number | null) ?? null,
           nim: (filterParams.nim as string | null) ?? null,
         },
-        onProgress: (progress, offset, total) => {
+        onProgress: (progress, offset) => {
           setExportProgress(progress);
           setExportOffset(offset);
-          setExportTotal(total);
         },
         signal: exportControllerRef.current.signal,
       });
@@ -396,7 +393,7 @@ export default function PpdsListPage() {
         isShown={showExportModal}
         progress={exportProgress}
         offset={exportOffset}
-        total={exportTotal}
+        total={ppdsData.pagination.total}
         isComplete={isExportComplete}
         onCancel={handleCancelExport}
         onOk={handleOkExport}

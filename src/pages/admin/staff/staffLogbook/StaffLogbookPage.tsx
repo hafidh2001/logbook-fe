@@ -124,7 +124,6 @@ export default function StaffLogbookPage() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportOffset, setExportOffset] = useState(0);
-  const [exportTotal, setExportTotal] = useState(0);
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
@@ -134,7 +133,6 @@ export default function StaffLogbookPage() {
 
     setExportProgress(0);
     setExportOffset(0);
-    setExportTotal(0);
     setIsExportComplete(false);
     setShowExportModal(true);
 
@@ -150,10 +148,9 @@ export default function StaffLogbookPage() {
           start_date: filterParams.start_date ?? undefined,
           end_date: filterParams.end_date ?? undefined,
         },
-        onProgress: (progress, offset, total) => {
+        onProgress: (progress, offset) => {
           setExportProgress(progress);
           setExportOffset(offset);
-          setExportTotal(total);
         },
         signal: exportControllerRef.current.signal,
       });
@@ -392,7 +389,7 @@ export default function StaffLogbookPage() {
         isShown={showExportModal}
         progress={exportProgress}
         offset={exportOffset}
-        total={exportTotal}
+        total={staffLogbookData?.pagination.total ?? 0}
         isComplete={isExportComplete}
         onCancel={handleCancelExport}
         onOk={handleOkExport}

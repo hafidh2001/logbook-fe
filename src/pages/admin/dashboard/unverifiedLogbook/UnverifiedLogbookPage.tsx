@@ -47,7 +47,6 @@ export default function UnverifiedLogbookPage() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportOffset, setExportOffset] = useState(0);
-  const [exportTotal, setExportTotal] = useState(0);
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
@@ -133,7 +132,6 @@ export default function UnverifiedLogbookPage() {
 
     setExportProgress(0);
     setExportOffset(0);
-    setExportTotal(0);
     setIsExportComplete(false);
     setShowExportModal(true);
 
@@ -149,10 +147,9 @@ export default function UnverifiedLogbookPage() {
           start_date: filterParams.start_date ?? undefined,
           end_date: filterParams.end_date ?? undefined,
         },
-        onProgress: (progress, offset, total) => {
+        onProgress: (progress, offset) => {
           setExportProgress(progress);
           setExportOffset(offset);
-          setExportTotal(total);
         },
         signal: exportControllerRef.current.signal,
       });
@@ -392,7 +389,7 @@ export default function UnverifiedLogbookPage() {
         isShown={showExportModal}
         progress={exportProgress}
         offset={exportOffset}
-        total={exportTotal}
+        total={unverifiedLogbookData?.pagination.total ?? 0}
         isComplete={isExportComplete}
         onCancel={handleCancelExport}
         onOk={handleOkExport}
