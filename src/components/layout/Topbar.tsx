@@ -15,8 +15,9 @@ export const Topbar = ({
   searchPlaceholder = "Search...",
   isLoading = false,
   exportFormats = ["csv", "excel"],
+  initialSearchValue = "",
 }: ITopbarProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialSearchValue);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

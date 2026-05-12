@@ -15,4 +15,6 @@ export interface ITopbarProps {
   searchPlaceholder?: string;
   isLoading?: boolean;
   exportFormats?: ExportFormat[];
+  /** Initial search value to sync with URL search params */
+  initialSearchValue?: string;
 }

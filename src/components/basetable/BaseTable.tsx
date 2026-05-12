@@ -149,6 +149,20 @@ export const BaseTable = <
     }
   }, [isServerPagination, opt.meta?.page, opt.meta?.offset, opt.pagination?.initialPageSize]);
 
+  // Sync pagination with URL when URL changes (handles back/forward navigation, direct URL changes)
+  useEffect(() => {
+    if (!isServerPagination) return;
+
+    const pageParam = searchParams.get("page");
+    const urlPage = pageParam ? parseInt(pageParam, 10) : 1;
+    const currentPageIndex = urlPage - 1;
+
+    // Only update if different from current state
+    if (pagination.pageIndex !== currentPageIndex) {
+      setPagination(prev => ({ ...prev, pageIndex: currentPageIndex }));
+    }
+  }, [searchParams, isServerPagination]);
+
   // Sync pagination changes to URL search params - FIXED: use ref to track previous pageIndex
   const prevPageIndexRef = useRef<number>(pagination.pageIndex);
 

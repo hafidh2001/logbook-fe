@@ -1,6 +1,6 @@
 import { Topbar } from "@/components/layout/Topbar";
 import { ROUTES } from "@/utils/routes";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
 import { useAuthStore } from "@/store/authStore";
@@ -11,11 +11,8 @@ import "dayjs/locale/id";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
-import usePagination from "@/hooks/usePagination";
-import useFilter from "@/hooks/useFilter";
-import { FilterValue } from "@/components/filterPanel";
 import { StatusBadge } from "@/components/statusBadge";
 import { useDashboardStore } from "@/store/dashboardStore";
 import { TUnverifiedLogbook } from "@/types/dashboard";
@@ -31,6 +28,7 @@ export default function UnverifiedLogbookPage() {
 
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const {
     unverifiedLogbookData,
@@ -50,61 +48,150 @@ export default function UnverifiedLogbookPage() {
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
-  // Pagination - page is always read from URL
-  const { page, setPage, limit, setLimit, searchParams } = usePagination({
-    defaultPage: 1,
-    defaultLimit: DEFAULT_PAGE_SIZE,
-  });
+  // ========== FULL URL SEARCH PARAMS IMPLEMENTATION ==========
 
-  // Filter hook - id_staff is controlled by URL (idUser), other filters are optional
-  const { filterParams, handleFilterSearch, handleFilterReset } = useFilter<
-    Omit<Record<string, FilterValue>, "start_date" | "end_date"> & {
+  // Read all params from URL - this is the SINGLE SOURCE OF TRUTH
+  const page = useMemo(() => {
+    const p = searchParams.get("page");
+    return p ? parseInt(p, 10) : 1;
+  }, [searchParams]);
+
+  const limit = useMemo(() => {
+    const l = searchParams.get("limit");
+    return l ? parseInt(l, 10) : DEFAULT_PAGE_SIZE;
+  }, [searchParams]);
+
+  const search = useMemo(() => {
+    return searchParams.get("search") || "";
+  }, [searchParams]);
+
+  const id_ppds = useMemo(() => {
+    const val = searchParams.get("id_ppds");
+    return val ? parseInt(val, 10) : null;
+  }, [searchParams]);
+
+  const id_staff = useMemo(() => {
+    const val = searchParams.get("id_staff");
+    return val ? parseInt(val, 10) : null;
+  }, [searchParams]);
+
+  const id_activity = useMemo(() => {
+    const val = searchParams.get("id_activity");
+    return val ? parseInt(val, 10) : null;
+  }, [searchParams]);
+
+  const id_stase = useMemo(() => {
+    const val = searchParams.get("id_stase");
+    return val ? parseInt(val, 10) : null;
+  }, [searchParams]);
+
+  const start_date = useMemo(() => {
+    return searchParams.get("start_date") || undefined;
+  }, [searchParams]);
+
+  const end_date = useMemo(() => {
+    return searchParams.get("end_date") || undefined;
+  }, [searchParams]);
+
+  // Debounced search for API calls
+  const debouncedSearch = useDebounce(search, 500);
+
+  // ========== URL SETTERS ==========
+
+  const updateUrlParams = useCallback(
+    (updates: Record<string, string | number | null | undefined>) => {
+      const newParams = new URLSearchParams(searchParams);
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === null || value === undefined || value === "") {
+          newParams.delete(key);
+        } else {
+          newParams.set(key, String(value));
+        }
+      });
+      setSearchParams(newParams, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
+
+  const setPage = useCallback(
+    (newPage: number) => {
+      updateUrlParams({ page: newPage });
+    },
+    [updateUrlParams],
+  );
+
+  const setLimit = useCallback(
+    (newLimit: number) => {
+      updateUrlParams({ limit: newLimit, page: 1 }); // Reset to page 1 when limit changes
+    },
+    [updateUrlParams],
+  );
+
+  const handleSearchChange = useCallback(
+    (query: string) => {
+      updateUrlParams({ search: query, page: 1 }); // Reset to page 1 when searching
+    },
+    [updateUrlParams],
+  );
+
+  const handleFilterChange = useCallback(
+    (filters: {
+      id_ppds?: number | null;
+      id_staff?: number | null;
+      id_activity?: number | null;
+      id_stase?: number | null;
       start_date?: string;
       end_date?: string;
-    }
-  >({
-    fields: [
-      { key: "id_ppds" },
-      { key: "id_staff" },
-      { key: "id_activity" },
-      { key: "id_stase" },
-      // { key: "status" }, --- IGNORE ---
-      { key: "start_date" },
-      { key: "end_date" },
-    ],
-    onFilterChange: () => setPage(1),
-  });
+    }) => {
+      updateUrlParams({
+        ...filters,
+        page: 1, // Always reset to page 1 when filter changes
+      });
+    },
+    [updateUrlParams],
+  );
 
-  // Search state with 500ms debounce
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
-
-  // Reset page when search changes (only when user types actual search query)
-  useEffect(() => {
-    if (debouncedSearchQuery) {
-      setPage(1);
+  const handleFilterReset = useCallback(() => {
+    // Keep only essential params, reset everything else
+    const newParams = new URLSearchParams();
+    newParams.set("page", "1");
+    newParams.set("limit", String(DEFAULT_PAGE_SIZE));
+    if (idUser) {
+      newParams.set("id_staff", idUser); // Preserve staff filter if from URL
     }
-  }, [debouncedSearchQuery, setPage]);
+    setSearchParams(newParams, { replace: true });
+  }, [idUser, setSearchParams]);
+
+  // ========== DATA FETCHING ==========
 
   useEffect(() => {
-    // Runs when URL, filter, or search changes
     if (user?.id_client) {
       loadUnverifiedLogbookList({
         id_client: user.id_client,
-        id_staff: (filterParams.id_staff as number | null) ?? undefined,
+        id_staff: id_staff ?? undefined,
         page,
         limit,
-        search: debouncedSearchQuery || undefined,
-        id_ppds: (filterParams.id_ppds as number | null) ?? undefined,
-        id_activity: (filterParams.id_activity as number | null) ?? undefined,
-        id_stase: (filterParams.id_stase as number | null) ?? undefined,
-        // status: (filterParams.status as string | null) ?? undefined,
-        start_date: filterParams.start_date ?? undefined,
-        end_date: filterParams.end_date ?? undefined,
+        search: debouncedSearch || undefined,
+        id_ppds: id_ppds ?? undefined,
+        id_activity: id_activity ?? undefined,
+        id_stase: id_stase ?? undefined,
+        start_date,
+        end_date,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, filterParams, debouncedSearchQuery]);
+  }, [
+    user?.id_client,
+    page,
+    limit,
+    debouncedSearch,
+    id_ppds,
+    id_staff,
+    id_activity,
+    id_stase,
+    start_date,
+    end_date,
+    loadUnverifiedLogbookList,
+  ]);
 
   useEffect(() => {
     // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
@@ -112,19 +199,6 @@ export default function UnverifiedLogbookPage() {
       reset();
     };
   }, [reset]);
-
-  // Reset store when sidebar is clicked (URL has no page param)
-  useEffect(() => {
-    const pageParam = searchParams.get("page");
-    // If no page param in URL, reset store
-    if (!pageParam) {
-      reset();
-      // Also force page to 1 in URL if somehow different
-      if (page !== 1) {
-        setPage(1);
-      }
-    }
-  }, [searchParams, reset, page, setPage]);
 
   const handleExport = async (format: ExportFormat) => {
     // Create new AbortController for this export
@@ -140,12 +214,12 @@ export default function UnverifiedLogbookPage() {
       const allData = await loadExportUnverifiedLogbookList({
         filterParams: {
           id_client: user?.id_client ?? 0,
-          id_staff: (filterParams.id_staff as number | null) ?? undefined,
-          id_ppds: (filterParams.id_ppds as number | null) ?? undefined,
-          id_activity: (filterParams.id_activity as number | null) ?? undefined,
-          id_stase: (filterParams.id_stase as number | null) ?? undefined,
-          start_date: filterParams.start_date ?? undefined,
-          end_date: filterParams.end_date ?? undefined,
+          id_staff: id_staff ?? undefined,
+          id_ppds: id_ppds ?? undefined,
+          id_activity: id_activity ?? undefined,
+          id_stase: id_stase ?? undefined,
+          start_date,
+          end_date,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);
@@ -176,8 +250,12 @@ export default function UnverifiedLogbookPage() {
           header: "Staff Pengajar/DPJP",
           accessorKey: "staff",
           formatter: (value) => {
-            if (!value || !Array.isArray(value) || value.length === 0) return "-";
-            return value.map((s: { name: string | null }) => s.name).filter(Boolean).join(", ");
+            if (!value || !Array.isArray(value) || value.length === 0)
+              return "-";
+            return value
+              .map((s: { name: string | null }) => s.name)
+              .filter(Boolean)
+              .join(", ");
           },
         },
         { header: "Activity", accessorKey: "action_name" },
@@ -209,10 +287,7 @@ export default function UnverifiedLogbookPage() {
         });
       }
 
-      showToast(
-        `Berhasil mengekspor ${allData.length} data`,
-        "success"
-      );
+      showToast(`Berhasil mengekspor ${allData.length} data`, "success");
 
       // Set complete state - modal stays open until user clicks OK
       setIsExportComplete(true);
@@ -226,7 +301,7 @@ export default function UnverifiedLogbookPage() {
       console.error("Export error:", error);
       showToast(
         error instanceof Error ? error.message : "Gagal mengekspor data",
-        "error"
+        "error",
       );
       setShowExportModal(false);
     } finally {
@@ -247,10 +322,6 @@ export default function UnverifiedLogbookPage() {
   const handleOkExport = () => {
     setShowExportModal(false);
     setIsExportComplete(false);
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
   };
 
   const handlePaginationChange = (pageIndex: number, pageSize: number) => {
@@ -398,18 +469,19 @@ export default function UnverifiedLogbookPage() {
       <Topbar
         breadcrumbs={[
           { label: "Dashboard", to: ROUTES.dashboard },
-          { label: "Unverified Logbook" },
+          { label: "Unverified Logbook", to: ROUTES.unverifiedLogbook },
         ]}
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
-        onSearch={handleSearch}
+        onSearch={handleSearchChange}
         isLoading={isExporting}
+        initialSearchValue={search}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
           <Filter
-            onSearch={handleFilterSearch}
+            onChange={handleFilterChange}
             onReset={handleFilterReset}
             initialStaffId={idUser ? Number(idUser) : undefined}
           />
@@ -424,8 +496,6 @@ export default function UnverifiedLogbookPage() {
               pagination={{
                 enabled: true,
                 mode: "server",
-                initialPageIndex: 0,
-                initialPageSize: DEFAULT_PAGE_SIZE,
                 pageCount: unverifiedLogbookData?.pagination.pageCount ?? 1,
               }}
               onPaginationChange={handlePaginationChange}
