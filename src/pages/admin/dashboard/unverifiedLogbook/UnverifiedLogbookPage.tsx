@@ -1,6 +1,6 @@
 import { Topbar } from "@/components/layout/Topbar";
 import { ROUTES } from "@/utils/routes";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
 import { useAuthStore } from "@/store/authStore";
@@ -11,7 +11,7 @@ import "dayjs/locale/id";
 import { Button } from "@/components/ui/button";
 import { icons } from "@/assets/images/Icon";
 import useWindowDimensions from "@/hooks/useWindowDimension";
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DEFAULT_PAGE_SIZE } from "@/constants/table";
 import { StatusBadge } from "@/components/statusBadge";
 import { useDashboardStore } from "@/store/dashboardStore";
@@ -20,7 +20,7 @@ import { showToast } from "@/utils/toast";
 import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlParams } from "@/hooks/useUrlParams";
 
 export default function UnverifiedLogbookPage() {
   const { width } = useWindowDimensions();
@@ -28,7 +28,6 @@ export default function UnverifiedLogbookPage() {
 
   const { idUser } = useParams<{ idUser: string }>();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
 
   const {
     unverifiedLogbookData,
@@ -48,119 +47,66 @@ export default function UnverifiedLogbookPage() {
   const [isExportComplete, setIsExportComplete] = useState(false);
   const exportControllerRef = useRef<AbortController | null>(null);
 
-  // ========== FULL URL SEARCH PARAMS IMPLEMENTATION ==========
+  // ========== URL PARAMS (using useUrlParams hook) ==========
+  const {
+    page,
+    limit,
+    search,
+    debouncedSearch,
+    filters,
+    setLimit,
+    setSearch,
+    setFilters,
+    resetParams,
+    getNumberParam,
+  } = useUrlParams({
+    defaultPage: 1,
+    defaultLimit: DEFAULT_PAGE_SIZE,
+    filterKeys: ["id_ppds", "id_staff", "id_activity", "id_stase", "start_date", "end_date"],
+    searchDebounceMs: 500,
+  });
 
-  // Read all params from URL - this is the SINGLE SOURCE OF TRUTH
-  const page = useMemo(() => {
-    const p = searchParams.get("page");
-    return p ? parseInt(p, 10) : 1;
-  }, [searchParams]);
+  // Extract filter values from URL
+  const id_ppds = getNumberParam("id_ppds");
+  const id_staff = getNumberParam("id_staff");
+  const id_activity = getNumberParam("id_activity");
+  const id_stase = getNumberParam("id_stase");
+  const start_date = filters.start_date || undefined;
+  const end_date = filters.end_date || undefined;
 
-  const limit = useMemo(() => {
-    const l = searchParams.get("limit");
-    return l ? parseInt(l, 10) : DEFAULT_PAGE_SIZE;
-  }, [searchParams]);
+  // ========== HANDLERS ==========
 
-  const search = useMemo(() => {
-    return searchParams.get("search") || "";
-  }, [searchParams]);
+  const handleFilterChange = (newFilters: {
+    id_ppds?: number | null;
+    id_staff?: number | null;
+    id_activity?: number | null;
+    id_stase?: number | null;
+    start_date?: string;
+    end_date?: string;
+  }) => {
+    setFilters(newFilters);
+  };
 
-  const id_ppds = useMemo(() => {
-    const val = searchParams.get("id_ppds");
-    return val ? parseInt(val, 10) : null;
-  }, [searchParams]);
-
-  const id_staff = useMemo(() => {
-    const val = searchParams.get("id_staff");
-    return val ? parseInt(val, 10) : null;
-  }, [searchParams]);
-
-  const id_activity = useMemo(() => {
-    const val = searchParams.get("id_activity");
-    return val ? parseInt(val, 10) : null;
-  }, [searchParams]);
-
-  const id_stase = useMemo(() => {
-    const val = searchParams.get("id_stase");
-    return val ? parseInt(val, 10) : null;
-  }, [searchParams]);
-
-  const start_date = useMemo(() => {
-    return searchParams.get("start_date") || undefined;
-  }, [searchParams]);
-
-  const end_date = useMemo(() => {
-    return searchParams.get("end_date") || undefined;
-  }, [searchParams]);
-
-  // Debounced search for API calls
-  const debouncedSearch = useDebounce(search, 500);
-
-  // ========== URL SETTERS ==========
-
-  const updateUrlParams = useCallback(
-    (updates: Record<string, string | number | null | undefined>) => {
-      const newParams = new URLSearchParams(searchParams);
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value === null || value === undefined || value === "") {
-          newParams.delete(key);
-        } else {
-          newParams.set(key, String(value));
-        }
-      });
-      setSearchParams(newParams, { replace: true });
-    },
-    [searchParams, setSearchParams],
-  );
-
-  const setPage = useCallback(
-    (newPage: number) => {
-      updateUrlParams({ page: newPage });
-    },
-    [updateUrlParams],
-  );
-
-  const setLimit = useCallback(
-    (newLimit: number) => {
-      updateUrlParams({ limit: newLimit, page: 1 }); // Reset to page 1 when limit changes
-    },
-    [updateUrlParams],
-  );
-
-  const handleSearchChange = useCallback(
-    (query: string) => {
-      updateUrlParams({ search: query, page: 1 }); // Reset to page 1 when searching
-    },
-    [updateUrlParams],
-  );
-
-  const handleFilterChange = useCallback(
-    (filters: {
-      id_ppds?: number | null;
-      id_staff?: number | null;
-      id_activity?: number | null;
-      id_stase?: number | null;
-      start_date?: string;
-      end_date?: string;
-    }) => {
-      updateUrlParams({
-        ...filters,
-        page: 1, // Always reset to page 1 when filter changes
-      });
-    },
-    [updateUrlParams],
-  );
-
-  const handleFilterReset = useCallback(() => {
-    // Keep only essential params, reset everything else
-    const newParams = new URLSearchParams();
-    newParams.set("page", "1");
-    newParams.set("limit", String(DEFAULT_PAGE_SIZE));
+  const handleFilterReset = () => {
+    resetParams(idUser ? ["id_staff"] : []);
     if (idUser) {
-      newParams.set("id_staff", idUser); // Preserve staff filter if from URL
+      // Re-apply id_staff if from URL param
+      setFilters({ id_staff: Number(idUser) });
     }
-    setSearchParams(newParams, { replace: true });
-  }, [idUser, setSearchParams]);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearch(query);
+  };
+
+  const handlePaginationChange = (_pageIndex: number, pageSize: number) => {
+    // BaseTable handles page changes via URL internally
+    setLimit(pageSize, false);
+  };
+
+  const handleRowClick = (row: Row<TUnverifiedLogbook>) => {
+    navigate(ROUTES.unverifiedLogbookDetail(String(row.original.id)));
+  };
 
   // ========== DATA FETCHING ==========
 
@@ -194,14 +140,14 @@ export default function UnverifiedLogbookPage() {
   ]);
 
   useEffect(() => {
-    // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
     return () => {
       reset();
     };
   }, [reset]);
 
+  // ========== EXPORT ==========
+
   const handleExport = async (format: ExportFormat) => {
-    // Create new AbortController for this export
     exportControllerRef.current = new AbortController();
 
     setExportProgress(0);
@@ -210,7 +156,6 @@ export default function UnverifiedLogbookPage() {
     setShowExportModal(true);
 
     try {
-      // Use the cloned store method for export - this doesn't affect UI state
       const allData = await loadExportUnverifiedLogbookList({
         filterParams: {
           id_client: user?.id_client ?? 0,
@@ -234,7 +179,6 @@ export default function UnverifiedLogbookPage() {
         return;
       }
 
-      // Define columns for export
       const exportColumns: ExportColumn<TUnverifiedLogbook>[] = [
         { header: "No", accessorKey: "no" },
         {
@@ -264,7 +208,6 @@ export default function UnverifiedLogbookPage() {
         { header: "Verified Status", accessorKey: "verified_status" },
       ];
 
-      // Prepare data with index number
       const dataWithIndex = allData.map((item, index) => ({
         ...item,
         no: index + 1,
@@ -288,11 +231,8 @@ export default function UnverifiedLogbookPage() {
       }
 
       showToast(`Berhasil mengekspor ${allData.length} data`, "success");
-
-      // Set complete state - modal stays open until user clicks OK
       setIsExportComplete(true);
     } catch (error) {
-      // Check if cancelled
       if (error instanceof Error && error.message === "EXPORT_CANCELLED") {
         showToast("Export dibatalkan", "error");
         setShowExportModal(false);
@@ -324,16 +264,8 @@ export default function UnverifiedLogbookPage() {
     setIsExportComplete(false);
   };
 
-  const handlePaginationChange = (pageIndex: number, pageSize: number) => {
-    setPage(pageIndex + 1);
-    setLimit(pageSize);
-  };
+  // ========== COLUMNS ==========
 
-  const handleRowClick = (row: Row<TUnverifiedLogbook>) => {
-    navigate(ROUTES.unverifiedLogbookDetail(String(row.original.id)));
-  };
-
-  // Define columns for Logbook table
   const columns: ColumnDef<TUnverifiedLogbook>[] = [
     {
       accessorKey: "date",
@@ -453,6 +385,8 @@ export default function UnverifiedLogbookPage() {
       },
     },
   ];
+
+  // ========== RENDER ==========
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">

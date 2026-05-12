@@ -128,25 +128,50 @@ export const Filter = ({
       const staseOpt = staseOptions.find(opt => opt.value === currentFilters.id_stase);
       if (staseOpt) values.id_stase = staseOpt;
     }
-    // Date values
+    // Date values - convert string from URL to Date object for FilterPanel
     if (currentFilters.start_date) {
-      values.start_date = currentFilters.start_date;
+      const [year, month, day] = currentFilters.start_date.split("-").map(Number);
+      values.start_date = new Date(year, month - 1, day);
     }
     if (currentFilters.end_date) {
-      values.end_date = currentFilters.end_date;
+      const [year, month, day] = currentFilters.end_date.split("-").map(Number);
+      values.end_date = new Date(year, month - 1, day);
     }
 
     return Object.keys(values).length > 0 ? values : undefined;
   }, [currentFilters, initialStaffId, staffOptions, ppdsActiveOptions, activityOptions, staseOptions]);
 
   const handleSearch = (data: Record<string, FilterValue>) => {
+    // Helper to convert select FilterValue to number value
+    const getSelectValue = (key: string): number | null => {
+      const val = data[key];
+      if (val && typeof val === "object" && "value" in val) {
+        return (val as { value: number }).value ?? null;
+      }
+      return null;
+    };
+
+    // Helper to convert date values to YYYY-MM-DD string
+    const getDateValue = (key: string): string | undefined => {
+      const val = data[key];
+      if (!val) return undefined;
+      // Handle Date object from CalendarSelect
+      if (val instanceof Date) {
+        const day = String(val.getDate()).padStart(2, "0");
+        const month = String(val.getMonth() + 1).padStart(2, "0");
+        const year = val.getFullYear();
+        return `${year}-${month}-${day}`;
+      }
+      return undefined;
+    };
+
     const filters = {
-      id_ppds: (data.id_ppds as { value: number })?.value ?? null,
-      id_staff: (data.id_staff as { value: number })?.value ?? null,
-      id_activity: (data.id_activity as { value: number })?.value ?? null,
-      id_stase: (data.id_stase as { value: number })?.value ?? null,
-      start_date: typeof data.start_date === "string" ? data.start_date : undefined,
-      end_date: typeof data.end_date === "string" ? data.end_date : undefined,
+      id_ppds: getSelectValue("id_ppds"),
+      id_staff: getSelectValue("id_staff"),
+      id_activity: getSelectValue("id_activity"),
+      id_stase: getSelectValue("id_stase"),
+      start_date: getDateValue("start_date"),
+      end_date: getDateValue("end_date"),
     };
 
     onChange(filters);
