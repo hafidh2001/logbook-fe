@@ -117,8 +117,19 @@ const getDefaultValue = (type: FilterFieldType): FilterValue => {
 };
 
 export function FilterPanel({ fields, onSearch, onReset, resultCount, initialValues, syncValues }: FilterProps) {
-  // State untuk setiap filter
-  const [filters, setFilters] = useState<Record<string, FilterValue>>(() =>
+  // Applied filters - these are what show in chips and are sent to API
+  const [appliedFilters, setAppliedFilters] = useState<Record<string, FilterValue>>(() =>
+    fields.reduce(
+      (acc, field) => {
+        acc[field.key] = initialValues?.[field.key] ?? getDefaultValue(field.type);
+        return acc;
+      },
+      {} as Record<string, FilterValue>
+    )
+  );
+
+  // Draft filters - temporary state while user is selecting in the panel
+  const [draftFilters, setDraftFilters] = useState<Record<string, FilterValue>>(() =>
     fields.reduce(
       (acc, field) => {
         acc[field.key] = initialValues?.[field.key] ?? getDefaultValue(field.type);
@@ -130,11 +141,23 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Sync filters when initialValues or syncValues changes
+  // Sync applied filters when initialValues or syncValues changes (from URL/external)
   useEffect(() => {
     const valuesToSync = syncValues ?? initialValues;
     if (valuesToSync) {
-      setFilters((prev) => {
+      setAppliedFilters((prev) => {
+        let hasUpdates = false;
+        const newFilters = { ...prev };
+        Object.entries(valuesToSync).forEach(([key, value]) => {
+          if (prev[key] !== value) {
+            newFilters[key] = value;
+            hasUpdates = true;
+          }
+        });
+        return hasUpdates ? newFilters : prev;
+      });
+      // Also sync draft filters so panel shows current applied values when opened
+      setDraftFilters((prev) => {
         let hasUpdates = false;
         const newFilters = { ...prev };
         Object.entries(valuesToSync).forEach(([key, value]) => {
@@ -148,66 +171,81 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
     }
   }, [syncValues, initialValues]);
 
-  // Hitung jumlah filter yang aktif
+  // Open panel - load applied filters into draft
+  // Close panel - discard draft, restore to applied (unless Terapkan was clicked)
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      // Opening - load current applied values into draft
+      setDraftFilters(appliedFilters);
+    } else {
+      // Closing without Terapkan - discard draft
+      setDraftFilters(appliedFilters);
+    }
+    setIsFilterOpen(open);
+  };
+
+  // Hitung jumlah filter yang aktif (based on applied, not draft)
   const activeFilterCount = useMemo(() => {
     return fields.filter((field) =>
-      hasFilterValue(filters[field.key], field.type)
+      hasFilterValue(appliedFilters[field.key], field.type)
     ).length;
-  }, [fields, filters]);
+  }, [fields, appliedFilters]);
 
-  // Ambil chips untuk display (hanya yang aktif)
+  // Ambil chips untuk display (hanya yang aktif - based on applied)
   const activeFilterChips = useMemo(() => {
     return fields
-      .filter((field) => hasFilterValue(filters[field.key], field.type))
+      .filter((field) => hasFilterValue(appliedFilters[field.key], field.type))
       .map((field) => ({
         key: field.key,
         label: field.label,
-        value: filters[field.key],
+        value: appliedFilters[field.key],
         type: field.type,
-        displayValue: getChipLabel(filters[field.key], field.type),
+        displayValue: getChipLabel(appliedFilters[field.key], field.type),
         disabled: field.disabled,
       }));
-  }, [fields, filters]);
+  }, [fields, appliedFilters]);
 
   const handleFilterChange = (key: string, value: FilterValue) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    setDraftFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleRemoveChip = (key: string) => {
     const field = fields.find((f) => f.key === key);
     if (field) {
-      const newFilters = { ...filters, [key]: getDefaultValue(field.type) };
-      setFilters(newFilters);
+      const newFilters = { ...appliedFilters, [key]: getDefaultValue(field.type) };
+      setAppliedFilters(newFilters);
+      setDraftFilters(newFilters);
       onSearch(newFilters);
     }
   };
 
   const handleSearch = () => {
-    onSearch(filters);
+    // Commit draft to applied
+    setAppliedFilters(draftFilters);
+    onSearch(draftFilters);
     setIsFilterOpen(false);
   };
 
   const handleReset = () => {
-    setFilters(
-      fields.reduce(
-        (acc, field) => {
-          // Preserve disabled field values during reset
-          if (field.disabled) {
-            acc[field.key] = filters[field.key];
-          } else {
-            acc[field.key] = getDefaultValue(field.type);
-          }
-          return acc;
-        },
-        {} as Record<string, FilterValue>
-      )
+    const resetFilters = fields.reduce(
+      (acc, field) => {
+        // Preserve disabled field values during reset
+        if (field.disabled) {
+          acc[field.key] = appliedFilters[field.key];
+        } else {
+          acc[field.key] = getDefaultValue(field.type);
+        }
+        return acc;
+      },
+      {} as Record<string, FilterValue>
     );
+    setDraftFilters(resetFilters);
     onReset();
   };
 
-  // Render field berdasarkan type
+  // Render field berdasarkan type (uses draftFilters for panel selections)
   const renderField = (field: FilterFieldConfig) => {
-    const value = filters[field.key];
+    const value = draftFilters[field.key];
 
     switch (field.type) {
       case "select":
@@ -348,7 +386,7 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
       )}
 
       {/* Filter Sheet/Panel */}
-      <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+      <Sheet open={isFilterOpen} onOpenChange={handleOpenChange}>
         <SheetContent
           side="right"
           className="flex flex-col h-full w-full sm:max-w-md"
