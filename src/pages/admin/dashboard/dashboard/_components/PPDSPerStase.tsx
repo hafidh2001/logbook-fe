@@ -1,38 +1,123 @@
 import { PieChart } from "@/components/chart/pieChart";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { useDashboardStore } from "@/store/dashboardStore";
+import { useRef, useState, useEffect } from "react";
 import type { ChartData } from "chart.js";
+
+// Extended color palette for charts with many items
+const CHART_COLORS = [
+  "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7",
+  "#DDA0DD", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9",
+  "#F8B500", "#00CED1", "#FF7F50", "#937DB8", "#2ECC71",
+];
 
 export const PPDSPerStase = () => {
   const { ppdsPerStase } = useDashboardStore();
+  const legendRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chartRef = useRef<any>(null);
+  const [hiddenItems, setHiddenItems] = useState<Set<number>>(new Set());
+  const [chartSize, setChartSize] = useState(0);
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (legendRef.current) {
+        setChartSize(legendRef.current.offsetHeight);
+      }
+    };
+
+    updateSize();
+
+    const resizeObserver = new ResizeObserver(updateSize);
+    if (legendRef.current) {
+      resizeObserver.observe(legendRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const chartData: ChartData<"pie", number[], string> = {
     labels: ppdsPerStase.map((item) => item.stase) ?? [],
     datasets: [
       {
         data: ppdsPerStase.map((item) => item.count) ?? [],
-        backgroundColor: ["#FF6B6B", "#4ECDC4", "#45B7D1"],
+        backgroundColor: ppdsPerStase.map(
+          (_, index) => CHART_COLORS[index % CHART_COLORS.length]
+        ),
         borderWidth: 0,
       },
     ],
   };
 
+  const handleLegendClick = (index: number) => {
+    chartRef.current?.toggleDataVisibility(index);
+    setHiddenItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <CardWrapper title="PPDS Per Stase">
-      <div className="h-72 flex items-center justify-center">
-        <div className="w-full sm:w-[270px]">
+      <div className="h-72 flex gap-4">
+        {/* Left: Square Chart Area */}
+        <div
+          className="flex items-center justify-center flex-shrink-0"
+          style={{ width: chartSize, height: chartSize }}
+        >
           <PieChart
+            ref={chartRef}
             data={chartData}
             options={{
-              responsive: true,
-              maintainAspectRatio: true,
+              responsive: false,
+              maintainAspectRatio: false,
               plugins: {
                 legend: {
-                  position: "bottom",
+                  display: false,
                 },
               },
             }}
+            width={chartSize}
+            height={chartSize}
           />
+        </div>
+
+        {/* Right: Legend Area (scrollable) */}
+        <div
+          ref={legendRef}
+          className="flex-1 min-w-0 overflow-y-auto flex items-center"
+        >
+          <div className="space-y-2 flex-1">
+            {ppdsPerStase.map((item, index) => (
+              <button
+                key={item.stase}
+                onClick={() => handleLegendClick(index)}
+                className="flex items-center gap-2 w-full text-left hover:opacity-70 transition-opacity"
+              >
+                <div
+                  className="w-3 h-3 rounded-sm flex-shrink-0"
+                  style={{
+                    backgroundColor:
+                      CHART_COLORS[index % CHART_COLORS.length],
+                  }}
+                />
+                <span
+                  className={`text-sm truncate ${
+                    hiddenItems.has(index)
+                      ? "line-through text-gray-400"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {item.stase}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </CardWrapper>
