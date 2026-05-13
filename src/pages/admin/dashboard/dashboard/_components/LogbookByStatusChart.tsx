@@ -7,14 +7,16 @@ import type { ChartData } from "chart.js";
 export const LogbookByStatusChart = () => {
   const { logbookByStatus } = useDashboardStore();
 
+  const colors = logbookByStatus.map(
+    (_, index) => CHART_COLORS[index % CHART_COLORS.length]
+  );
+
   const chartData: ChartData<"bar", number[], string> = {
     labels: logbookByStatus.map((item) => item.status),
     datasets: [
       {
         data: logbookByStatus.map((item) => item.count),
-        backgroundColor: logbookByStatus.map(
-          (_, index) => CHART_COLORS[index % CHART_COLORS.length]
-        ),
+        backgroundColor: colors,
         borderRadius: 6,
       },
     ],

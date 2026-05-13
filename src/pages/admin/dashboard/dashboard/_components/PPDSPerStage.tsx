@@ -30,14 +30,16 @@ export const PPDSPerStage = () => {
     return () => resizeObserver.disconnect();
   }, []);
 
+  const colors = ppdsPerStage.map(
+    (_, index) => CHART_COLORS[index % CHART_COLORS.length]
+  );
+
   const chartData: ChartData<"doughnut", number[], string> = {
     labels: ppdsPerStage.map((item) => item.stage) ?? [],
     datasets: [
       {
         data: ppdsPerStage.map((item) => item.count) ?? [],
-        backgroundColor: ppdsPerStage.map(
-          (_, index) => CHART_COLORS[index % CHART_COLORS.length]
-        ),
+        backgroundColor: colors,
         borderWidth: 0,
       },
     ],
@@ -96,7 +98,7 @@ export const PPDSPerStage = () => {
                 <div
                   className="w-3 h-3 rounded-sm flex-shrink-0"
                   style={{
-                    backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                    backgroundColor: colors[index],
                   }}
                 />
                 <span
