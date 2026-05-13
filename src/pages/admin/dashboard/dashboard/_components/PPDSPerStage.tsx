@@ -1,6 +1,7 @@
 import { DoughnutChart } from "@/components/chart/doughnutChart";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { useDashboardStore } from "@/store/dashboardStore";
+import { CHART_COLORS } from "@/constants/chartColors";
 import { useRef, useState, useEffect } from "react";
 import type { ChartData } from "chart.js";
 
@@ -34,13 +35,13 @@ export const PPDSPerStage = () => {
     datasets: [
       {
         data: ppdsPerStage.map((item) => item.count) ?? [],
-        backgroundColor: ["#6C63FF", "#81C784", "#64B5F6"],
+        backgroundColor: ppdsPerStage.map(
+          (_, index) => CHART_COLORS[index % CHART_COLORS.length]
+        ),
         borderWidth: 0,
       },
     ],
   };
-
-  const colors = ["#6C63FF", "#81C784", "#64B5F6"];
 
   const handleLegendClick = (index: number) => {
     chartRef.current?.toggleDataVisibility(index);
@@ -94,7 +95,9 @@ export const PPDSPerStage = () => {
               >
                 <div
                   className="w-3 h-3 rounded-sm flex-shrink-0"
-                  style={{ backgroundColor: colors[index % colors.length] }}
+                  style={{
+                    backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                  }}
                 />
                 <span
                   className={`text-sm truncate ${

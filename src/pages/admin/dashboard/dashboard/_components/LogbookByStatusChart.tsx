@@ -1,6 +1,7 @@
 import { BarChart } from "@/components/chart/barChart";
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { useDashboardStore } from "@/store/dashboardStore";
+import { CHART_COLORS } from "@/constants/chartColors";
 import type { ChartData } from "chart.js";
 
 export const LogbookByStatusChart = () => {
@@ -11,7 +12,9 @@ export const LogbookByStatusChart = () => {
     datasets: [
       {
         data: logbookByStatus.map((item) => item.count),
-        backgroundColor: ["#81C784", "#E57373", "#64B5F6", "#FFD54F"],
+        backgroundColor: logbookByStatus.map(
+          (_, index) => CHART_COLORS[index % CHART_COLORS.length]
+        ),
         borderRadius: 6,
       },
     ],
