@@ -7,6 +7,7 @@ import type {
 } from "@/types/ppds/store";
 import type {
   TPpds,
+  TPpdsInactive,
   TPpdsDetail,
   TPpdsLogbook,
   IPpdsPayload,
@@ -363,7 +364,7 @@ export const usePpdsStore = create<PpdsStore>((set) => ({
 
       // Step 2: Batch export with limit
       const totalBatch = Math.ceil(total / EXPORT_LIMIT);
-      let allData: TPpds[] = [];
+      let allData: TPpdsInactive[] = [];
 
       for (let i = 0; i < totalBatch; i++) {
         // Check if cancelled before each batch

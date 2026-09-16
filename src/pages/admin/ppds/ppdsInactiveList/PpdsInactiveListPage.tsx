@@ -4,7 +4,7 @@ import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { Filter } from "./_components/Filter";
 import { BaseTable } from "@/components/basetable/BaseTable";
-import { TPpds } from "@/types/ppds";
+import { TPpdsInactive } from "@/types/ppds";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Row } from "@tanstack/react-table";
 import dayjs from "dayjs";
@@ -141,7 +141,7 @@ export default function PpdsInactiveListPage() {
       }
 
       // Define columns for export
-      const exportColumns: ExportColumn<TPpds>[] = [
+      const exportColumns: ExportColumn<TPpdsInactive>[] = [
         { header: "No", accessorKey: "no" },
         { header: "Nama", accessorKey: "display_name" },
         { header: "Username", accessorKey: "username" },
@@ -157,6 +157,8 @@ export default function PpdsInactiveListPage() {
         { header: "NIM", accessorKey: "nim" },
         { header: "Role", accessorKey: "role_name" },
         { header: "Stase", accessorKey: "stase_name" },
+        { header: "Inactive At", accessorKey: "inactive_at" },
+        { header: "Inactive Notes", accessorKey: "inactive_notes" },
         { header: "Total Logbook", accessorKey: "total_logbook" },
       ];
 
@@ -183,10 +185,7 @@ export default function PpdsInactiveListPage() {
         });
       }
 
-      showToast(
-        `Berhasil mengekspor ${allData.length} data`,
-        "success"
-      );
+      showToast(`Berhasil mengekspor ${allData.length} data`, "success");
 
       // Set complete state - modal stays open until user clicks OK
       setIsExportComplete(true);
@@ -200,7 +199,7 @@ export default function PpdsInactiveListPage() {
       console.error("Export error:", error);
       showToast(
         error instanceof Error ? error.message : "Gagal mengekspor data",
-        "error"
+        "error",
       );
       setShowExportModal(false);
     } finally {
@@ -225,11 +224,11 @@ export default function PpdsInactiveListPage() {
 
   // ========== COLUMNS ==========
 
-  const handleRowClick = (row: Row<TPpds>) => {
+  const handleRowClick = (row: Row<TPpdsInactive>) => {
     navigate(ROUTES.ppdsInactiveDetail(String(row.original.id)));
   };
 
-  const columns: ColumnDef<TPpds>[] = [
+  const columns: ColumnDef<TPpdsInactive>[] = [
     {
       accessorKey: "display_name",
       header: "Nama",
@@ -286,6 +285,21 @@ export default function PpdsInactiveListPage() {
       header: "Stase",
       size: 130,
       cell: ({ row: { original } }) => original.stase_name ?? "-",
+    },
+    {
+      accessorKey: "inactive_at",
+      header: "Inactive At",
+      size: 150,
+      cell: ({ row: { original } }) =>
+        original.inactive_at
+          ? dayjs(original.inactive_at).locale("id").format("DD MMMM YYYY")
+          : "-",
+    },
+    {
+      accessorKey: "inactive_notes",
+      header: "Inactive Notes",
+      size: 150,
+      cell: ({ row: { original } }) => original.inactive_notes ?? "-",
     },
     {
       accessorKey: "total_logbook",

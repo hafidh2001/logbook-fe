@@ -1,5 +1,10 @@
 import { Nullable } from "@/types";
 
+export type TPpdsInactive = TPpds & {
+  inactive_at: Nullable<string>;
+  inactive_notes: Nullable<string>;
+};
+
 export type TPpds = {
   id: number;
   display_name: string;

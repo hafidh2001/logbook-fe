@@ -10,6 +10,7 @@ import type {
   IPpdsChangePasswordPayload,
   TPpdsLogbookDetail,
   IPpdsLogbookDetailParams,
+  TPpdsInactive,
 } from "@/types/ppds";
 import type { ApiPaginationResponse, ApiResponse } from "@/types";
 
@@ -229,7 +230,7 @@ export const ppdsApi = {
 
   async getPpdsInactiveList(
     params: IPpdsListParams,
-  ): Promise<ApiPaginationResponse<TPpds[]>> {
+  ): Promise<ApiPaginationResponse<TPpdsInactive[]>> {
     try {
       const { data: responseData } = await apiClient.post(
         "GetListPPDSInactive",

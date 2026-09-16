@@ -10,6 +10,7 @@ import type {
   IPpdsChangePasswordPayload,
   TPpdsLogbookDetail,
   IPpdsLogbookDetailParams,
+  TPpdsInactive,
 } from "./index";
 
 export interface PpdsData {
@@ -33,7 +34,7 @@ export interface PpdsLogbookData {
 }
 
 export interface PpdsInactiveData {
-  list: TPpds[];
+  list: TPpdsInactive[];
   pagination: {
     page: number;
     limit: number;
@@ -76,7 +77,7 @@ export interface PpdsActions {
     filterParams: Partial<IPpdsListParams>;
     onProgress?: (progress: number, offset: number, total: number) => void;
     signal?: AbortSignal;
-  }) => Promise<TPpds[]>;
+  }) => Promise<TPpdsInactive[]>;
   loadExportPpdsLogbookList: (params: {
     filterParams: Omit<IPpdsLogbookListParams, "page" | "limit">;
     onProgress?: (progress: number, offset: number, total: number) => void;
