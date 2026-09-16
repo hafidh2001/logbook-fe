@@ -151,7 +151,7 @@ export default function StaffListPage() {
         { header: "No. Telepon", accessorKey: "phone" },
         { header: "Alamat", accessorKey: "address" },
         { header: "Tanggal Lahir", accessorKey: "date_of_birth" },
-        { header: "NIM", accessorKey: "nim" },
+        { header: "NIP", accessorKey: "nim" },
         { header: "Role", accessorKey: "role_name" },
         { header: "Stase", accessorKey: "stase_name" },
         { header: "Total Logbook", accessorKey: "total_logbook" },
@@ -295,7 +295,7 @@ export default function StaffListPage() {
     },
     {
       accessorKey: "nim",
-      header: "NIM",
+      header: "NIP",
       size: 150,
       cell: ({ row: { original } }) => {
         return original.nim ? (

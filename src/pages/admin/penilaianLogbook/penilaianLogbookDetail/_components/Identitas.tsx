@@ -24,7 +24,7 @@ export const Identitas = ({ data }: Props) => {
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500 w-24">Code</span>
+        <span className="text-sm text-gray-500 w-24">NIM</span>
         <span className="text-sm font-medium text-gray-800">
           {data?.code ?? "-"}
         </span>

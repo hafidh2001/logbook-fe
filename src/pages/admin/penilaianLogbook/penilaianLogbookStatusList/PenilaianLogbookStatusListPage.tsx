@@ -194,7 +194,7 @@ export default function PenilaianLogbookStatusListPage() {
             value ? dayjs(value).locale("id").format("DD MMMM YYYY") : "-",
         },
         { header: "PPDS", accessorKey: "ppds_name" },
-        { header: "Code", accessorKey: "code" },
+        { header: "NIM", accessorKey: "code" },
         { header: "Inisial Code", accessorKey: "inisial_code" },
         { header: "Semester", accessorKey: "semester_name" },
         { header: "Stase", accessorKey: "stase_name" },
@@ -306,7 +306,7 @@ export default function PenilaianLogbookStatusListPage() {
     },
     {
       accessorKey: "code",
-      header: "Code",
+      header: "NIM",
       size: 100,
       cell: ({ row: { original } }) => original.code ?? "-",
     },

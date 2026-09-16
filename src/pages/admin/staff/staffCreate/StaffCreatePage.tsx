@@ -164,11 +164,11 @@ export default function StaffCreatePage() {
                 control={control}
                 render={({ field }) => (
                   <InputField
-                    label="NIM"
+                    label="NIP"
                     {...field}
                     value={field.value || ""}
                     onChange={field.onChange}
-                    placeholder="Masukkan NIM..."
+                    placeholder="Masukkan NIP..."
                   />
                 )}
               />

@@ -185,7 +185,7 @@ export default function StaffLogbookPage() {
             value ? dayjs(value).locale("id").format("DD MMMM YYYY") : "-",
         },
         { header: "Peserta PPDS", accessorKey: "ppds_name" },
-        { header: "NIM", accessorKey: "nim" },
+        { header: "NIP", accessorKey: "nim" },
         { header: "Stase", accessorKey: "stase_name" },
         { header: "Staff Pengajar/DPJP", accessorKey: "staff_name" },
         { header: "Activity", accessorKey: "action_name" },
@@ -294,7 +294,7 @@ export default function StaffLogbookPage() {
     },
     {
       accessorKey: "nim",
-      header: "NIM",
+      header: "NIP",
       size: 120,
       cell: ({ row: { original } }) => original.nim ?? "-",
     },

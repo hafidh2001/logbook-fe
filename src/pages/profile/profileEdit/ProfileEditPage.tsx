@@ -161,11 +161,11 @@ export default function ProfileEditPage() {
                 control={control}
                 render={({ field }) => (
                   <InputField
-                    label="Code"
+                    label="NIM"
                     {...field}
                     value={field.value || ""}
                     onChange={field.onChange}
-                    placeholder="Masukkan code..."
+                    placeholder="Masukkan NIM..."
                   />
                 )}
               />

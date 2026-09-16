@@ -94,7 +94,7 @@ export default function StaffChangePasswordPage() {
                   {selectedStaff?.display_name || "-"}
                 </h2>
                 <p className="text-sm text-gray-500">
-                  NIM: {selectedStaff?.nim || "-"}
+                  NIP: {selectedStaff?.nim || "-"}
                 </p>
                 <p className="text-sm text-gray-500 capitalize">
                   Role: {selectedStaff?.role_name || "-"}
