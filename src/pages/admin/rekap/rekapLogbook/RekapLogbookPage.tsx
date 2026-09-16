@@ -308,7 +308,7 @@ export default function RekapLogbookPage() {
     {
       accessorKey: "ppds",
       header: "PPDS",
-      size: 120,
+      size: 160,
       cell: ({ row: { original } }) => (
         <span className="font-medium">{original.ppds ?? "-"}</span>
       ),
@@ -342,7 +342,7 @@ export default function RekapLogbookPage() {
     {
       accessorKey: "pin",
       header: "PIN",
-      size: 80,
+      size: 150,
       cell: ({ row: { original } }) => original.pin ?? "-",
     },
     {

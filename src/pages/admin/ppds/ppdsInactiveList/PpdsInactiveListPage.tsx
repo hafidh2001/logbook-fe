@@ -157,7 +157,12 @@ export default function PpdsInactiveListPage() {
         { header: "NIM", accessorKey: "nim" },
         { header: "Role", accessorKey: "role_name" },
         { header: "Stase", accessorKey: "stase_name" },
-        { header: "Inactive At", accessorKey: "inactive_at" },
+        {
+          header: "Inactive At",
+          accessorKey: "inactive_at",
+          formatter: (value) =>
+            value ? dayjs(value).locale("id").format("DD MMMM YYYY") : "-",
+        },
         { header: "Inactive Notes", accessorKey: "inactive_notes" },
         { header: "Total Logbook", accessorKey: "total_logbook" },
       ];

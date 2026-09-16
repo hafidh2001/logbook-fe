@@ -150,7 +150,12 @@ export default function StaffListPage() {
         { header: "Email", accessorKey: "email" },
         { header: "No. Telepon", accessorKey: "phone" },
         { header: "Alamat", accessorKey: "address" },
-        { header: "Tanggal Lahir", accessorKey: "date_of_birth" },
+        {
+          header: "Tanggal Lahir",
+          accessorKey: "date_of_birth",
+          formatter: (value) =>
+            value ? dayjs(value).locale("id").format("DD MMMM YYYY") : "-",
+        },
         { header: "NIP", accessorKey: "nim" },
         { header: "Role", accessorKey: "role_name" },
         { header: "Stase", accessorKey: "stase_name" },
@@ -180,10 +185,7 @@ export default function StaffListPage() {
         });
       }
 
-      showToast(
-        `Berhasil mengekspor ${allData.length} data`,
-        "success"
-      );
+      showToast(`Berhasil mengekspor ${allData.length} data`, "success");
 
       // Set complete state - modal stays open until user clicks OK
       setIsExportComplete(true);
@@ -197,7 +199,7 @@ export default function StaffListPage() {
       console.error("Export error:", error);
       showToast(
         error instanceof Error ? error.message : "Gagal mengekspor data",
-        "error"
+        "error",
       );
       setShowExportModal(false);
     } finally {
@@ -232,7 +234,12 @@ export default function StaffListPage() {
         showToast(successMessage ?? "Data berhasil dihapus!", "success", {
           duration: 3000,
         });
-        loadStaffList({ page, limit, staff: staff ?? undefined, nim: nim ?? undefined });
+        loadStaffList({
+          page,
+          limit,
+          staff: staff ?? undefined,
+          nim: nim ?? undefined,
+        });
       } else {
         const errorMessage = useStaffStore.getState().error;
         showToast(errorMessage ?? "Gagal menghapus data", "error", {
