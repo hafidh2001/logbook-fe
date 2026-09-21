@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { ApiResponse, ApiPaginationResponse } from "@/types";
-import type { TStaseListItem, TStaseDetail, IStaseListParams, IStaseCreatePayload, IStaseUpdatePayload } from "@/types/stase";
+import { IHospitalCreatePayload, IHospitalListParams, IHospitalUpdatePayload, THospital } from "@/types/hospital";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
@@ -19,13 +19,13 @@ const apiClient = axios.create({
   timeout: 30000,
 });
 
-export const staseApi = {
-  async getStaseList(
-    params: IStaseListParams,
-  ): Promise<ApiPaginationResponse<TStaseListItem[]>> {
+export const hospitalApi = {
+  async getHospitalList(
+    params: IHospitalListParams,
+  ): Promise<ApiPaginationResponse<THospital[]>> {
     try {
       const { data: responseData } = await apiClient.post(
-        "GetListStase",
+        "GetListHospital",
         params,
       );
 
@@ -46,12 +46,12 @@ export const staseApi = {
     }
   },
 
-  async getStaseDetail(
-    params: { id_logbook: number }
-  ): Promise<ApiResponse<TStaseDetail>> {
+  async getHospitalDetail(
+    params: { id: number }
+  ): Promise<ApiResponse<THospital>> {
     try {
       const { data: responseData } = await apiClient.post(
-        "GetDetailStase",
+        "GetDetailHospital",
         params,
       );
 
@@ -72,10 +72,10 @@ export const staseApi = {
     }
   },
 
-  async deleteStase(id_logbook: number): Promise<ApiResponse<null>> {
+  async deleteHospital(id: number): Promise<ApiResponse<null>> {
     try {
-      const { data: responseData } = await apiClient.post("RemoveStase", {
-        id_logbook,
+      const { data: responseData } = await apiClient.post("RemoveHospital", {
+        id,
       });
 
       if (responseData.status === false) {
@@ -95,10 +95,10 @@ export const staseApi = {
     }
   },
 
-  async createStase(data: IStaseCreatePayload): Promise<ApiResponse<null>> {
+  async createHospital(data: IHospitalCreatePayload): Promise<ApiResponse<null>> {
     try {
       const { data: responseData } = await apiClient.post(
-        "CreateStase",
+        "CreateHospital",
         data,
       );
 
@@ -119,10 +119,10 @@ export const staseApi = {
     }
   },
 
-  async updateStase(data: IStaseUpdatePayload): Promise<ApiResponse<null>> {
+  async updateHospital(data: IHospitalUpdatePayload): Promise<ApiResponse<null>> {
     try {
       const { data: responseData } = await apiClient.post(
-        "UpdateStase",
+        "UpdateHospital",
         data,
       );
 

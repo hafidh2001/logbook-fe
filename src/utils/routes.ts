@@ -121,6 +121,22 @@ export class ROUTES {
     return `${this.staffLogbook(idUser)}/${idLogbook}` as const;
   }
 
+  static get hospital() {
+    return `/admin/hospital` as const;
+  }
+
+  static get hospitalCreate() {
+    return `${this.hospital}/create` as const;
+  }
+
+  static hospitalDetail(id: string) {
+    return `${this.hospital}/${id}` as const;
+  }
+
+  static hospitalEdit(id: string) {
+    return `${this.hospital}/${id}/edit` as const;
+  }
+
   // Stase Routes
   static get stase() {
     return `/admin/stase` as const;

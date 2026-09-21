@@ -76,7 +76,7 @@ export const staffApi = {
 
   async deleteStaff(id_user: number): Promise<ApiResponse<{ id_user: number }>> {
     try {
-      const { data: responseData } = await apiClient.post("DeleteStaff", { id_user });
+      const { data: responseData } = await apiClient.post("RemoveStaff", { id_user });
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Failed to delete staff");

@@ -42,6 +42,8 @@ import {
   UnverifiedLogbookPage,
   PenilaianLogbookDetailPage,
   UnverifiedLogbookDetailPage,
+  HospitalListPage,
+  HospitalFormPage,
 } from "@/pages";
 
 function App() {
@@ -290,6 +292,38 @@ function App() {
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <StaffLogbookDetailPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Hospital Routes */}
+        <Route
+          path={ROUTES.hospital}
+          element={
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <HospitalListPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.hospitalCreate}
+          element={
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <HospitalFormPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.hospitalDetail(":idHospital")}
+          element={
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <HospitalFormPage />
               </AdminLayout>
             </ProtectedRoute>
           }

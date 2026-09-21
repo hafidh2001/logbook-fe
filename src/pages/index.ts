@@ -32,6 +32,10 @@ export const StaffChangePasswordPage = lazyLoad(() => import('./admin/staff/staf
 export const StaffLogbookPage = lazyLoad(() => import('./admin/staff/staffLogbook/StaffLogbookPage'));
 export const StaffLogbookDetailPage = lazyLoad(() => import('./admin/staff/staffLogbookDetail/StaffLogbookDetailPage'));
 
+// Admin Pages - Hospital
+export const HospitalListPage = lazyLoad(() => import('./admin/hospital/hospitalList/HospitalListPage'));
+export const HospitalFormPage = lazyLoad(() => import('./admin/hospital/hospitalForm/HospitalFormPage'));
+
 // Admin Pages - Stase
 export const StaseListPage = lazyLoad(() => import('./admin/stase/staseList/StaseListPage'));
 export const StaseFormPage = lazyLoad(() => import('./admin/stase/staseForm/StaseFormPage'));

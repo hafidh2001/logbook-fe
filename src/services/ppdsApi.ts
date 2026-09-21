@@ -83,7 +83,7 @@ export const ppdsApi = {
 
   async deletePpds(id_user: number): Promise<ApiResponse<{ id_user: number }>> {
     try {
-      const { data: responseData } = await apiClient.post("DeletePPDS", {
+      const { data: responseData } = await apiClient.post("RemovePPDS", {
         id_user,
       });
 

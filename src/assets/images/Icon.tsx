@@ -43,6 +43,7 @@ import {
   UserCheck,
   ArrowLeft,
   Loader,
+  Hospital,
 } from "lucide-react";
 
 export const icons = {
@@ -90,4 +91,5 @@ export const icons = {
   UserCheck,
   ArrowLeft,
   Loader,
+  Hospital,
 };
