@@ -13,6 +13,7 @@ function Calendar({
   const defaultClassNames = getDefaultClassNames();
   return (
     <DayPicker
+      captionLayout="dropdown-years"
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
@@ -26,7 +27,7 @@ function Calendar({
         month: cn("w-full", classNames?.month),
 
         caption_label: cn(
-          "truncate text-sm font-medium",
+          "truncate text-sm font-medium hidden",
           classNames?.caption_label,
         ),
         button_next: cn(
