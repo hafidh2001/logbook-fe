@@ -28,12 +28,12 @@ export const Filter = ({
   const [searchParams] = useSearchParams();
 
   const {
-    ppdsOptions,
+    ppdsActiveOptions,
     staffOptions,
     staseOptions,
     activityOptions,
     logbookStatusOptions,
-    fetchPPDSOptions,
+    fetchPPDSActiveOptions,
     fetchStaffOptions,
     fetchStaseOptions,
     fetchActivityOptions,
@@ -43,7 +43,7 @@ export const Filter = ({
 
   useEffect(() => {
     if (user?.id_client) {
-      fetchPPDSOptions({ id_client: user.id_client });
+      fetchPPDSActiveOptions({ id_client: user.id_client });
       fetchStaffOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
       fetchActivityOptions({ id_client: user.id_client });
@@ -51,7 +51,7 @@ export const Filter = ({
     }
   }, [
     user?.id_client,
-    fetchPPDSOptions,
+    fetchPPDSActiveOptions,
     fetchStaffOptions,
     fetchStaseOptions,
     fetchActivityOptions,
@@ -59,7 +59,7 @@ export const Filter = ({
   ]);
 
   // Transform options to use name as value (since view uses text fields, not IDs)
-  const ppdsNameOptions: BasicSelectOpt<string>[] = ppdsOptions.map((opt) => ({
+  const ppdsNameOptions: BasicSelectOpt<string>[] = ppdsActiveOptions.map((opt) => ({
     label: String(opt.label),
     value: String(opt.label),
   }));

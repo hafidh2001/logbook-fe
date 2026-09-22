@@ -23,16 +23,16 @@ export const Filter = ({
 }) => {
   const [searchParams] = useSearchParams();
 
-  const { ppdsOptions, staseOptions, fetchPPDSOptions, fetchStaseOptions } =
+  const { ppdsActiveOptions, staseOptions, fetchPPDSActiveOptions, fetchStaseOptions } =
     useMasterStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
     if (user?.id_client) {
-      fetchPPDSOptions({ id_client: user.id_client });
+      fetchPPDSActiveOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
     }
-  }, [user?.id_client, fetchPPDSOptions, fetchStaseOptions]);
+  }, [user?.id_client, fetchPPDSActiveOptions, fetchStaseOptions]);
 
   // Read current filter values from URL
   const currentFilters = useMemo(() => ({
@@ -47,7 +47,7 @@ export const Filter = ({
       key: "id_ppds",
       label: "PPDS",
       type: "select",
-      options: ppdsOptions,
+      options: ppdsActiveOptions,
       placeholder: "Pilih PPDS...",
     },
     {
@@ -77,7 +77,7 @@ export const Filter = ({
 
     // PPDS option from URL
     if (currentFilters.id_ppds) {
-      const ppdsOpt = ppdsOptions.find(opt => opt.value === currentFilters.id_ppds);
+      const ppdsOpt = ppdsActiveOptions.find(opt => opt.value === currentFilters.id_ppds);
       if (ppdsOpt) values.id_ppds = ppdsOpt;
     }
     // Stase option from URL
@@ -96,7 +96,7 @@ export const Filter = ({
     }
 
     return Object.keys(values).length > 0 ? values : undefined;
-  }, [currentFilters, ppdsOptions, staseOptions]);
+  }, [currentFilters, ppdsActiveOptions, staseOptions]);
 
   // Helper to get number value from select option
   const getSelectValue = (key: string, data: Record<string, FilterValue>): number | null => {

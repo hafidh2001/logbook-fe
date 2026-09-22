@@ -25,10 +25,10 @@ export const Filter = ({
   const [searchParams] = useSearchParams();
 
   const {
-    ppdsOptions,
+    ppdsActiveOptions,
     staffOptions,
     staseOptions,
-    fetchPPDSOptions,
+    fetchPPDSActiveOptions,
     fetchStaffOptions,
     fetchStaseOptions,
   } = useMasterStore();
@@ -36,11 +36,11 @@ export const Filter = ({
 
   useEffect(() => {
     if (user?.id_client) {
-      fetchPPDSOptions({ id_client: user.id_client });
+      fetchPPDSActiveOptions({ id_client: user.id_client });
       fetchStaffOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
     }
-  }, [user?.id_client, fetchPPDSOptions, fetchStaffOptions, fetchStaseOptions]);
+  }, [user?.id_client, fetchPPDSActiveOptions, fetchStaffOptions, fetchStaseOptions]);
 
   // Read current filter values from URL
   const currentFilters = useMemo(() => ({
@@ -56,7 +56,7 @@ export const Filter = ({
       key: "id_ppds",
       label: "PPDS",
       type: "select",
-      options: ppdsOptions,
+      options: ppdsActiveOptions,
       placeholder: "Pilih PPDS...",
     },
     {
@@ -93,7 +93,7 @@ export const Filter = ({
 
     // PPDS option from URL
     if (currentFilters.id_ppds) {
-      const ppdsOpt = ppdsOptions.find(opt => opt.value === currentFilters.id_ppds);
+      const ppdsOpt = ppdsActiveOptions.find(opt => opt.value === currentFilters.id_ppds);
       if (ppdsOpt) values.id_ppds = ppdsOpt;
     }
     // Staff option from URL
@@ -117,7 +117,7 @@ export const Filter = ({
     }
 
     return Object.keys(values).length > 0 ? values : undefined;
-  }, [currentFilters, ppdsOptions, staffOptions, staseOptions]);
+  }, [currentFilters, ppdsActiveOptions, staffOptions, staseOptions]);
 
   const handleSearch = (data: Record<string, FilterValue>) => {
     // Helper to convert select FilterValue to number value
