@@ -4,6 +4,7 @@ export type TStaseListItem = {
   stase_name: string;
   date: string;
   notes: string | null;
+  is_retake: boolean;
 };
 
 export interface IStaseListParams {

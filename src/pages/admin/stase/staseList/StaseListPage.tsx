@@ -19,6 +19,7 @@ import { ExportModal } from "@/components/exportModal/ExportModal";
 import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
 import { useUrlParams } from "@/hooks/useUrlParams";
+import { cn } from "@/lib/utils";
 
 export default function StaseListPage() {
   const { width } = useWindowDimensions();
@@ -104,7 +105,16 @@ export default function StaseListPage() {
       start_date,
       end_date,
     });
-  }, [page, limit, debouncedSearch, id_ppds, id_stase, start_date, end_date, loadStaseList]);
+  }, [
+    page,
+    limit,
+    debouncedSearch,
+    id_ppds,
+    id_stase,
+    start_date,
+    end_date,
+    loadStaseList,
+  ]);
 
   useEffect(() => {
     return () => reset();
@@ -187,10 +197,7 @@ export default function StaseListPage() {
         });
       }
 
-      showToast(
-        `Berhasil mengekspor ${allData.length} data`,
-        "success"
-      );
+      showToast(`Berhasil mengekspor ${allData.length} data`, "success");
 
       // Set complete state - modal stays open until user clicks OK
       setIsExportComplete(true);
@@ -204,7 +211,7 @@ export default function StaseListPage() {
       console.error("Export error:", error);
       showToast(
         error instanceof Error ? error.message : "Gagal mengekspor data",
-        "error"
+        "error",
       );
       setShowExportModal(false);
     } finally {
@@ -284,7 +291,12 @@ export default function StaseListPage() {
       size: 180,
       cell: ({ row: { original } }) => {
         return original.stase_name ? (
-          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
+          <span
+            className={cn(
+              "px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap",
+              original.is_retake && "bg-red-100 text-red-700",
+            )}
+          >
             {original.stase_name}
           </span>
         ) : (
@@ -424,10 +436,12 @@ export default function StaseListPage() {
         description={
           <>
             Apakah Anda yakin ingin menghapus data stase{" "}
-            <span className="font-semibold">{deleteModal.item?.stase_name}</span>{" "}
+            <span className="font-semibold">
+              {deleteModal.item?.stase_name}
+            </span>{" "}
             untuk user{" "}
-            <span className="font-semibold">{deleteModal.item?.user_name}</span>?
-            Tindakan ini tidak dapat dibatalkan.
+            <span className="font-semibold">{deleteModal.item?.user_name}</span>
+            ? Tindakan ini tidak dapat dibatalkan.
           </>
         }
         onConfirm={handleDeleteConfirm}
