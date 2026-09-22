@@ -42,10 +42,10 @@ export interface RekapLogbookState {
     pageCount: number;
   };
   rekapLogbookDetail: TRekapLogbookItem | null;
-  isLoading: boolean;
-  isLoadingDetail: boolean;
-  isExporting: boolean;
-  error: Nullable<string>;
+  isLoadingLogbook: boolean;
+  isLoadingLogbookDetail: boolean;
+  isExportingLogbook: boolean;
+  errorLogbook: Nullable<string>;
 }
 
 export interface RekapLogbookActions {
@@ -56,6 +56,7 @@ export interface RekapLogbookActions {
     onProgress?: (progress: number, offset: number) => void;
     signal?: AbortSignal;
   }) => Promise<TRekapLogbookItem[]>;
+  cancelExportLogbook: () => void;
   resetLogbook: () => void;
   resetLogbookDetail: () => void;
 }

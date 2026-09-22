@@ -33,6 +33,7 @@ export interface IRekapPenilaianListParams {
   stase_name?: Nullable<string>;
   start_date?: Nullable<string>;
   end_date?: Nullable<string>;
+  status?: Nullable<string>;
 }
 
 export type TRekapPenilaianData = {
@@ -78,6 +79,7 @@ export interface IRekapLogbookListParams {
   stase_name?: Nullable<string>;
   start_date?: Nullable<string>;
   end_date?: Nullable<string>;
+  status?: Nullable<string>;
 }
 
 export type TRekapLogbookData = {

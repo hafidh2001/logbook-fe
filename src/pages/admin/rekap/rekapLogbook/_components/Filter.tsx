@@ -13,6 +13,7 @@ type FilterChangeHandler = (filters: {
   stase_name?: string | null;
   start_date?: string;
   end_date?: string;
+  status?: string | null;
 }) => void;
 
 type FilterResetHandler = () => void;
@@ -31,10 +32,12 @@ export const Filter = ({
     staffOptions,
     staseOptions,
     activityOptions,
+    logbookStatusOptions,
     fetchPPDSOptions,
     fetchStaffOptions,
     fetchStaseOptions,
     fetchActivityOptions,
+    fetchLogbookStatusOptions,
   } = useMasterStore();
   const { user } = useAuthStore();
 
@@ -44,6 +47,7 @@ export const Filter = ({
       fetchStaffOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
       fetchActivityOptions({ id_client: user.id_client });
+      fetchLogbookStatusOptions();
     }
   }, [
     user?.id_client,
@@ -51,6 +55,7 @@ export const Filter = ({
     fetchStaffOptions,
     fetchStaseOptions,
     fetchActivityOptions,
+    fetchLogbookStatusOptions,
   ]);
 
   // Transform options to use name as value (since view uses text fields, not IDs)
@@ -74,6 +79,11 @@ export const Filter = ({
     value: String(opt.label),
   }));
 
+  const logbookStatusNameOptions: BasicSelectOpt<string>[] = logbookStatusOptions.map((opt) => ({
+    label: String(opt.label),
+    value: String(opt.value),
+  }));
+
   // Read current filter values from URL
   const currentFilters = useMemo(() => ({
     ppds_name: searchParams.get("ppds_name") || undefined,
@@ -82,6 +92,7 @@ export const Filter = ({
     stase_name: searchParams.get("stase_name") || undefined,
     start_date: searchParams.get("start_date") || undefined,
     end_date: searchParams.get("end_date") || undefined,
+    status: searchParams.get("status") || undefined,
   }), [searchParams]);
 
   const filterFields: FilterFieldConfig[] = [
@@ -125,6 +136,13 @@ export const Filter = ({
       type: "calendar",
       placeholder: "Pilih tanggal selesai...",
     },
+    {
+      key: "status",
+      label: "Status",
+      type: "select",
+      options: logbookStatusNameOptions,
+      placeholder: "Pilih Status...",
+    }
   ];
 
   // Build sync values from URL params - these will sync when URL changes (back navigation)
@@ -161,8 +179,14 @@ export const Filter = ({
       values.end_date = new Date(year, month - 1, day);
     }
 
+    // Status option from URL (string-based, value = label)
+    if (currentFilters.status) {
+      const statusOpt = logbookStatusNameOptions.find(opt => opt.value === currentFilters.status);
+      if (statusOpt) values.status = statusOpt;
+    }
+
     return Object.keys(values).length > 0 ? values : undefined;
-  }, [currentFilters, ppdsNameOptions, staffNameOptions, activityNameOptions, staseNameOptions]);
+  }, [currentFilters, ppdsNameOptions, staffNameOptions, activityNameOptions, staseNameOptions, logbookStatusNameOptions]);
 
   // Helper to get string value from select option
   const getSelectValue = (key: string, data: Record<string, FilterValue>): string | null => {
@@ -194,6 +218,7 @@ export const Filter = ({
       stase_name: getSelectValue("stase_name", data),
       start_date: getDateValue("start_date", data),
       end_date: getDateValue("end_date", data),
+      status: getSelectValue("status", data),
     };
     onChange(filters);
   };

@@ -19,7 +19,7 @@ export const StatusBadge = ({ status }: Props) => {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-md">
           <icons.Check className="h-3 w-3" />
-          Disetujui
+          {LogbookStatusEnum.APPROVED}
         </span>
       );
 
@@ -27,7 +27,7 @@ export const StatusBadge = ({ status }: Props) => {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-md">
           <icons.Clock className="h-3 w-3" />
-          Menunggu
+          {LogbookStatusEnum.PENDING}
         </span>
       );
 
@@ -35,7 +35,7 @@ export const StatusBadge = ({ status }: Props) => {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-md">
           <icons.X className="h-3 w-3" />
-          Ditolak
+          {LogbookStatusEnum.REJECTED}
         </span>
       );
 
@@ -43,7 +43,7 @@ export const StatusBadge = ({ status }: Props) => {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-md">
           <icons.RotateCcw className="h-3 w-3" />
-          Direvisi
+          {LogbookStatusEnum.REVISED}
         </span>
       );
 
@@ -51,7 +51,7 @@ export const StatusBadge = ({ status }: Props) => {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-md">
           <icons.Check className="h-3 w-3" />
-          Terverifikasi
+          {LogbookStatusEnum.VERIFIED}
         </span>
       );
 

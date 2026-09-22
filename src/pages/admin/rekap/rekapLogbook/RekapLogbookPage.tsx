@@ -20,6 +20,7 @@ import { ExportFormat } from "@/components/exportButton";
 import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
 import { useUrlParams } from "@/hooks/useUrlParams";
 import type { TRekapLogbookItem } from "@/types/rekap";
+import { StatusBadge } from "@/components/statusBadge";
 
 export default function RekapLogbookPage() {
   const { width } = useWindowDimensions();
@@ -30,11 +31,11 @@ export default function RekapLogbookPage() {
   const {
     rekapLogbook,
     rekapLogbookPagination,
-    isLoading,
-    isExporting,
+    isLoadingLogbook,
+    isExportingLogbook,
     loadRekapLogbook,
     loadExportRekapLogbook,
-    cancelExport,
+    cancelExportLogbook,
     resetLogbook,
   } = useRekapStore();
 
@@ -67,6 +68,7 @@ export default function RekapLogbookPage() {
       "stase_name",
       "start_date",
       "end_date",
+      "status",
     ],
     searchDebounceMs: 500,
   });
@@ -78,6 +80,7 @@ export default function RekapLogbookPage() {
   const stase_name = filters.stase_name as string | undefined;
   const start_date = filters.start_date as string | undefined;
   const end_date = filters.end_date as string | undefined;
+  const status = filters.status as string | undefined;
 
   // ========== HANDLERS ==========
 
@@ -88,6 +91,7 @@ export default function RekapLogbookPage() {
     stase_name?: string | null;
     start_date?: string;
     end_date?: string;
+    status?: string | null;
   }) => {
     setFilters(newFilters);
   };
@@ -111,6 +115,7 @@ export default function RekapLogbookPage() {
         stase_name: stase_name ?? undefined,
         start_date,
         end_date,
+        status: status ?? undefined,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -124,6 +129,7 @@ export default function RekapLogbookPage() {
     stase_name,
     start_date,
     end_date,
+    status,
   ]);
 
   useEffect(() => {
@@ -149,6 +155,7 @@ export default function RekapLogbookPage() {
           stase_name: stase_name ?? undefined,
           start_date,
           end_date,
+          status: status ?? undefined,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);
@@ -237,7 +244,7 @@ export default function RekapLogbookPage() {
   const handleCancelExport = () => {
     if (exportControllerRef.current) {
       exportControllerRef.current.abort();
-      cancelExport();
+      cancelExportLogbook();
     }
     setShowExportModal(false);
     setIsExportComplete(false);
@@ -264,30 +271,6 @@ export default function RekapLogbookPage() {
   const handleView = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
     navigate(ROUTES.rekapLogbookDetail(String(id)));
-  };
-
-  const getStatusBadge = (status: string | null) => {
-    if (status === "verified") {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-md">
-          <icons.Check className="h-3 w-3" />
-          Terverifikasi
-        </span>
-      );
-    }
-    if (status === "pending") {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-md">
-          <icons.Clock className="h-3 w-3" />
-          Menunggu
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-md">
-        -
-      </span>
-    );
   };
 
   // Define columns for Rekap Logbook table
@@ -356,7 +339,7 @@ export default function RekapLogbookPage() {
       header: "Status",
       size: 150,
       cell: ({ row: { original } }) => {
-        return original.status ? getStatusBadge(original.status) : "-";
+        return original.status ? StatusBadge({ status: original.status }) : "-";
       },
     },
     {
@@ -425,7 +408,7 @@ export default function RekapLogbookPage() {
         searchPlaceholder="Cari logbook..."
         onExport={handleExport}
         onSearch={handleSearch}
-        isLoading={isExporting}
+        isLoading={isExportingLogbook}
         initialSearchValue={search}
       />
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
@@ -438,7 +421,7 @@ export default function RekapLogbookPage() {
             <BaseTable
               data={rekapLogbook}
               columns={columns}
-              isLoading={isLoading}
+              isLoading={isLoadingLogbook}
               isShowNumbering
               pagination={{
                 enabled: true,

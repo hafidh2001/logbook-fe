@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import { rekapApi } from "@/services/rekapApi";
-import type { RekapPenilaianStore, RekapLogbookStore } from "@/types/rekap/store";
+import type {
+  RekapPenilaianStore,
+  RekapLogbookStore,
+} from "@/types/rekap/store";
 import { EXPORT_LIMIT } from "@/constants/export";
 
 // ============= Rekap Penilaian Store =============
@@ -19,251 +22,273 @@ const penilaianInitialState = {
   error: null as string | null,
 };
 
-export const useRekapStore = create<RekapPenilaianStore & RekapLogbookStore>((set) => ({
-  ...penilaianInitialState,
-
-  // Rekap Penilaian Actions
-  loadRekapPenilaian: async (params) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await rekapApi.getRekapPenilaianList(params);
-      set({
-        rekapPenilaian: response.data,
-        rekapPenilaianPagination: {
-          page: response.pagination.page,
-          limit: response.pagination.limit,
-          total: response.total,
-          pageCount: Math.ceil(response.total / response.pagination.limit),
-        },
-        isLoading: false,
-      });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Failed to load rekap penilaian",
-        isLoading: false,
-      });
-    }
-  },
-
-  loadRekapPenilaianDetail: async (id_logbook: number) => {
-    set({ isLoadingDetail: true, error: null, rekapPenilaianDetail: null });
-    try {
-      const response = await rekapApi.getRekapPenilaianDetail(id_logbook);
-      set({ rekapPenilaianDetail: response.data, isLoadingDetail: false });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Failed to load rekap penilaian detail",
-        isLoadingDetail: false,
-      });
-    }
-  },
-
-  loadExportRekapPenilaian: async ({ filterParams, onProgress, signal }) => {
-    set({ isExporting: true });
-
-    try {
-      // Step 1: Get total count from first fetch
-      const firstResponse = await rekapApi.getRekapPenilaianList({
-        id_client: filterParams.id_client!,
-        page: 1,
-        limit: 1,
-      });
-
-      // Check if cancelled before continuing
-      if (signal?.aborted) {
-        set({ isExporting: false });
-        throw new Error("EXPORT_CANCELLED");
-      }
-
-      const total = firstResponse.total;
-
-      if (total === 0) {
-        set({ isExporting: false });
-        return [];
-      }
-
-      // Step 2: Batch export with limit
-      const totalBatch = Math.ceil(total / EXPORT_LIMIT);
-      let allData: typeof firstResponse.data = [];
-
-      for (let i = 0; i < totalBatch; i++) {
-        // Check if cancelled before each batch
-        if (signal?.aborted) {
-          set({ isExporting: false });
-          throw new Error("EXPORT_CANCELLED");
-        }
-
-        const response = await rekapApi.getRekapPenilaianList({
-          id_client: filterParams.id_client!,
-          page: i + 1,
-          limit: EXPORT_LIMIT,
-          search: filterParams.search,
-          ppds_name: filterParams.ppds_name,
-          staff_name: filterParams.staff_name,
-          activity_name: filterParams.activity_name,
-          stase_name: filterParams.stase_name,
-          start_date: filterParams.start_date,
-          end_date: filterParams.end_date,
-        });
-
-        // Check if cancelled after each batch
-        if (signal?.aborted) {
-          set({ isExporting: false });
-          throw new Error("EXPORT_CANCELLED");
-        }
-
-        allData.push(...response.data);
-
-        // Call progress callback
-        if (onProgress) {
-          onProgress(Math.round(((i + 1) / totalBatch) * 100), allData.length, total);
-        }
-      }
-
-      set({ isExporting: false });
-      return allData;
-    } catch (error) {
-      set({ isExporting: false });
-      throw error;
-    }
-  },
-
-  cancelExport: () => {
-    set({ isExporting: false });
-  },
-
-  reset: () => set(penilaianInitialState),
-  resetDetail: () => set({ rekapPenilaianDetail: null, isLoadingDetail: false }),
-
-  // Rekap Logbook State
-  rekapLogbook: [],
+// ============= Rekap Logbook Store =============
+const logbookInitialState = {
+  rekapLogbook: [] as any[],
   rekapLogbookPagination: {
     page: 1,
     limit: 10,
     total: 0,
     pageCount: 0,
   },
-  rekapLogbookDetail: null,
+  rekapLogbookDetail: null as any | null,
+  isLoadingLogbook: false,
+  isLoadingLogbookDetail: false,
+  isExportingLogbook: false,
+  errorLogbook: null as string | null,
+};
 
-  // Rekap Logbook Actions
-  loadRekapLogbook: async (params) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await rekapApi.getRekapLogbookList(params);
-      set({
-        rekapLogbook: response.data,
-        rekapLogbookPagination: {
-          page: response.pagination.page,
-          limit: response.pagination.limit,
-          total: response.total,
-          pageCount: Math.ceil(response.total / response.pagination.limit),
-        },
-        isLoading: false,
-      });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Failed to load rekap logbook",
-        isLoading: false,
-      });
-    }
-  },
+export const useRekapStore = create<RekapPenilaianStore & RekapLogbookStore>(
+  (set) => ({
+    ...penilaianInitialState,
+    ...logbookInitialState,
 
-  loadRekapLogbookDetail: async (id: number) => {
-    set({ isLoadingDetail: true, error: null, rekapLogbookDetail: null });
-    try {
-      const response = await rekapApi.getRekapLogbookDetail(id);
-      set({ rekapLogbookDetail: response.data, isLoadingDetail: false });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Failed to load rekap logbook detail",
-        isLoadingDetail: false,
-      });
-    }
-  },
-
-  loadExportRekapLogbook: async ({ filterParams, onProgress, signal }) => {
-    set({ isExporting: true });
-
-    try {
-      // Step 1: Get total count from first fetch
-      const firstResponse = await rekapApi.getRekapLogbookList({
-        id_client: filterParams.id_client!,
-        page: 1,
-        limit: 1,
-      });
-
-      // Check if cancelled before continuing
-      if (signal?.aborted) {
-        set({ isExporting: false });
-        throw new Error("EXPORT_CANCELLED");
+    // Rekap Penilaian Actions
+    loadRekapPenilaian: async (params) => {
+      set({ isLoading: true, error: null });
+      try {
+        const response = await rekapApi.getRekapPenilaianList(params);
+        set({
+          rekapPenilaian: response.data,
+          rekapPenilaianPagination: {
+            page: response.pagination.page,
+            limit: response.pagination.limit,
+            total: response.total,
+            pageCount: Math.ceil(response.total / response.pagination.limit),
+          },
+          isLoading: false,
+        });
+      } catch (error) {
+        set({
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to load rekap penilaian",
+          isLoading: false,
+        });
       }
+    },
 
-      const total = firstResponse.total;
-
-      if (total === 0) {
-        set({ isExporting: false });
-        return [];
+    loadRekapPenilaianDetail: async (id_logbook: number) => {
+      set({ isLoadingDetail: true, error: null, rekapPenilaianDetail: null });
+      try {
+        const response = await rekapApi.getRekapPenilaianDetail(id_logbook);
+        set({ rekapPenilaianDetail: response.data, isLoadingDetail: false });
+      } catch (error) {
+        set({
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to load rekap penilaian detail",
+          isLoadingDetail: false,
+        });
       }
+    },
 
-      // Step 2: Batch export with limit
-      const totalBatch = Math.ceil(total / EXPORT_LIMIT);
-      let allData: typeof firstResponse.data = [];
+    loadExportRekapPenilaian: async ({ filterParams, onProgress, signal }) => {
+      set({ isExporting: true });
 
-      for (let i = 0; i < totalBatch; i++) {
-        // Check if cancelled before each batch
-        if (signal?.aborted) {
-          set({ isExporting: false });
-          throw new Error("EXPORT_CANCELLED");
-        }
-
-        const response = await rekapApi.getRekapLogbookList({
+      try {
+        // Step 1: Get total count from first fetch
+        const firstResponse = await rekapApi.getRekapPenilaianList({
           id_client: filterParams.id_client!,
-          page: i + 1,
-          limit: EXPORT_LIMIT,
-          search: filterParams.search,
-          ppds_name: filterParams.ppds_name,
-          staff_name: filterParams.staff_name,
-          activity_name: filterParams.activity_name,
-          stase_name: filterParams.stase_name,
-          start_date: filterParams.start_date,
-          end_date: filterParams.end_date,
+          page: 1,
+          limit: 1,
         });
 
-        // Check if cancelled after each batch
+        // Check if cancelled before continuing
         if (signal?.aborted) {
           set({ isExporting: false });
           throw new Error("EXPORT_CANCELLED");
         }
 
-        allData.push(...response.data);
+        const total = firstResponse.total;
 
-        // Call progress callback (without total since we already know it)
-        if (onProgress) {
-          onProgress(Math.round(((i + 1) / totalBatch) * 100), allData.length);
+        if (total === 0) {
+          set({ isExporting: false });
+          return [];
         }
+
+        // Step 2: Batch export with limit
+        const totalBatch = Math.ceil(total / EXPORT_LIMIT);
+        let allData: typeof firstResponse.data = [];
+
+        for (let i = 0; i < totalBatch; i++) {
+          // Check if cancelled before each batch
+          if (signal?.aborted) {
+            set({ isExporting: false });
+            throw new Error("EXPORT_CANCELLED");
+          }
+
+          const response = await rekapApi.getRekapPenilaianList({
+            id_client: filterParams.id_client!,
+            page: i + 1,
+            limit: EXPORT_LIMIT,
+            search: filterParams.search,
+            ppds_name: filterParams.ppds_name,
+            staff_name: filterParams.staff_name,
+            activity_name: filterParams.activity_name,
+            stase_name: filterParams.stase_name,
+            start_date: filterParams.start_date,
+            end_date: filterParams.end_date,
+          });
+
+          // Check if cancelled after each batch
+          if (signal?.aborted) {
+            set({ isExporting: false });
+            throw new Error("EXPORT_CANCELLED");
+          }
+
+          allData.push(...response.data);
+
+          // Call progress callback
+          if (onProgress) {
+            onProgress(
+              Math.round(((i + 1) / totalBatch) * 100),
+              allData.length,
+              total,
+            );
+          }
+        }
+
+        set({ isExporting: false });
+        return allData;
+      } catch (error) {
+        set({ isExporting: false });
+        throw error;
       }
-
-      set({ isExporting: false });
-      return allData;
-    } catch (error) {
-      set({ isExporting: false });
-      throw error;
-    }
-  },
-
-  resetLogbook: () => set({
-    rekapLogbook: [],
-    rekapLogbookPagination: {
-      page: 1,
-      limit: 10,
-      total: 0,
-      pageCount: 0,
     },
-    rekapLogbookDetail: null,
-    isLoading: false,
-    isLoadingDetail: false,
-    error: null,
-  }),
 
-  resetLogbookDetail: () => set({ rekapLogbookDetail: null, isLoadingDetail: false }),
-}));
+    cancelExport: () => {
+      set({ isExporting: false });
+    },
+
+    reset: () => set(penilaianInitialState),
+    resetDetail: () =>
+      set({ rekapPenilaianDetail: null, isLoadingDetail: false }),
+
+    // Rekap Logbook Actions
+    loadRekapLogbook: async (params) => {
+      set({ isLoadingLogbook: true, errorLogbook: null });
+      try {
+        const response = await rekapApi.getRekapLogbookList(params);
+        set({
+          rekapLogbook: response.data,
+          rekapLogbookPagination: {
+            page: response.pagination.page,
+            limit: response.pagination.limit,
+            total: response.total,
+            pageCount: Math.ceil(response.total / response.pagination.limit),
+          },
+          isLoadingLogbook: false,
+        });
+      } catch (error) {
+        set({
+          errorLogbook:
+            error instanceof Error
+              ? error.message
+              : "Failed to load rekap logbook",
+          isLoadingLogbook: false,
+        });
+      }
+    },
+
+    loadRekapLogbookDetail: async (id: number) => {
+      set({ isLoadingLogbookDetail: true, errorLogbook: null, rekapLogbookDetail: null });
+      try {
+        const response = await rekapApi.getRekapLogbookDetail(id);
+        set({ rekapLogbookDetail: response.data, isLoadingLogbookDetail: false });
+      } catch (error) {
+        set({
+          errorLogbook:
+            error instanceof Error
+              ? error.message
+              : "Failed to load rekap logbook detail",
+          isLoadingLogbookDetail: false,
+        });
+      }
+    },
+
+    loadExportRekapLogbook: async ({ filterParams, onProgress, signal }) => {
+      set({ isExportingLogbook: true });
+
+      try {
+        // Step 1: Get total count from first fetch
+        const firstResponse = await rekapApi.getRekapLogbookList({
+          id_client: filterParams.id_client!,
+          page: 1,
+          limit: 1,
+        });
+
+        // Check if cancelled before continuing
+        if (signal?.aborted) {
+          set({ isExportingLogbook: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        const total = firstResponse.total;
+
+        if (total === 0) {
+          set({ isExportingLogbook: false });
+          return [];
+        }
+
+        // Step 2: Batch export with limit
+        const totalBatch = Math.ceil(total / EXPORT_LIMIT);
+        let allData: typeof firstResponse.data = [];
+
+        for (let i = 0; i < totalBatch; i++) {
+          // Check if cancelled before each batch
+          if (signal?.aborted) {
+            set({ isExportingLogbook: false });
+            throw new Error("EXPORT_CANCELLED");
+          }
+
+          const response = await rekapApi.getRekapLogbookList({
+            id_client: filterParams.id_client!,
+            page: i + 1,
+            limit: EXPORT_LIMIT,
+            search: filterParams.search,
+            ppds_name: filterParams.ppds_name,
+            staff_name: filterParams.staff_name,
+            activity_name: filterParams.activity_name,
+            stase_name: filterParams.stase_name,
+            start_date: filterParams.start_date,
+            end_date: filterParams.end_date,
+            status: filterParams.status,
+          });
+
+          // Check if cancelled after each batch
+          if (signal?.aborted) {
+            set({ isExportingLogbook: false });
+            throw new Error("EXPORT_CANCELLED");
+          }
+
+          allData.push(...response.data);
+
+          // Call progress callback (without total since we already know it)
+          if (onProgress) {
+            onProgress(
+              Math.round(((i + 1) / totalBatch) * 100),
+              allData.length,
+            );
+          }
+        }
+
+        set({ isExportingLogbook: false });
+        return allData;
+      } catch (error) {
+        set({ isExportingLogbook: false });
+        throw error;
+      }
+    },
+
+    cancelExportLogbook: () => {
+      set({ isExportingLogbook: false });
+    },
+
+    resetLogbook: () => set(logbookInitialState),
+    resetLogbookDetail: () =>
+      set({ rekapLogbookDetail: null, isLoadingLogbookDetail: false }),
+  }),
+);

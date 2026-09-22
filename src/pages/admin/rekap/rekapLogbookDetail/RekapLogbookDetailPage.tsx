@@ -14,7 +14,7 @@ export default function RekapLogbookDetailPage() {
 
   const {
     rekapLogbookDetail: data,
-    isLoadingDetail,
+    isLoadingLogbookDetail,
     loadRekapLogbookDetail,
     resetLogbookDetail,
   } = useRekapStore();
@@ -26,7 +26,7 @@ export default function RekapLogbookDetailPage() {
     return () => resetLogbookDetail();
   }, [idUser, loadRekapLogbookDetail, resetLogbookDetail]);
 
-  if (isLoadingDetail) {
+  if (isLoadingLogbookDetail) {
     return <LoadingPage />;
   }
 
