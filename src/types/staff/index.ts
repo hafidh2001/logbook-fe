@@ -7,6 +7,7 @@ export type TStaff = {
   email: Nullable<string>;
   phone: Nullable<string>;
   address: Nullable<string>;
+  location: Nullable<string>;
   date_of_birth: Nullable<string>;
   nim: Nullable<string>;
   role_name: Nullable<string>;
@@ -25,6 +26,7 @@ export interface IStaffPayload {
   email: string;
   phone: string;
   address?: Nullable<string>;
+  location?: Nullable<string>;
   date_of_birth?: Nullable<string>;
   nim?: Nullable<string>;
 }
@@ -50,6 +52,7 @@ export interface IStaffCreatePayload {
   password: string;
   confirm_password: string;
   address?: Nullable<string>;
+  location?: Nullable<string>;
   date_of_birth?: Nullable<string>;
   nim?: Nullable<string>;
 }

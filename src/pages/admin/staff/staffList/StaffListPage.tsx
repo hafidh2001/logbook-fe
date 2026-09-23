@@ -280,44 +280,46 @@ export default function StaffListPage() {
       accessorKey: "email",
       header: "Email",
       size: 180,
-      cell: ({ row: { original } }) => {
-        return original.email ? (
-          <span>{original.email}</span>
-        ) : (
-          <span className="text-gray-400">-</span>
-        );
-      },
+      cell: ({ row: { original } }) => original.email ?? "-",
     },
     {
       accessorKey: "phone",
       header: "Phone",
       size: 150,
-      cell: ({ row: { original } }) => {
-        return original.phone ? (
-          <span>{original.phone}</span>
-        ) : (
-          <span className="text-gray-400">-</span>
-        );
-      },
+      cell: ({ row: { original } }) => original.phone ?? "-",
+    },
+    {
+      accessorKey: "address",
+      header: "Address",
+      size: 200,
+      cell: ({ row: { original } }) => original.address ?? "-",
+    },
+    {
+      accessorKey: "location",
+      header: "Location",
+      size: 200,
+      cell: ({ row: { original } }) => original.location ?? "-",
     },
     {
       accessorKey: "nim",
       header: "NIP",
+      size: 200,
+      cell: ({ row: { original } }) => original.nim ?? "-",
+    },
+    {
+      accessorKey: "role_name",
+      header: "Role",
       size: 150,
-      cell: ({ row: { original } }) => {
-        return original.nim ? (
-          <span className="font-mono text-sm">{original.nim}</span>
-        ) : (
-          <span className="text-gray-400">-</span>
-        );
-      },
+      cell: ({ row: { original } }) => original.role_name ?? "-",
     },
     {
       accessorKey: "total_logbook",
       header: "Logbook",
       size: 100,
       cell: ({ row: { original } }) => (
-        <span className="text-center block">{original.total_logbook ?? 0}</span>
+        <span className="text-center block">
+          {original.total_logbook ? `${original.total_logbook} item` : 0}
+        </span>
       ),
     },
     {

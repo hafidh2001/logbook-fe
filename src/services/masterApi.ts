@@ -206,9 +206,9 @@ export const masterApi = {
     }
   },
 
-  async getMasterSemester(
-    params: { id_stage: number },
-  ): Promise<ApiPaginationResponse<IMasterOptions[]>> {
+  async getMasterSemester(params: {
+    id_stage: number;
+  }): Promise<ApiPaginationResponse<IMasterOptions[]>> {
     try {
       const { data: responseData } = await apiClient.post(
         "GetMasterSemester",
@@ -232,12 +232,38 @@ export const masterApi = {
     }
   },
 
-  async getStageByStase(
-    params: { id_stase: number },
-  ): Promise<ApiPaginationResponse<IMasterOptions[]>> {
+  async getStageByStase(params: {
+    id_stase: number;
+  }): Promise<ApiPaginationResponse<IMasterOptions[]>> {
     try {
       const { data: responseData } = await apiClient.post(
         "GetStageByStase",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getMasterHospital(
+    params: IMasterParams,
+  ): Promise<ApiPaginationResponse<IMasterOptions[]>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetMasterHospital",
         params,
       );
 

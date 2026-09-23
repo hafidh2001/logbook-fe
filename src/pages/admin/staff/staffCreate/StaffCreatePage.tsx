@@ -3,7 +3,7 @@ import { ROUTES } from "@/utils/routes";
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InputField } from "@/components/fields/inputField";
 import { CalendarSelect } from "@/components/fields/calendarSelect";
 import { icons } from "@/assets/images/Icon";
@@ -16,6 +16,9 @@ import {
 } from "@/validations/staff/staff";
 import { showToast } from "@/utils/toast";
 import dayjs from "dayjs";
+import { SingleSelect } from "@/components/fields/singleSelect";
+import { BasicSelectOpt } from "@/types";
+import { useMasterStore } from "@/store/masterStore";
 
 export default function StaffCreatePage() {
   const navigate = useNavigate();
@@ -23,6 +26,15 @@ export default function StaffCreatePage() {
   const { user } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const { hospitalOptions, fetchHospitalOptions } = useMasterStore();
+
+  // Initial load
+  useEffect(() => {
+    if (user?.id_client) {
+      fetchHospitalOptions({ id_client: user.id_client });
+    }
+  }, [user?.id_client, fetchHospitalOptions]);
 
   const {
     control,
@@ -65,6 +77,14 @@ export default function StaffCreatePage() {
       });
     }
   };
+
+  const hospitalSelectOptions = hospitalOptions.map(
+    (opt) =>
+      ({
+        value: opt.label,
+        label: opt.label,
+      }) as BasicSelectOpt<string>,
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
@@ -174,21 +194,48 @@ export default function StaffCreatePage() {
               />
 
               {/* Row 4: Address (full width) */}
-              <div className="sm:col-span-2">
-                <Controller
-                  name="address"
-                  control={control}
-                  render={({ field }) => (
-                    <InputField
-                      label="Address"
+              {/* <div className="sm:col-span-2"> */}
+              <Controller
+                name="address"
+                control={control}
+                render={({ field }) => (
+                  <InputField
+                    label="Address"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder="Masukkan alamat..."
+                  />
+                )}
+              />
+
+              <Controller
+                name="location"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-700">
+                      Location
+                    </label>
+                    <SingleSelect
                       {...field}
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      placeholder="Masukkan alamat..."
+                      options={hospitalSelectOptions}
+                      value={
+                        hospitalSelectOptions.find(
+                          (opt) => opt.value === field.value,
+                        ) || null
+                      }
+                      onChange={(option) =>
+                        field.onChange(option?.value as number)
+                      }
+                      isSearchable={false}
+                      isClearable={false}
+                      errorMessage={errors.location?.message}
                     />
-                  )}
-                />
-              </div>
+                  </div>
+                )}
+              />
+              {/* </div> */}
 
               {/* Row 5: Password* | Konfirmasi Password* */}
               <Controller

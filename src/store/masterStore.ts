@@ -19,6 +19,7 @@ const initialState = {
   activityOptions: [] as BasicSelectOpt<number>[],
   userStatusOptions: [] as BasicSelectOpt<string>[],
   logbookStatusOptions: [] as BasicSelectOpt<string>[],
+  hospitalOptions: [] as BasicSelectOpt<number>[],
   isLoading: false,
   error: null,
 };
@@ -228,6 +229,24 @@ export const useMasterStore = create<MasterStore>((set) => ({
         };
       });
       set({ logbookStatusOptions: arr, isLoading: false });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan";
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  fetchHospitalOptions: async (params) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await masterApi.getMasterHospital({ ...params });
+      const arr = response.data.map((item) => {
+        return {
+          label: item.name,
+          value: item.id,
+        };
+      });
+      set({ hospitalOptions: arr, isLoading: false });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Terjadi kesalahan";

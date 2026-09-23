@@ -6,6 +6,7 @@ export const staffSchema = z.object({
   email: z.string().min(1, "Email harus diisi").email("Format email tidak valid"),
   phone: z.string().min(1, "Phone harus diisi"),
   address: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
   date_of_birth: z.date().optional().nullable(),
   nim: z.string().optional().nullable(),
 });
@@ -22,6 +23,7 @@ export const staffCreateSchema = z
     nim: z.string().optional(),
     date_of_birth: z.date().optional().nullable(),
     address: z.string().optional(),
+    location: z.string().optional(),
     password: z.string().min(1, "Password harus diisi").min(8, "Password minimal 8 karakter"),
     confirm_password: z.string().min(1, "Konfirmasi Password harus diisi"),
   })

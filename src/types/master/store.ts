@@ -16,6 +16,7 @@ export interface MasterState {
   activityOptions: BasicSelectOpt<number>[];
   userStatusOptions: BasicSelectOpt<string>[];
   logbookStatusOptions: BasicSelectOpt<string>[];
+  hospitalOptions: BasicSelectOpt<number>[];
   isLoading: boolean;
   error: Nullable<string>;
 }
@@ -40,6 +41,7 @@ export interface MasterActions {
   fetchActivityOptions: (params: IMasterParams) => Promise<void>;
   fetchUserStatusOptions: () => Promise<void>;
   fetchLogbookStatusOptions: () => Promise<void>;
+  fetchHospitalOptions: (params: IMasterParams) => Promise<void>;
   reset: () => void;
 }
 
