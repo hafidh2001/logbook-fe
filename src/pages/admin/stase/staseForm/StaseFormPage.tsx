@@ -39,11 +39,11 @@ export default function StaseFormPage() {
   } = useStaseStore();
 
   const {
-    ppdsOptions,
+    ppdsActiveOptions,
     staseOptions,
     stageOptions,
     semesterOptions,
-    fetchPPDSOptions,
+    fetchPPDSActiveOptions,
     fetchStaseOptions,
     fetchStageByStase,
     fetchSemesterOptions,
@@ -57,10 +57,10 @@ export default function StaseFormPage() {
   // Initial load
   useEffect(() => {
     if (user?.id_client) {
-      fetchPPDSOptions({ id_client: user.id_client });
+      fetchPPDSActiveOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
     }
-  }, [user?.id_client, fetchPPDSOptions, fetchStaseOptions]);
+  }, [user?.id_client, fetchPPDSActiveOptions, fetchStaseOptions]);
 
   // Load detail when in edit mode
   useEffect(() => {
@@ -194,7 +194,7 @@ export default function StaseFormPage() {
   const { isShown: isShowDelete, toggle: toggleDelete } = useModal();
 
   // Convert options helper
-  const ppdsSelectOptions: BasicSelectOpt<number>[] = ppdsOptions.map(
+  const ppdsSelectOptions: BasicSelectOpt<number>[] = ppdsActiveOptions.map(
     (opt) => ({
       value: Number(opt.value),
       label: opt.label,
