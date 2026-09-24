@@ -1,6 +1,6 @@
 import { FilterPanel } from "@/components/filterPanel";
 import type { FilterFieldConfig, FilterValue } from "@/components/filterPanel";
-import type { BasicSelectOpt } from "@/types";
+import { LogbookStatusEnum, type BasicSelectOpt } from "@/types";
 import { useEffect, useMemo } from "react";
 import { useMasterStore } from "@/store/masterStore";
 import { useAuthStore } from "@/store/authStore";
@@ -59,41 +59,55 @@ export const Filter = ({
   ]);
 
   // Transform options to use name as value (since view uses text fields, not IDs)
-  const ppdsNameOptions: BasicSelectOpt<string>[] = ppdsActiveOptions.map((opt) => ({
-    label: String(opt.label),
-    value: String(opt.label),
-  }));
+  const ppdsNameOptions: BasicSelectOpt<string>[] = ppdsActiveOptions.map(
+    (opt) => ({
+      label: String(opt.label),
+      value: String(opt.label),
+    }),
+  );
 
-  const staffNameOptions: BasicSelectOpt<string>[] = staffOptions.map((opt) => ({
-    label: String(opt.label),
-    value: String(opt.label),
-  }));
+  const staffNameOptions: BasicSelectOpt<string>[] = staffOptions.map(
+    (opt) => ({
+      label: String(opt.label),
+      value: String(opt.label),
+    }),
+  );
 
-  const activityNameOptions: BasicSelectOpt<string>[] = activityOptions.map((opt) => ({
-    label: String(opt.label),
-    value: String(opt.label),
-  }));
+  const activityNameOptions: BasicSelectOpt<string>[] = activityOptions.map(
+    (opt) => ({
+      label: String(opt.label),
+      value: String(opt.label),
+    }),
+  );
 
-  const staseNameOptions: BasicSelectOpt<string>[] = staseOptions.map((opt) => ({
-    label: String(opt.label),
-    value: String(opt.label),
-  }));
+  const staseNameOptions: BasicSelectOpt<string>[] = staseOptions.map(
+    (opt) => ({
+      label: String(opt.label),
+      value: String(opt.label),
+    }),
+  );
 
-  const logbookStatusNameOptions: BasicSelectOpt<string>[] = logbookStatusOptions.map((opt) => ({
-    label: String(opt.label),
-    value: String(opt.value),
-  }));
+  const logbookStatusNameOptions: BasicSelectOpt<string>[] =
+    logbookStatusOptions
+      .filter((opt) => opt.value !== LogbookStatusEnum.APPROVED)
+      .map((opt) => ({
+        label: String(opt.label),
+        value: String(opt.value),
+      }));
 
   // Read current filter values from URL
-  const currentFilters = useMemo(() => ({
-    ppds_name: searchParams.get("ppds_name") || undefined,
-    staff_name: searchParams.get("staff_name") || undefined,
-    activity_name: searchParams.get("activity_name") || undefined,
-    stase_name: searchParams.get("stase_name") || undefined,
-    start_date: searchParams.get("start_date") || undefined,
-    end_date: searchParams.get("end_date") || undefined,
-    status: searchParams.get("status") || undefined,
-  }), [searchParams]);
+  const currentFilters = useMemo(
+    () => ({
+      ppds_name: searchParams.get("ppds_name") || undefined,
+      staff_name: searchParams.get("staff_name") || undefined,
+      activity_name: searchParams.get("activity_name") || undefined,
+      stase_name: searchParams.get("stase_name") || undefined,
+      start_date: searchParams.get("start_date") || undefined,
+      end_date: searchParams.get("end_date") || undefined,
+      status: searchParams.get("status") || undefined,
+    }),
+    [searchParams],
+  );
 
   const filterFields: FilterFieldConfig[] = [
     {
@@ -142,7 +156,7 @@ export const Filter = ({
       type: "select",
       options: logbookStatusNameOptions,
       placeholder: "Pilih Status...",
-    }
+    },
   ];
 
   // Build sync values from URL params - these will sync when URL changes (back navigation)
@@ -151,27 +165,37 @@ export const Filter = ({
 
     // PPDS option from URL (string-based, value = label)
     if (currentFilters.ppds_name) {
-      const ppdsOpt = ppdsNameOptions.find(opt => opt.value === currentFilters.ppds_name);
+      const ppdsOpt = ppdsNameOptions.find(
+        (opt) => opt.value === currentFilters.ppds_name,
+      );
       if (ppdsOpt) values.ppds_name = ppdsOpt;
     }
     // Staff option from URL (string-based, value = label)
     if (currentFilters.staff_name) {
-      const staffOpt = staffNameOptions.find(opt => opt.value === currentFilters.staff_name);
+      const staffOpt = staffNameOptions.find(
+        (opt) => opt.value === currentFilters.staff_name,
+      );
       if (staffOpt) values.staff_name = staffOpt;
     }
     // Activity option from URL (string-based, value = label)
     if (currentFilters.activity_name) {
-      const activityOpt = activityNameOptions.find(opt => opt.value === currentFilters.activity_name);
+      const activityOpt = activityNameOptions.find(
+        (opt) => opt.value === currentFilters.activity_name,
+      );
       if (activityOpt) values.activity_name = activityOpt;
     }
     // Stase option from URL (string-based, value = label)
     if (currentFilters.stase_name) {
-      const staseOpt = staseNameOptions.find(opt => opt.value === currentFilters.stase_name);
+      const staseOpt = staseNameOptions.find(
+        (opt) => opt.value === currentFilters.stase_name,
+      );
       if (staseOpt) values.stase_name = staseOpt;
     }
     // Date values - convert string from URL to Date object for FilterPanel
     if (currentFilters.start_date) {
-      const [year, month, day] = currentFilters.start_date.split("-").map(Number);
+      const [year, month, day] = currentFilters.start_date
+        .split("-")
+        .map(Number);
       values.start_date = new Date(year, month - 1, day);
     }
     if (currentFilters.end_date) {
@@ -181,15 +205,27 @@ export const Filter = ({
 
     // Status option from URL (string-based, value = label)
     if (currentFilters.status) {
-      const statusOpt = logbookStatusNameOptions.find(opt => opt.value === currentFilters.status);
+      const statusOpt = logbookStatusNameOptions.find(
+        (opt) => opt.value === currentFilters.status,
+      );
       if (statusOpt) values.status = statusOpt;
     }
 
     return Object.keys(values).length > 0 ? values : undefined;
-  }, [currentFilters, ppdsNameOptions, staffNameOptions, activityNameOptions, staseNameOptions, logbookStatusNameOptions]);
+  }, [
+    currentFilters,
+    ppdsNameOptions,
+    staffNameOptions,
+    activityNameOptions,
+    staseNameOptions,
+    logbookStatusNameOptions,
+  ]);
 
   // Helper to get string value from select option
-  const getSelectValue = (key: string, data: Record<string, FilterValue>): string | null => {
+  const getSelectValue = (
+    key: string,
+    data: Record<string, FilterValue>,
+  ): string | null => {
     const val = data[key];
     if (val && typeof val === "object" && "value" in val) {
       return (val as { value: string }).value ?? null;
@@ -198,7 +234,10 @@ export const Filter = ({
   };
 
   // Helper to convert date values to YYYY-MM-DD string
-  const getDateValue = (key: string, data: Record<string, FilterValue>): string | undefined => {
+  const getDateValue = (
+    key: string,
+    data: Record<string, FilterValue>,
+  ): string | undefined => {
     const val = data[key];
     if (!val) return undefined;
     if (val instanceof Date) {
