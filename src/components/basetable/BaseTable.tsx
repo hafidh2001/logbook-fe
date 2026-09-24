@@ -47,18 +47,18 @@ type BaseTableState<T> = {
 export type SimpleColumnDef<T, COL extends Exclude<keyof T, symbol | number>> =
   | COL
   | {
-    name: COL;
-    header?: ReactNode;
-    render?: (opt: {
-      table: BaseTableState<T>;
-      row: T;
-      index: number;
-      el: {
-        tbody: { current: HTMLTableSectionElement | null };
-        container: { current: HTMLDivElement | null };
-      };
-    }) => ReactElement;
-  };
+      name: COL;
+      header?: ReactNode;
+      render?: (opt: {
+        table: BaseTableState<T>;
+        row: T;
+        index: number;
+        el: {
+          tbody: { current: HTMLTableSectionElement | null };
+          container: { current: HTMLDivElement | null };
+        };
+      }) => ReactElement;
+    };
 
 // Meta type for pagination
 export type TableMeta = {
@@ -70,8 +70,9 @@ export type TableMeta = {
 // Enhanced interface based on Rapidsense BaseTable
 interface BaseTableProps<
   T extends Record<string, any>,
-  COL extends Exclude<keyof T, symbol | number>
+  COL extends Exclude<keyof T, symbol | number>,
 > {
+  getRowId?: (row: T, index: number) => string;
   data: T[];
   columns: SimpleColumnDef<T, COL>[] | ColumnDef<T>[];
   pagination?: {
@@ -94,9 +95,9 @@ interface BaseTableProps<
 
 export const BaseTable = <
   T extends Record<string, any>,
-  COL extends Exclude<keyof T, symbol | number>
+  COL extends Exclude<keyof T, symbol | number>,
 >(
-  opt: BaseTableProps<T, COL>
+  opt: BaseTableProps<T, COL>,
 ) => {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [searchParams, setSearchParams] = useSearchParams();
@@ -106,7 +107,9 @@ export const BaseTable = <
   const tbody = useRef<HTMLTableSectionElement>(null);
 
   // Determine pagination mode
-  const isServerPagination = opt.pagination?.mode === "server" || (opt.pagination?.mode !== "client" && !!opt.onPaginationChange);
+  const isServerPagination =
+    opt.pagination?.mode === "server" ||
+    (opt.pagination?.mode !== "client" && !!opt.onPaginationChange);
 
   // Get page from URL (1-based)
   const getPageFromUrl = useCallback((): number => {
@@ -125,7 +128,8 @@ export const BaseTable = <
     // Server mode: use meta if available, otherwise derive from initial values
     if (isServerPagination) {
       return {
-        pageIndex: (opt.meta?.page ?? opt.pagination?.initialPageIndex ?? 1) - 1,
+        pageIndex:
+          (opt.meta?.page ?? opt.pagination?.initialPageIndex ?? 1) - 1,
         pageSize: opt.meta?.offset ?? opt.pagination?.initialPageSize ?? 10,
       };
     }
@@ -135,7 +139,13 @@ export const BaseTable = <
       pageIndex: urlPage - 1,
       pageSize: opt.pagination?.initialPageSize || 10,
     };
-  }, [isServerPagination, opt.meta, opt.pagination?.initialPageIndex, opt.pagination?.initialPageSize, getPageFromUrl]);
+  }, [
+    isServerPagination,
+    opt.meta,
+    opt.pagination?.initialPageIndex,
+    opt.pagination?.initialPageSize,
+    getPageFromUrl,
+  ]);
 
   const [pagination, setPagination] = useState(getInitialPagination);
 
@@ -147,7 +157,12 @@ export const BaseTable = <
         pageSize: opt.meta?.offset ?? opt.pagination?.initialPageSize ?? 10,
       });
     }
-  }, [isServerPagination, opt.meta?.page, opt.meta?.offset, opt.pagination?.initialPageSize]);
+  }, [
+    isServerPagination,
+    opt.meta?.page,
+    opt.meta?.offset,
+    opt.pagination?.initialPageSize,
+  ]);
 
   // Sync pagination with URL when URL changes (handles back/forward navigation, direct URL changes)
   useEffect(() => {
@@ -159,7 +174,7 @@ export const BaseTable = <
 
     // Only update if different from current state
     if (pagination.pageIndex !== currentPageIndex) {
-      setPagination(prev => ({ ...prev, pageIndex: currentPageIndex }));
+      setPagination((prev) => ({ ...prev, pageIndex: currentPageIndex }));
     }
   }, [searchParams, isServerPagination]);
 
@@ -183,7 +198,12 @@ export const BaseTable = <
       setSearchParams(newSearchParams, { replace: true });
       prevPageIndexRef.current = pagination.pageIndex;
     }
-  }, [pagination.pageIndex, searchParams, setSearchParams, opt.pagination?.enabled]);
+  }, [
+    pagination.pageIndex,
+    searchParams,
+    setSearchParams,
+    opt.pagination?.enabled,
+  ]);
 
   // Handle edge case: when data becomes empty and page > 1, go to previous page
   useEffect(() => {
@@ -208,7 +228,7 @@ export const BaseTable = <
 
     const pageCount = opt.pagination?.pageCount ?? 1;
     if (pagination.pageIndex >= pageCount) {
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
         pageIndex: pageCount > 0 ? pageCount - 1 : 0,
       }));
@@ -273,7 +293,7 @@ export const BaseTable = <
               return cell;
             },
           } as ColumnDef<T>;
-        }
+        },
       );
     }
 
@@ -296,7 +316,7 @@ export const BaseTable = <
         cell: (context) => {
           // For server-side: use meta if available, otherwise derive from pagination config
           if (isServerPagination) {
-            const page = opt.meta?.page ?? (pagination.pageIndex + 1);
+            const page = opt.meta?.page ?? pagination.pageIndex + 1;
             const pageSize = opt.meta?.offset ?? pagination.pageSize;
             const rowNumber = (page - 1) * pageSize + context.row.index + 1;
             return <span className="text-sm font-medium">{rowNumber}</span>;
@@ -332,7 +352,7 @@ export const BaseTable = <
             <ChevronDown
               className={cn(
                 "h-4 w-4 transition-transform cursor-pointer text-muted-foreground hover:text-foreground",
-                row.getIsExpanded() && "rotate-180"
+                row.getIsExpanded() && "rotate-180",
               )}
             />
           );
@@ -361,7 +381,8 @@ export const BaseTable = <
       rowSelection,
     },
     onPaginationChange: (updater) => {
-      const newState = typeof updater === 'function' ? updater(pagination) : updater;
+      const newState =
+        typeof updater === "function" ? updater(pagination) : updater;
       setPagination(newState);
 
       if (isServerPagination && opt.onPaginationChange) {
@@ -378,11 +399,17 @@ export const BaseTable = <
     manualPagination: isServerPagination,
     manualExpanding: true,
     autoResetPageIndex: !isServerPagination,
-    getRowId: (row, index) => {
-      // @ts-ignore
-      return row.id?.toString() || index.toString();
-    },
-    pageCount: isServerPagination ? (opt.pagination?.pageCount || -1) : undefined,
+    // getRowId: (row, index) => {
+    //   // @ts-ignore
+    //   return row.id?.toString() || index.toString();
+
+    // },
+    getRowId: opt.getRowId
+      ? opt.getRowId
+      : (row, index) => {
+          return row.id?.toString() || index.toString();
+        },
+    pageCount: isServerPagination ? opt.pagination?.pageCount || -1 : undefined,
   });
 
   useEffect(() => {
@@ -405,7 +432,7 @@ export const BaseTable = <
     <div
       className={cn(
         "w-full h-full relative border rounded-lg overflow-hidden",
-        opt.className
+        opt.className,
       )}
       ref={div}
     >
@@ -418,14 +445,16 @@ export const BaseTable = <
                 <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-slate-600"></div>
-                    <span className="text-sm font-medium text-slate-600">Loading...</span>
+                    <span className="text-sm font-medium text-slate-600">
+                      Loading...
+                    </span>
                   </div>
                 </div>
               )}
-              <Table className="w-full" style={{ tableLayout: 'fixed' }}>
+              <Table className="w-full" style={{ tableLayout: "fixed" }}>
                 <TableHeader
                   className="sticky top-0 z-20 bg-blue-600"
-                  style={{ position: 'sticky' }}
+                  style={{ position: "sticky" }}
                 >
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow
@@ -455,7 +484,7 @@ export const BaseTable = <
                           <TableHead
                             key={header.id}
                             className={cn(
-                              "bg-blue-600 text-white font-semibold border-r last:border-r-0 h-12 px-4 text-center"
+                              "bg-blue-600 text-white font-semibold border-r last:border-r-0 h-12 px-4 text-center",
                             )}
                             style={{
                               width: finalWidth,
@@ -470,9 +499,9 @@ export const BaseTable = <
                             {header.isPlaceholder
                               ? null
                               : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
                           </TableHead>
                         );
                       })}
@@ -488,7 +517,7 @@ export const BaseTable = <
                             className={cn(
                               "border-b border-slate-200 hover:bg-slate-50 transition-colors",
                               opt.renderExpansion && "cursor-pointer",
-                              row.getIsExpanded() && "bg-slate-50"
+                              row.getIsExpanded() && "bg-slate-50",
                             )}
                             onClick={() => {
                               if (opt.renderExpansion) {
@@ -503,7 +532,7 @@ export const BaseTable = <
                                 "start";
 
                               const getCellTextAlignClass = (
-                                justify: string
+                                justify: string,
                               ) => {
                                 switch (justify) {
                                   case "center":
@@ -526,12 +555,12 @@ export const BaseTable = <
                                     "py-3 px-4 border-r border-slate-200 last:border-r-0",
                                     cellTextAlignClass,
                                     cell.column.id === "no" && "text-center",
-                                    cell.column.id === "color" && "text-center"
+                                    cell.column.id === "color" && "text-center",
                                   )}
                                 >
                                   {flexRender(
                                     cell.column.columnDef.cell,
-                                    cell.getContext()
+                                    cell.getContext(),
                                   )}
                                 </TableCell>
                               );
@@ -557,12 +586,14 @@ export const BaseTable = <
                       <TableCell
                         colSpan={visibleColumns.length}
                         className="h-24 text-center text-slate-500 whitespace-normal"
-                        style={{ minWidth: 'auto' }}
+                        style={{ minWidth: "auto" }}
                       >
                         {opt.isLoading ? (
                           <div className="flex flex-col items-center justify-center gap-3">
                             <div className="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-slate-600"></div>
-                            <span className="text-sm font-medium">Loading data...</span>
+                            <span className="text-sm font-medium">
+                              Loading data...
+                            </span>
                           </div>
                         ) : (
                           opt.noDataText || "No data available"

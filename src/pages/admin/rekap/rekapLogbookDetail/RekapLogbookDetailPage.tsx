@@ -21,7 +21,10 @@ export default function RekapLogbookDetailPage() {
 
   useEffect(() => {
     if (idUser) {
-      loadRekapLogbookDetail(Number(idUser));
+      loadRekapLogbookDetail(
+        Number(idUser.split("-")[0]),
+        idUser.split("-")[1] || null,
+      );
     }
     return () => resetLogbookDetail();
   }, [idUser, loadRekapLogbookDetail, resetLogbookDetail]);

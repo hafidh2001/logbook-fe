@@ -1,6 +1,11 @@
 import axios from "axios";
 import type { ApiPaginationResponse, ApiResponse } from "@/types";
-import type { IRekapPenilaianListParams, TRekapPenilaianItem, IRekapLogbookListParams, TRekapLogbookItem } from "@/types/rekap";
+import type {
+  IRekapPenilaianListParams,
+  TRekapPenilaianItem,
+  IRekapLogbookListParams,
+  TRekapLogbookItem,
+} from "@/types/rekap";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
@@ -22,16 +27,18 @@ const apiClient = axios.create({
 // ============= Rekap Penilaian API =============
 export const rekapApi = {
   async getRekapPenilaianList(
-    params: IRekapPenilaianListParams
+    params: IRekapPenilaianListParams,
   ): Promise<ApiPaginationResponse<TRekapPenilaianItem[]>> {
     try {
       const { data: responseData } = await apiClient.post(
         "GetListRekapPenilaian",
-        params
+        params,
       );
 
       if (responseData.status === false) {
-        throw new Error(responseData.message || "Failed to fetch rekap penilaian");
+        throw new Error(
+          responseData.message || "Failed to fetch rekap penilaian",
+        );
       }
 
       return responseData;
@@ -48,16 +55,18 @@ export const rekapApi = {
   },
 
   async getRekapPenilaianDetail(
-    id_logbook: number
+    id_logbook: number,
   ): Promise<ApiResponse<TRekapPenilaianItem>> {
     try {
       const { data: responseData } = await apiClient.post(
         "GetDetailRekapPenilaian",
-        { id_logbook }
+        { id_logbook },
       );
 
       if (responseData.status === false) {
-        throw new Error(responseData.message || "Failed to fetch rekap penilaian detail");
+        throw new Error(
+          responseData.message || "Failed to fetch rekap penilaian detail",
+        );
       }
 
       return responseData;
@@ -75,16 +84,18 @@ export const rekapApi = {
 
   // ============= Rekap Logbook API =============
   async getRekapLogbookList(
-    params: IRekapLogbookListParams
+    params: IRekapLogbookListParams,
   ): Promise<ApiPaginationResponse<TRekapLogbookItem[]>> {
     try {
       const { data: responseData } = await apiClient.post(
         "GetListRekapLogbook",
-        params
+        params,
       );
 
       if (responseData.status === false) {
-        throw new Error(responseData.message || "Failed to fetch rekap logbook");
+        throw new Error(
+          responseData.message || "Failed to fetch rekap logbook",
+        );
       }
 
       return responseData;
@@ -101,16 +112,19 @@ export const rekapApi = {
   },
 
   async getRekapLogbookDetail(
-    id: number
+    id: number,
+    staff: string | null,
   ): Promise<ApiResponse<TRekapLogbookItem>> {
     try {
       const { data: responseData } = await apiClient.post(
         "GetDetailRekapLogbook",
-        { id }
+        { id, staff },
       );
 
       if (responseData.status === false) {
-        throw new Error(responseData.message || "Failed to fetch rekap logbook detail");
+        throw new Error(
+          responseData.message || "Failed to fetch rekap logbook detail",
+        );
       }
 
       return responseData;

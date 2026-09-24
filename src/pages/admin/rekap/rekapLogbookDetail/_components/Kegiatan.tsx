@@ -1,5 +1,6 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { StatusBadge } from "@/components/statusBadge";
+import dayjs from "dayjs";
 
 interface Props {
   data: any;
@@ -15,7 +16,9 @@ export const Kegiatan = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Date</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.date ?? "-"}
+          {data?.date
+            ? dayjs(data.date).locale("id").format("DD MMM YYYY")
+            : "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -28,7 +31,7 @@ export const Kegiatan = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Activity</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.activity ?? "-"}
+          {data?.action ?? "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">

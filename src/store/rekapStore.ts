@@ -193,10 +193,10 @@ export const useRekapStore = create<RekapPenilaianStore & RekapLogbookStore>(
       }
     },
 
-    loadRekapLogbookDetail: async (id: number) => {
+    loadRekapLogbookDetail: async (id: number, staff: string | null) => {
       set({ isLoadingLogbookDetail: true, errorLogbook: null, rekapLogbookDetail: null });
       try {
-        const response = await rekapApi.getRekapLogbookDetail(id);
+        const response = await rekapApi.getRekapLogbookDetail(id, staff);
         set({ rekapLogbookDetail: response.data, isLoadingLogbookDetail: false });
       } catch (error) {
         set({

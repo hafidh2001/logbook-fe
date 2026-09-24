@@ -50,7 +50,7 @@ export interface RekapLogbookState {
 
 export interface RekapLogbookActions {
   loadRekapLogbook: (params: IRekapLogbookListParams) => Promise<void>;
-  loadRekapLogbookDetail: (id: number) => Promise<void>;
+  loadRekapLogbookDetail: (id: number, staff: string | null) => Promise<void>;
   loadExportRekapLogbook: (params: {
     filterParams: Partial<IRekapLogbookListParams>;
     onProgress?: (progress: number, offset: number) => void;

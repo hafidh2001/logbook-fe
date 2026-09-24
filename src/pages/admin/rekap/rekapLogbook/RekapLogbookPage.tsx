@@ -265,12 +265,12 @@ export default function RekapLogbookPage() {
   };
 
   const handleRowClick = (row: Row<TRekapLogbookItem>) => {
-    navigate(ROUTES.rekapLogbookDetail(String(row.original.id)));
+    navigate(ROUTES.rekapLogbookDetail(String(`${row.original.id}-${row.original.staff}`)));
   };
 
-  const handleView = (e: React.MouseEvent, id: number) => {
+  const handleView = (e: React.MouseEvent, id: number, staff: string) => {
     e.stopPropagation();
-    navigate(ROUTES.rekapLogbookDetail(String(id)));
+    navigate(ROUTES.rekapLogbookDetail(String(`${id}-${staff}`)));
   };
 
   // Define columns for Rekap Logbook table
@@ -367,6 +367,24 @@ export default function RekapLogbookPage() {
       cell: ({ row: { original } }) => original.title ?? "-",
     },
     {
+      accessorKey: "patient",
+      header: "Patient",
+      size: 200,
+      cell: ({ row: { original } }) => original.patient ?? "-",
+    },
+    {
+      accessorKey: "diagnosis",
+      header: "Diagnosis",
+      size: 200,
+      cell: ({ row: { original } }) => original.diagnosis ?? "-",
+    },
+    {
+      accessorKey: "treatment",
+      header: "Treatment",
+      size: 200,
+      cell: ({ row: { original } }) => original.treatment ?? "-",
+    },
+    {
       id: "actions",
       header: "Action",
       size: sm ? 120 : 80,
@@ -376,7 +394,7 @@ export default function RekapLogbookPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={(e) => handleView(e, original.id)}
+              onClick={(e) => handleView(e, original.id, original.staff ?? "")}
               className="bg-blue-600 text-white hover:bg-blue-700"
             >
               <icons.Eye className="h-4 w-4" />
@@ -419,6 +437,7 @@ export default function RekapLogbookPage() {
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
+              getRowId={(row) => `${row.id}-${row.staff}`}
               data={rekapLogbook}
               columns={columns}
               isLoading={isLoadingLogbook}
