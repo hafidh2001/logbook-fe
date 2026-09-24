@@ -9,6 +9,7 @@ import { EXPORT_LIMIT } from "@/constants/export";
 // ============= Rekap Penilaian Store =============
 const penilaianInitialState = {
   rekapPenilaian: [] as any[],
+  averageRekapPenilaian: 0 as number | null,
   rekapPenilaianPagination: {
     page: 1,
     limit: 10,
@@ -64,6 +65,25 @@ export const useRekapStore = create<RekapPenilaianStore & RekapLogbookStore>(
             error instanceof Error
               ? error.message
               : "Failed to load rekap penilaian",
+          isLoading: false,
+        });
+      }
+    },
+
+    loadAverageRekapPenilaian: async (params) => {
+      set({ isLoading: true, error: null });
+      try {
+        const response = await rekapApi.getAverageRekapPenilaian(params);
+        set({
+          averageRekapPenilaian: response.data,
+          isLoading: false,
+        });
+      } catch (error) {
+        set({
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to load average rekap penilaian",
           isLoading: false,
         });
       }
@@ -194,10 +214,17 @@ export const useRekapStore = create<RekapPenilaianStore & RekapLogbookStore>(
     },
 
     loadRekapLogbookDetail: async (id: number, staff: string | null) => {
-      set({ isLoadingLogbookDetail: true, errorLogbook: null, rekapLogbookDetail: null });
+      set({
+        isLoadingLogbookDetail: true,
+        errorLogbook: null,
+        rekapLogbookDetail: null,
+      });
       try {
         const response = await rekapApi.getRekapLogbookDetail(id, staff);
-        set({ rekapLogbookDetail: response.data, isLoadingLogbookDetail: false });
+        set({
+          rekapLogbookDetail: response.data,
+          isLoadingLogbookDetail: false,
+        });
       } catch (error) {
         set({
           errorLogbook:

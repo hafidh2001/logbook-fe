@@ -4,6 +4,7 @@ import type { IRekapPenilaianListParams, TRekapPenilaianItem, IRekapLogbookListP
 // ============= Rekap Penilaian Store =============
 export interface RekapPenilaianState {
   rekapPenilaian: TRekapPenilaianItem[];
+  averageRekapPenilaian: number | null;
   rekapPenilaianPagination: {
     page: number;
     limit: number;
@@ -19,6 +20,7 @@ export interface RekapPenilaianState {
 
 export interface RekapPenilaianActions {
   loadRekapPenilaian: (params: IRekapPenilaianListParams) => Promise<void>;
+  loadAverageRekapPenilaian: (params: IRekapPenilaianListParams) => Promise<void>;
   loadRekapPenilaianDetail: (id_logbook: number) => Promise<void>;
   loadExportRekapPenilaian: (params: {
     filterParams: Partial<IRekapPenilaianListParams>;

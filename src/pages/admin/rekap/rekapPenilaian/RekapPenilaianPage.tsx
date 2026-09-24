@@ -29,10 +29,12 @@ export default function RekapPenilaianPage() {
   const { user } = useAuthStore();
   const {
     rekapPenilaian,
+    averageRekapPenilaian,
     rekapPenilaianPagination,
     isLoading,
     isExporting,
     loadRekapPenilaian,
+    loadAverageRekapPenilaian,
     loadExportRekapPenilaian,
     cancelExport,
     reset,
@@ -104,6 +106,16 @@ export default function RekapPenilaianPage() {
         id_client: user.id_client,
         page,
         limit,
+        search: debouncedSearch || undefined,
+        ppds_name: ppds_name ?? undefined,
+        staff_name: staff_name ?? undefined,
+        activity_name: activity_name ?? undefined,
+        stase_name: stase_name ?? undefined,
+        start_date,
+        end_date,
+      });
+      loadAverageRekapPenilaian({
+        id_client: user.id_client,
         search: debouncedSearch || undefined,
         ppds_name: ppds_name ?? undefined,
         staff_name: staff_name ?? undefined,
@@ -435,8 +447,13 @@ export default function RekapPenilaianPage() {
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
-          <Filter onChange={handleFilterChange} onReset={handleFilterReset} />
-
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
+              <span className="font-semibold text-xs">Total Nilai</span>
+              <span className="font-bold text-sm">{averageRekapPenilaian}</span>
+            </div>
+            <Filter onChange={handleFilterChange} onReset={handleFilterReset} />
+          </div>
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
