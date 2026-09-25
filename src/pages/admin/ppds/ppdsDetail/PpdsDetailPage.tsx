@@ -17,6 +17,7 @@ import { usePpdsStore } from "@/store/ppdsStore";
 import { useMasterStore } from "@/store/masterStore";
 import { useEffect } from "react";
 import dayjs from "dayjs";
+import { UserStatusEnum } from "@/types";
 
 export default function PpdsDetailPage() {
   const { idUser } = useParams<{ idUser: string }>();
@@ -78,6 +79,7 @@ export default function PpdsDetailPage() {
           ? `${selectedPpds.total_logbook} items`
           : "0",
         status: selectedPpds.status ?? "",
+        old_status: selectedPpds.status ?? "",
         inactive_at: selectedPpds.inactive_at
           ? dayjs(selectedPpds.inactive_at).toDate()
           : null,
@@ -99,6 +101,9 @@ export default function PpdsDetailPage() {
           : null,
         inactive_at: data.inactive_at
           ? dayjs(data.inactive_at).format("YYYY-MM-DD")
+          : null,
+        reactivate_date: data.reactivate_date
+          ? dayjs(data.reactivate_date).format("YYYY-MM-DD")
           : null,
       };
       const success = await updatePpds({ id_user: Number(idUser), ...payload });
@@ -225,6 +230,7 @@ export default function PpdsDetailPage() {
                 render={({ field }) => (
                   <InputField
                     label="NIM"
+                    errorMessage={errors.nim?.message}
                     {...field}
                     value={field.value ?? ""}
                     onChange={field.onChange}
@@ -238,6 +244,7 @@ export default function PpdsDetailPage() {
                 render={({ field }) => (
                   <CalendarSelect
                     label="Date Of Birth"
+                    errorMessage={errors.date_of_birth?.message}
                     {...field}
                     value={field.value ?? undefined}
                     onChange={field.onChange}
@@ -321,6 +328,7 @@ export default function PpdsDetailPage() {
                       }
                       isSearchable={false}
                       isClearable={false}
+                      isDisabled={UserStatusEnum.LULUS === selectedPpds?.status}
                     />
                   </div>
                 )}
@@ -331,6 +339,7 @@ export default function PpdsDetailPage() {
                 render={({ field }) => (
                   <CalendarSelect
                     label="Inactive At"
+                    errorMessage={errors.inactive_at?.message}
                     {...field}
                     value={field.value ?? undefined}
                     onChange={field.onChange}
@@ -359,11 +368,12 @@ export default function PpdsDetailPage() {
                 render={({ field }) => (
                   <CalendarSelect
                     label="Reactivate Date"
+                    errorMessage={errors.reactivate_date?.message}
                     {...field}
                     value={field.value ?? undefined}
                     onChange={field.onChange}
-                    placeholder="Tanggal reactivate akan muncul setelah dinonaktifkan..."
-                    isDisabled
+                    placeholder="Masukkan tanggal reactivate..."
+                    isDisabled={UserStatusEnum.ACTIVE === selectedPpds?.status}
                   />
                 )}
               />
@@ -427,10 +437,8 @@ export default function PpdsDetailPage() {
         description={
           <>
             Apakah Anda yakin ingin menghapus data{" "}
-            <span className="font-semibold">
-              {selectedPpds?.display_name}
-            </span>
-            ? Tindakan ini tidak dapat dibatalkan.
+            <span className="font-semibold">{selectedPpds?.display_name}</span>?
+            Tindakan ini tidak dapat dibatalkan.
           </>
         }
         onConfirm={handleDelete}

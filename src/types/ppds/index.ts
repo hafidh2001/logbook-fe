@@ -39,6 +39,7 @@ export interface IPpdsPayload {
   status?: Nullable<string>;
   inactive_at?: Nullable<string>;
   inactive_notes?: Nullable<string>;
+  reactivate_date?: Nullable<string>;
 }
 
 export interface IPpdsListParams {
