@@ -121,6 +121,7 @@ export class ROUTES {
     return `${this.staffLogbook(idUser)}/${idLogbook}` as const;
   }
 
+  // Hospital Routes
   static get hospital() {
     return `/admin/hospital` as const;
   }
@@ -133,8 +134,17 @@ export class ROUTES {
     return `${this.hospital}/${id}` as const;
   }
 
-  static hospitalEdit(id: string) {
-    return `${this.hospital}/${id}/edit` as const;
+  // Morbidity Routes
+  static get morbidity() {
+    return `/admin/morbidity` as const;
+  }
+
+  static morbidityByUser(idUser: string) {
+    return `${this.morbidity}/${idUser}` as const;
+  }
+
+  static morbidityByUserDetail(idUser: string, idLogbook: string) {
+    return `${this.morbidityByUser(idUser)}/${idLogbook}` as const;
   }
 
   // Stase Routes

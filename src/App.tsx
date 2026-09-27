@@ -44,7 +44,10 @@ import {
   UnverifiedLogbookDetailPage,
   HospitalListPage,
   HospitalFormPage,
+  MorbidityListPage,
+  MorbidityByUserPage,
 } from "@/pages";
+import MorbidityByUserDetailPage from "@/pages/admin/morbidity/morbidityByUserDetail/MorbidityByUserDetailPage";
 
 function App() {
   const { isInitialized } = useAuthStore();
@@ -324,6 +327,40 @@ function App() {
             <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
               <AdminLayout>
                 <HospitalFormPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Morbidity Routes */}
+        <Route
+          path={ROUTES.morbidity}
+          element={
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <MorbidityListPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path={ROUTES.morbidityByUser(":idUser")}
+          element={
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <MorbidityByUserPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path={ROUTES.morbidityByUserDetail(":idUser", ":idLogbook")}
+          element={
+            <ProtectedRoute allowedRoles={[RoleEnum.INSTITUTION]}>
+              <AdminLayout>
+                <MorbidityByUserDetailPage />
               </AdminLayout>
             </ProtectedRoute>
           }

@@ -36,6 +36,11 @@ export const StaffLogbookDetailPage = lazyLoad(() => import('./admin/staff/staff
 export const HospitalListPage = lazyLoad(() => import('./admin/hospital/hospitalList/HospitalListPage'));
 export const HospitalFormPage = lazyLoad(() => import('./admin/hospital/hospitalForm/HospitalFormPage'));
 
+// Admin Pages - Morbidity
+export const MorbidityListPage = lazyLoad(() => import('./admin/morbidity/morbidityList/MorbidityListPage'));
+export const MorbidityByUserPage = lazyLoad(() => import('./admin/morbidity/morbidityByUser/MorbidityByUserPage'));
+export const MorbidityByUserDetailPage = lazyLoad(() => import('./admin/morbidity/morbidityByUserDetail/MorbidityByUserDetailPage'));
+
 // Admin Pages - Stase
 export const StaseListPage = lazyLoad(() => import('./admin/stase/staseList/StaseListPage'));
 export const StaseFormPage = lazyLoad(() => import('./admin/stase/staseForm/StaseFormPage'));

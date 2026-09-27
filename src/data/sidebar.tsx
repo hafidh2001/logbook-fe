@@ -10,6 +10,7 @@ export const navItems: TNavItem[] = [
   { label: "Rumah Sakit", icon: <icons.Hospital size={18} />, to: ROUTES.hospital },
   { label: "Stase", icon: <icons.Grid2X2 size={18} />, to: ROUTES.stase },
   { label: "Penilaian Logbook", icon: <icons.FileText size={18} />, to: ROUTES.penilaianLogbook },
+  { label: "Morbidity", icon: <icons.FileText size={18} />, to: ROUTES.morbidity },
   {
     label: "Rekap",
     icon: <icons.FileStack size={18} />,

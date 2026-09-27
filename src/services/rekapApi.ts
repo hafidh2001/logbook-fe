@@ -68,7 +68,7 @@ export const rekapApi = {
           responseData.message || "Failed to fetch average rekap penilaian",
         );
       }
-      
+
       return responseData;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -146,7 +146,7 @@ export const rekapApi = {
     try {
       const { data: responseData } = await apiClient.post(
         "GetDetailRekapLogbook",
-        { id, staff },
+        { id, staff: staff == "null" ? "" : staff },
       );
 
       if (responseData.status === false) {
