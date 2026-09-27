@@ -36,9 +36,10 @@ export const PPDSPerStase = () => {
       {
         data: ppdsPerStase.map((item) => item.count) ?? [],
         backgroundColor: ppdsPerStase.map(
-          (_, index) => CHART_COLORS[index % CHART_COLORS.length]
+          (_, index) => CHART_COLORS[index % CHART_COLORS.length],
         ),
-        borderWidth: 0,
+        borderWidth: 1.5,
+        borderColor: "#fff",
       },
     ],
   };
@@ -96,8 +97,7 @@ export const PPDSPerStase = () => {
                 <div
                   className="w-3 h-3 rounded-sm flex-shrink-0"
                   style={{
-                    backgroundColor:
-                      CHART_COLORS[index % CHART_COLORS.length],
+                    backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
                   }}
                 />
                 <span

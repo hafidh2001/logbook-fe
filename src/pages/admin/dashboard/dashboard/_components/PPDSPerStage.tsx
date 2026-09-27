@@ -31,7 +31,7 @@ export const PPDSPerStage = () => {
   }, []);
 
   const colors = ppdsPerStage.map(
-    (_, index) => CHART_COLORS[index % CHART_COLORS.length]
+    (_, index) => CHART_COLORS[index % CHART_COLORS.length],
   );
 
   const chartData: ChartData<"doughnut", number[], string> = {
@@ -40,7 +40,8 @@ export const PPDSPerStage = () => {
       {
         data: ppdsPerStage.map((item) => item.count) ?? [],
         backgroundColor: colors,
-        borderWidth: 0,
+        borderWidth: 5,
+        borderColor: "#fff",
       },
     ],
   };
