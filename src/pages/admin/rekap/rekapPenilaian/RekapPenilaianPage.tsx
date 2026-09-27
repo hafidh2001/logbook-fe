@@ -447,8 +447,8 @@ export default function RekapPenilaianPage() {
       <div className="flex-1 px-4 sm:px-6 py-2 overflow-hidden">
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
+          <div className="flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-2">
+            <div className="w-full sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
               <span className="font-semibold text-xs">Total Nilai</span>
               <span className="font-bold text-sm">{averageRekapPenilaian}</span>
             </div>
