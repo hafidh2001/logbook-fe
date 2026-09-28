@@ -185,25 +185,31 @@ export const BaseTable = <
     if (!opt.pagination?.enabled) return;
 
     const prevPageIndex = prevPageIndexRef.current;
+
+    // Initial render
+    if (prevPageIndex === undefined) {
+      prevPageIndexRef.current = pagination.pageIndex;
+      return;
+    }
+
+    // Page tidak berubah
+    if (prevPageIndex === pagination.pageIndex) {
+      return;
+    }
+
+    const newSearchParams = new URLSearchParams(window.location.search);
     const newPage = (pagination.pageIndex + 1).toString();
 
-    // Only update URL if pageIndex actually changed
-    if (prevPageIndex !== pagination.pageIndex) {
-      const newSearchParams = new URLSearchParams(searchParams);
-      if (newPage === "1") {
-        newSearchParams.delete("page");
-      } else {
-        newSearchParams.set("page", newPage);
-      }
-      setSearchParams(newSearchParams, { replace: true });
-      prevPageIndexRef.current = pagination.pageIndex;
+    if (newPage === "1") {
+      newSearchParams.delete("page");
+    } else {
+      newSearchParams.set("page", newPage);
     }
-  }, [
-    pagination.pageIndex,
-    searchParams,
-    setSearchParams,
-    opt.pagination?.enabled,
-  ]);
+
+    setSearchParams(newSearchParams, { replace: true });
+
+    prevPageIndexRef.current = pagination.pageIndex;
+  }, [pagination.pageIndex, opt.pagination?.enabled, setSearchParams]);
 
   // Handle edge case: when data becomes empty and page > 1, go to previous page
   useEffect(() => {

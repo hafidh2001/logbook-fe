@@ -15,7 +15,7 @@ export const navItems: TNavItem[] = [
     label: "Rekap",
     icon: <icons.FileStack size={18} />,
     children: [
-      // { label: "Rekap Report", to: ROUTES.rekapReport },
+      { label: "Rekap Report", to: ROUTES.rekapReport },
       { label: "Rekap Penilaian", to: ROUTES.rekapPenilaian },
       { label: "Rekap Logbook", to: ROUTES.rekapLogbook },
     ],

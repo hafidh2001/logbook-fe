@@ -449,8 +449,8 @@ export default function RekapPenilaianPage() {
           {/* Filter Section */}
           <div className="flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-2">
             <div className="w-full sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
-              <span className="font-semibold text-xs">Total Nilai</span>
-              <span className="font-bold text-sm">{averageRekapPenilaian}</span>
+              <span className="font-semibold text-xs text-nowrap">Total Nilai</span>
+              <span className="font-bold text-sm">{averageRekapPenilaian ?? 0}</span>
             </div>
             <Filter onChange={handleFilterChange} onReset={handleFilterReset} />
           </div>

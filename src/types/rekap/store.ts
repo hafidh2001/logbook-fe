@@ -1,5 +1,37 @@
 import { Nullable } from "@/types";
-import type { IRekapPenilaianListParams, TRekapPenilaianItem, IRekapLogbookListParams, TRekapLogbookItem } from "@/types/rekap";
+import type {
+  IRekapPenilaianListParams,
+  TRekapPenilaianItem,
+  IRekapLogbookListParams,
+  TRekapLogbookItem,
+  TRekapReportItem,
+  IRekapReportListParams,
+  TRekapReportData,
+} from "@/types/rekap";
+
+// ============= Rekap Report Store =============
+export interface RekapReportState {
+  rekapReport: TRekapReportItem[];
+  rekapReportSummary: TRekapReportData["summary"];
+  rekapReportPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pageCount: number;
+  };
+  // rekapPenilaianDetail: TRekapReportItem | null;
+  isLoadingReport: boolean;
+  // isLoadingDetail: boolean;
+  // isExporting: boolean;
+  errorReport: Nullable<string>;
+}
+
+export interface RekapReportActions {
+  loadRekapReport: (params: IRekapReportListParams) => Promise<void>;
+  resetReport: () => void;
+}
+
+export type RekapReportStore = RekapReportState & RekapReportActions;
 
 // ============= Rekap Penilaian Store =============
 export interface RekapPenilaianState {
@@ -20,7 +52,9 @@ export interface RekapPenilaianState {
 
 export interface RekapPenilaianActions {
   loadRekapPenilaian: (params: IRekapPenilaianListParams) => Promise<void>;
-  loadAverageRekapPenilaian: (params: IRekapPenilaianListParams) => Promise<void>;
+  loadAverageRekapPenilaian: (
+    params: IRekapPenilaianListParams,
+  ) => Promise<void>;
   loadRekapPenilaianDetail: (id_logbook: number) => Promise<void>;
   loadExportRekapPenilaian: (params: {
     filterParams: Partial<IRekapPenilaianListParams>;

@@ -35,6 +35,8 @@ export type FilterFieldConfig = {
   options?: BasicSelectOpt<string | number>[];
   placeholder?: string;
   disabled?: boolean;
+  isClearable?: boolean;
+  showLabel?: boolean;
 };
 
 // Filter state type - can hold different value types
@@ -66,8 +68,7 @@ const hasFilterValue = (value: FilterValue, type: FilterFieldType): boolean => {
   if (type === "calendar" || type === "monthYear") return value instanceof Date;
   if (type === "select")
     return (value as BasicSelectOpt<string | number>)?.value !== "";
-  if (type === "multiSelect")
-    return Array.isArray(value) && value.length > 0;
+  if (type === "multiSelect") return Array.isArray(value) && value.length > 0;
   return false;
 };
 
@@ -89,13 +90,13 @@ const getChipLabel = (value: FilterValue, type: FilterFieldType): string => {
     return `${month}, ${year}`;
   }
   if (type === "select")
-    return String(
-      (value as BasicSelectOpt<string | number>)?.label || ""
-    );
+    return String((value as BasicSelectOpt<string | number>)?.label || "");
   if (type === "multiSelect")
-    return (value as BasicSelectOpt<string | number>[])
-      ?.map((v) => v.label)
-      .join(", ") || "";
+    return (
+      (value as BasicSelectOpt<string | number>[])
+        ?.map((v) => v.label)
+        .join(", ") || ""
+    );
   return "";
 };
 
@@ -116,27 +117,39 @@ const getDefaultValue = (type: FilterFieldType): FilterValue => {
   }
 };
 
-export function FilterPanel({ fields, onSearch, onReset, resultCount, initialValues, syncValues }: FilterProps) {
+export function FilterPanel({
+  fields,
+  onSearch,
+  onReset,
+  resultCount,
+  initialValues,
+  syncValues,
+}: FilterProps) {
   // Applied filters - these are what show in chips and are sent to API
-  const [appliedFilters, setAppliedFilters] = useState<Record<string, FilterValue>>(() =>
+  const [appliedFilters, setAppliedFilters] = useState<
+    Record<string, FilterValue>
+  >(() =>
     fields.reduce(
       (acc, field) => {
-        acc[field.key] = initialValues?.[field.key] ?? getDefaultValue(field.type);
+        acc[field.key] =
+          initialValues?.[field.key] ?? getDefaultValue(field.type);
         return acc;
       },
-      {} as Record<string, FilterValue>
-    )
+      {} as Record<string, FilterValue>,
+    ),
   );
 
   // Draft filters - temporary state while user is selecting in the panel
-  const [draftFilters, setDraftFilters] = useState<Record<string, FilterValue>>(() =>
-    fields.reduce(
-      (acc, field) => {
-        acc[field.key] = initialValues?.[field.key] ?? getDefaultValue(field.type);
-        return acc;
-      },
-      {} as Record<string, FilterValue>
-    )
+  const [draftFilters, setDraftFilters] = useState<Record<string, FilterValue>>(
+    () =>
+      fields.reduce(
+        (acc, field) => {
+          acc[field.key] =
+            initialValues?.[field.key] ?? getDefaultValue(field.type);
+          return acc;
+        },
+        {} as Record<string, FilterValue>,
+      ),
   );
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -187,7 +200,7 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
   // Hitung jumlah filter yang aktif (based on applied, not draft)
   const activeFilterCount = useMemo(() => {
     return fields.filter((field) =>
-      hasFilterValue(appliedFilters[field.key], field.type)
+      hasFilterValue(appliedFilters[field.key], field.type),
     ).length;
   }, [fields, appliedFilters]);
 
@@ -202,6 +215,8 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
         type: field.type,
         displayValue: getChipLabel(appliedFilters[field.key], field.type),
         disabled: field.disabled,
+        isClearable: field.isClearable ?? true,
+        showLabel: field.showLabel ?? false,
       }));
   }, [fields, appliedFilters]);
 
@@ -212,7 +227,10 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
   const handleRemoveChip = (key: string) => {
     const field = fields.find((f) => f.key === key);
     if (field) {
-      const newFilters = { ...appliedFilters, [key]: getDefaultValue(field.type) };
+      const newFilters = {
+        ...appliedFilters,
+        [key]: getDefaultValue(field.type),
+      };
       setAppliedFilters(newFilters);
       setDraftFilters(newFilters);
       onSearch(newFilters);
@@ -237,7 +255,7 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
         }
         return acc;
       },
-      {} as Record<string, FilterValue>
+      {} as Record<string, FilterValue>,
     );
     setDraftFilters(resetFilters);
     onReset();
@@ -293,6 +311,7 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
       case "calendar":
         return (
           <CalendarSelect
+            label={field.showLabel ? field.label : undefined}
             key={field.key}
             value={value as Date | undefined}
             onChange={(val) =>
@@ -300,6 +319,7 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
             }
             placeholder={field.placeholder || `Pilih ${field.label}...`}
             containerClassName="w-full"
+            isClearable={field.isClearable}
           />
         );
 
@@ -372,7 +392,7 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
             >
               <span className="font-medium">{chip.label}:</span>
               <span>{chip.displayValue}</span>
-              {!chip.disabled && (
+              {!chip.disabled && chip.isClearable && (
                 <button
                   onClick={() => handleRemoveChip(chip.key)}
                   className="ml-1 hover:bg-blue-300 rounded-full p-0.5 transition-colors"
@@ -408,10 +428,14 @@ export function FilterPanel({ fields, onSearch, onReset, resultCount, initialVal
 
           <SheetFooter className="flex-shrink-0 border-t pt-4">
             <div className="flex gap-2 justify-end">
-              <Button variant="secondary" onClick={handleReset}>
-                <icons.RotateCcw size={16} />
-                <span>Reset</span>
-              </Button>
+              {activeFilterChips.every(
+                (chip) => chip.isClearable == true,
+              ) && (
+                <Button variant="secondary" onClick={handleReset}>
+                  <icons.RotateCcw size={16} />
+                  <span>Reset</span>
+                </Button>
+              )}
               <Button variant="default" onClick={handleSearch}>
                 <icons.Search size={16} />
                 <span>Terapkan</span>

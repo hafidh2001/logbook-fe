@@ -5,6 +5,9 @@ import type {
   TRekapPenilaianItem,
   IRekapLogbookListParams,
   TRekapLogbookItem,
+  IRekapReportListParams,
+  TRekapReportItem,
+  TRekapReportData,
 } from "@/types/rekap";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -24,8 +27,38 @@ const apiClient = axios.create({
   timeout: 30000,
 });
 
-// ============= Rekap Penilaian API =============
 export const rekapApi = {
+  // ============= Rekap Report API =============
+  async getRekapReportList(
+    params: IRekapReportListParams,
+  ): Promise<
+    ApiPaginationResponse<TRekapReportItem[]> &
+      Pick<TRekapReportData, "summary">
+  > {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetListRekapReport",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch rekap report");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  // ============= Rekap Penilaian API =============
   async getRekapPenilaianList(
     params: IRekapPenilaianListParams,
   ): Promise<ApiPaginationResponse<TRekapPenilaianItem[]>> {
