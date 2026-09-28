@@ -33,6 +33,7 @@ export interface RekapReportActions {
     onProgress?: (progress: number, offset: number, total: number) => void;
     signal?: AbortSignal;
   }) => Promise<TRekapReportItem[]>;
+  cancelExportReport: () => void;
   resetReport: () => void;
 }
 
