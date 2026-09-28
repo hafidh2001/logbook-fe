@@ -1,4 +1,3 @@
-// Raw data from backend
 export interface TKinerjaDPJPRaw {
   id: number;
   display_name: string;
@@ -47,8 +46,14 @@ export interface TPpdsRaw {
 }
 
 export interface TLogActivityRaw {
-  date: string;
-  message: string;
+  id_notifikasi: number;
+  log_aktivitas: string | null;
+  role_user: string | null;
+  sudah_dibaca: boolean | null;
+  tanggal_aktivitas: string | null;
+  tipe: string | null;
+  url_tujuan: string | null;
+  user_terkait: string | null;
 }
 
 export interface TLogbookByStatusRaw {

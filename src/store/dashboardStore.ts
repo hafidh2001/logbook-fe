@@ -391,7 +391,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
 
       // Transform to { message }
       const transformed: TLogActivity[] = rawData.map((item) => ({
-        message: item.message || "-",
+        message: `${item.log_aktivitas}` || "-",
       }));
 
       set({ logActivity: transformed, isLoading: false });
