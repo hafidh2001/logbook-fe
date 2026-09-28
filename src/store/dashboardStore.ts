@@ -305,7 +305,6 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     try {
       const response = await dashboardApi.getDashboardPPDS(user.id_client);
       const rawData = response.data;
-      console.log(rawData);
 
       // Calculate ppds active/inactive and staff count
       // Note: PostgreSQL returns boolean as 't'/'f' strings, not JS booleans
