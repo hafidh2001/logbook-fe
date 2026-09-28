@@ -1,6 +1,7 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
 import { StatusBadge } from "@/components/statusBadge";
 import { TMorbidityByUserDetail } from "@/types/morbidity";
+import { Fragment } from "react/jsx-runtime";
 
 interface Props {
   data: TMorbidityByUserDetail | null;
@@ -27,27 +28,32 @@ export const Status = ({ data }: Props) => {
         </div>
         <StatusBadge status={data?.status.toLowerCase() ?? null} />
       </div>
+      <hr />
       <br />
-      {data?.staff.map(
-        (
-          item: {
-            name: string | null;
-            role: string | null;
-            status: string | null;
-          },
-          index: number,
-        ) => (
-          <div key={index} className="flex items-center gap-4">
+      {data?.staff.map((item, index: number) => (
+        <Fragment key={index}>
+          <div className="flex items-center gap-4">
             <div className="flex-1">
               <span className="text-sm font-semibold text-gray-800 block">
                 {item.role ?? "-"}
               </span>
-              <span className="text-sm text-gray-600">{item.name ?? "-"}</span>
+              <span className="text-sm text-gray-600 block">
+                {item.name ?? "-"}
+              </span>
+              <div className="flex flex-row items-center">
+                <span className="text-sm text-gray-600">
+                  Catatan Verifikasi :{" "}
+                </span>
+                <span className="text-sm text-gray-600">
+                  {item.verify_notes ?? " -"}
+                </span>
+              </div>
             </div>
             <StatusBadge status={item.status ?? null} />
           </div>
-        ),
-      )}
+          {index !== data?.staff.length - 1 && <hr />}
+        </Fragment>
+      ))}
     </CardWrapper>
   );
 };

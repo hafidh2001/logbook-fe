@@ -46,5 +46,6 @@ export type TMorbidityByUserDetail = TMorbidityByUser & {
     name: string | null;
     role: string | null;
     status: string | null;
+    verify_notes: string | null;
   }>;
 };
