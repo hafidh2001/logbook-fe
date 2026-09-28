@@ -34,9 +34,9 @@ export default function MorbidityByUserDetailPage() {
     <div className="h-screen bg-gray-50 flex flex-col pt-[60px] lg:pt-0">
       <Topbar
         breadcrumbs={[
-          { label: "Morbidity", to: ROUTES.morbidity },
+          { label: "Morbiditas", to: ROUTES.morbidity },
           {
-            label: `Morbidity By ${data?.display_name ?? "User"}`,
+            label: `Morbiditas By ${data?.display_name ?? "User"}`,
             to: ROUTES.morbidityByUser(String(idUser)),
           },
           { label: "Detail" },

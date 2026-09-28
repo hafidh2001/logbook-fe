@@ -123,7 +123,7 @@ export default function MorbidityListPage() {
   return (
     <div className="h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
-        breadcrumbs={[{ label: "Morbidity", to: ROUTES.morbidity }]}
+        breadcrumbs={[{ label: "Morbiditas", to: ROUTES.morbidity }]}
         searchPlaceholder="Cari morbiditas..."
         onSearch={handleSearchChange}
         initialSearchValue={search}
