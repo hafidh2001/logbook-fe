@@ -305,6 +305,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     try {
       const response = await dashboardApi.getDashboardPPDS(user.id_client);
       const rawData = response.data;
+      console.log(rawData);
 
       // Calculate ppds active/inactive and staff count
       // Note: PostgreSQL returns boolean as 't'/'f' strings, not JS booleans
@@ -318,7 +319,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
           isShowTrue(item.is_show),
       ).length;
       const ppdsInactive = rawData.filter(
-        (item) => item.role_name === "ppds" && item.status === "Inactive",
+        (item) => item.role_name === "ppds" && ( item.status === "Inactive" || item.status === "Lulus"),
       ).length;
       const staffCount = rawData.filter(
         (item) =>
@@ -330,7 +331,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
       // Group by stage (filter out null)
       const stageMap = new Map<string, number>();
       rawData.forEach((item) => {
-        if (item.stage_name !== null) {
+        if (item.stage_name !== null && item.status === "Active") {
           stageMap.set(
             item.stage_name,
             (stageMap.get(item.stage_name) || 0) + 1,
@@ -346,7 +347,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
       // Group by stase (filter out null)
       const staseMap = new Map<string, number>();
       rawData.forEach((item) => {
-        if (item.stase_name !== null) {
+        if (item.stase_name !== null && item.status === "Active") {
           staseMap.set(
             item.stase_name,
             (staseMap.get(item.stase_name) || 0) + 1,
