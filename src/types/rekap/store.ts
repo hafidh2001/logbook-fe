@@ -22,12 +22,17 @@ export interface RekapReportState {
   // rekapPenilaianDetail: TRekapReportItem | null;
   isLoadingReport: boolean;
   // isLoadingDetail: boolean;
-  // isExporting: boolean;
+  isExportingReport: boolean;
   errorReport: Nullable<string>;
 }
 
 export interface RekapReportActions {
   loadRekapReport: (params: IRekapReportListParams) => Promise<void>;
+  loadExportRekapReport: (params: {
+    filterParams: Partial<IRekapReportListParams>;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TRekapReportItem[]>;
   resetReport: () => void;
 }
 

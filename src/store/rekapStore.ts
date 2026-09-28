@@ -20,7 +20,7 @@ const reportInitialState = {
   // rekapReportDetail: null as any | null,
   isLoadingReport: false,
   // isLoadingDetail: false,
-  // isExporting: false,
+  isExportingReport: false,
   errorReport: null as string | null,
 };
 
@@ -68,7 +68,7 @@ export const useRekapStore = create<
     set({ isLoadingReport: true, errorReport: null });
     try {
       const response = await rekapApi.getRekapReportList(params);
-      
+
       set({
         rekapReport: response.data,
         rekapReportSummary: response.summary,
@@ -89,6 +89,78 @@ export const useRekapStore = create<
         isLoadingReport: false,
       });
     }
+  },
+
+  loadExportRekapReport: async ({ filterParams, onProgress, signal }) => {
+    set({ isExportingReport: true });
+
+    try {
+      // Step 1: Get total count from first fetch
+      const firstResponse = await rekapApi.getRekapReportList({
+        id_client: filterParams.id_client!,
+        page: 1,
+        limit: 1,
+      });
+
+      // Check if cancelled before continuing
+      if (signal?.aborted) {
+        set({ isExportingReport: false });
+        throw new Error("EXPORT_CANCELLED");
+      }
+
+      const total = firstResponse.total;
+
+      if (total === 0) {
+        set({ isExportingReport: false });
+        return [];
+      }
+
+      // Step 2: Batch export with limit
+      const totalBatch = Math.ceil(total / EXPORT_LIMIT);
+      let allData: typeof firstResponse.data = [];
+
+      for (let i = 0; i < totalBatch; i++) {
+        // Check if cancelled before each batch
+        if (signal?.aborted) {
+          set({ isExportingReport: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        const response = await rekapApi.getRekapReportList({
+          id_client: filterParams.id_client!,
+          page: i + 1,
+          limit: EXPORT_LIMIT,
+          start_date: filterParams.start_date,
+          end_date: filterParams.end_date,
+        });
+
+        // Check if cancelled after each batch
+        if (signal?.aborted) {
+          set({ isExportingReport: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        allData.push(...response.data);
+
+        // Call progress callback
+        if (onProgress) {
+          onProgress(
+            Math.round(((i + 1) / totalBatch) * 100),
+            allData.length,
+            total,
+          );
+        }
+      }
+
+      set({ isExportingReport: false });
+      return allData;
+    } catch (error) {
+      set({ isExportingReport: false });
+      throw error;
+    }
+  },
+  cancelExportReport: () => {
+    set({ isExportingReport: false });
   },
 
   resetReport: () => set(reportInitialState),
