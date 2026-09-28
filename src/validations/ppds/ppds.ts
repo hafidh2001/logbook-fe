@@ -74,7 +74,7 @@ export const ppdsCreateSchema = z
     password: z
       .string()
       .min(1, "Password harus diisi")
-      .min(8, "Password minimal 8 karakter"),
+      .min(5, "Password minimal 5 karakter"),
     confirm_password: z.string().min(1, "Konfirmasi Password harus diisi"),
   })
   .refine((data) => data.password === data.confirm_password, {
@@ -90,7 +90,7 @@ export const ppdsChangePasswordSchema = z
     password: z
       .string()
       .min(1, "Password harus diisi")
-      .min(8, "Password minimal 8 karakter"),
+      .min(5, "Password minimal 5 karakter"),
     confirm_password: z.string().min(1, "Konfirmasi Password harus diisi"),
   })
   .refine((data) => data.password === data.confirm_password, {
