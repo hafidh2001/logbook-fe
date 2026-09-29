@@ -31,7 +31,12 @@ export default function StaffDetailPage() {
     resetDetail,
   } = useStaffStore();
 
-  const { hospitalOptions, fetchHospitalOptions } = useMasterStore();
+  const {
+    hospitalOptions,
+    roleStaffOptions,
+    fetchHospitalOptions,
+    fetchRoleStaffOptions,
+  } = useMasterStore();
 
   const { user } = useAuthStore();
 
@@ -39,8 +44,9 @@ export default function StaffDetailPage() {
   useEffect(() => {
     if (user?.id_client) {
       fetchHospitalOptions({ id_client: user.id_client });
+      fetchRoleStaffOptions({ id_client: user.id_client });
     }
-  }, [user?.id_client, fetchHospitalOptions]);
+  }, [user?.id_client, fetchHospitalOptions, fetchRoleStaffOptions]);
 
   useEffect(() => {
     if (idUser) {
@@ -71,6 +77,7 @@ export default function StaffDetailPage() {
         nim: selectedStaff.nim ?? "",
         address: selectedStaff.address ?? "",
         location: selectedStaff.location ?? "",
+        id_role: selectedStaff.id_role ?? 0,
       });
     }
   }, [selectedStaff, resetForm]);
@@ -85,6 +92,7 @@ export default function StaffDetailPage() {
         : null,
       id_user: Number(idUser),
       updated_by: user?.id ?? 0,
+      id_role: data.id_role ?? 0,
     };
 
     const success = await updateStaff(payload);
@@ -281,11 +289,31 @@ export default function StaffDetailPage() {
               {/* </div> */}
 
               {/* Row 5: Role (disabled) | Logbook (read-only + button) */}
-              <InputField
-                label="Role"
-                value={selectedStaff?.role_name || "-"}
-                disabled
-                placeholder="Role..."
+              <Controller
+                name="id_role"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-700">
+                      Role
+                    </label>
+                    <SingleSelect
+                      {...field}
+                      options={roleStaffOptions}
+                      value={
+                        roleStaffOptions.find(
+                          (opt) => opt.value === field.value,
+                        ) || null
+                      }
+                      onChange={(option) =>
+                        field.onChange(option?.value as number)
+                      }
+                      isSearchable={false}
+                      isClearable={false}
+                      errorMessage={errors.id_role?.message}
+                    />
+                  </div>
+                )}
               />
               <div className="flex items-end gap-2">
                 <div className="flex-1">

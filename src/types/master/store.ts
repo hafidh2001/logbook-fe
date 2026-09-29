@@ -10,6 +10,7 @@ export interface MasterState {
   ppdsActiveOptions: BasicSelectOpt<number>[];
   ppdsInactiveOptions: BasicSelectOpt<number>[];
   staffOptions: BasicSelectOpt<number>[];
+  roleStaffOptions: BasicSelectOpt<number>[];
   staseOptions: StaseSelectOpt[];
   stageOptions: BasicSelectOpt<number>[];
   semesterOptions: BasicSelectOpt<number>[];
@@ -34,6 +35,7 @@ export interface MasterActions {
   fetchStaffOptions: (
     params: Pick<IMasterUserParams, "id_client">,
   ) => Promise<void>;
+  fetchRoleStaffOptions: (params: IMasterParams) => Promise<void>;
   fetchStaseOptions: (params: IMasterParams) => Promise<void>;
   fetchStageOptions: (params: IMasterParams) => Promise<void>;
   fetchStageByStase: (params: { id_stase: number }) => Promise<void>;
