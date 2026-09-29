@@ -7,10 +7,17 @@ import type {
   TRekapReportItem,
   IRekapReportListParams,
   TRekapReportData,
+  TRekapReportLogbookDetail,
+  TRekapReportDetailData,
+  IRekapReportDetailParams,
 } from "@/types/rekap";
 
 // ============= Rekap Report Store =============
 export interface RekapReportState {
+  filterRekapReport: {
+    start_date: string;
+    end_date: string;
+  };
   rekapReport: TRekapReportItem[];
   rekapReportSummary: TRekapReportData["summary"];
   rekapReportPagination: {
@@ -19,14 +26,30 @@ export interface RekapReportState {
     total: number;
     pageCount: number;
   };
-  // rekapPenilaianDetail: TRekapReportItem | null;
   isLoadingReport: boolean;
-  // isLoadingDetail: boolean;
   isExportingReport: boolean;
+
+  rekapReportDetail: TRekapReportLogbookDetail[];
+  rekapReportDetailPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pageCount: number;
+  };
+  rekapReportDetailSummary: TRekapReportDetailData["summary"];
+  rekapReportDetailActivity: TRekapReportDetailData["activity"];
+  isLoadingReportDetail: boolean;
+  isExportingReportDetail: boolean;
+
   errorReport: Nullable<string>;
 }
 
 export interface RekapReportActions {
+  setFilterRekapReport: (filter: {
+    start_date: string;
+    end_date: string;
+  }) => void;
+
   loadRekapReport: (params: IRekapReportListParams) => Promise<void>;
   loadExportRekapReport: (params: {
     filterParams: Partial<IRekapReportListParams>;
@@ -35,6 +58,15 @@ export interface RekapReportActions {
   }) => Promise<TRekapReportItem[]>;
   cancelExportReport: () => void;
   resetReport: () => void;
+
+  loadRekapReportDetail: (params: IRekapReportDetailParams) => Promise<void>;
+  loadExportRekapReportDetail: (params: {
+    filterParams: Partial<IRekapReportDetailParams>;
+    onProgress?: (progress: number, offset: number, total: number) => void;
+    signal?: AbortSignal;
+  }) => Promise<TRekapReportLogbookDetail[]>;
+  cancelExportReportDetail: () => void;
+  resetReportDetail: () => void;
 }
 
 export type RekapReportStore = RekapReportState & RekapReportActions;

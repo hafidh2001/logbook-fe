@@ -8,6 +8,9 @@ import type {
   IRekapReportListParams,
   TRekapReportItem,
   TRekapReportData,
+  IRekapReportDetailParams,
+  TRekapReportLogbookDetail,
+  TRekapReportDetailData,
 } from "@/types/rekap";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -43,6 +46,37 @@ export const rekapApi = {
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Failed to fetch rekap report");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async getRekapReportDetail(
+    params: IRekapReportDetailParams,
+  ): Promise<
+    ApiPaginationResponse<TRekapReportLogbookDetail[]> &
+      Pick<TRekapReportDetailData, "summary" | "activity">
+  > {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetDetailRekapReport",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(
+          responseData.message || "Failed to fetch rekap report detail",
+        );
       }
 
       return responseData;
