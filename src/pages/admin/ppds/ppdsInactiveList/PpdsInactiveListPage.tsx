@@ -58,7 +58,7 @@ export default function PpdsInactiveListPage() {
   } = useUrlParams({
     defaultPage: 1,
     defaultLimit: DEFAULT_PAGE_SIZE,
-    filterKeys: ["ppds", "stase", "nim"],
+    filterKeys: ["ppds", "stase", "nim", "status"],
     searchDebounceMs: 500,
   });
 
@@ -66,6 +66,7 @@ export default function PpdsInactiveListPage() {
   const ppds = getNumberParam("ppds");
   const stase = getNumberParam("stase");
   const nim = filters.nim || undefined;
+  const status = filters.status || undefined;
 
   // ========== HANDLERS ==========
 
@@ -73,6 +74,7 @@ export default function PpdsInactiveListPage() {
     ppds?: number | null;
     stase?: number | null;
     nim?: string | null;
+    status?: string | null;
   }) => {
     setFilters(newFilters);
   };
@@ -100,8 +102,18 @@ export default function PpdsInactiveListPage() {
       ppds: ppds ?? undefined,
       stase: stase ?? undefined,
       nim: nim,
+      status: status ?? undefined,
     });
-  }, [page, limit, debouncedSearch, ppds, stase, nim, loadPpdsInactiveList]);
+  }, [
+    page,
+    limit,
+    debouncedSearch,
+    ppds,
+    stase,
+    nim,
+    status,
+    loadPpdsInactiveList,
+  ]);
 
   useEffect(() => {
     // IMPORTANT: This reset() MUST be called on unmount to clean up the store state.
@@ -126,6 +138,7 @@ export default function PpdsInactiveListPage() {
           ppds: ppds ?? null,
           stase: stase ?? null,
           nim: nim ?? null,
+          status: status ?? null,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);

@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useMasterStore } from "@/store/masterStore";
 import { useAuthStore } from "@/store/authStore";
 import { useSearchParams } from "react-router-dom";
+import { UserStatusEnum } from "@/types";
 
 type FilterChangeHandler = (filters: {
   ppds?: number | null;
@@ -22,22 +23,41 @@ export const Filter = ({
 }) => {
   const [searchParams] = useSearchParams();
 
-  const { ppdsInactiveOptions, staseOptions, fetchPPDSInactiveOptions, fetchStaseOptions } = useMasterStore();
+  const {
+    ppdsInactiveOptions,
+    staseOptions,
+    userStatusOptions,
+    fetchPPDSInactiveOptions,
+    fetchStaseOptions,
+    fetchUserStatusOptions,
+  } = useMasterStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
     if (user?.id_client) {
       fetchPPDSInactiveOptions({ id_client: user.id_client });
       fetchStaseOptions({ id_client: user.id_client });
+      fetchUserStatusOptions();
     }
-  }, [user?.id_client, fetchPPDSInactiveOptions, fetchStaseOptions]);
+  }, [
+    user?.id_client,
+    fetchPPDSInactiveOptions,
+    fetchStaseOptions,
+    fetchUserStatusOptions,
+  ]);
 
   // Read current filter values from URL
-  const currentFilters = useMemo(() => ({
-    ppds: searchParams.get("ppds") ? Number(searchParams.get("ppds")) : null,
-    stase: searchParams.get("stase") ? Number(searchParams.get("stase")) : null,
-    nim: searchParams.get("nim") || undefined,
-  }), [searchParams]);
+  const currentFilters = useMemo(
+    () => ({
+      ppds: searchParams.get("ppds") ? Number(searchParams.get("ppds")) : null,
+      stase: searchParams.get("stase")
+        ? Number(searchParams.get("stase"))
+        : null,
+      nim: searchParams.get("nim") || undefined,
+      status: searchParams.get("status") ? Number(searchParams.get("status")) : null,
+    }),
+    [searchParams],
+  );
 
   const filterFields: FilterFieldConfig[] = [
     {
@@ -60,6 +80,15 @@ export const Filter = ({
       type: "input",
       placeholder: "Masukkan NIM...",
     },
+    {
+      key: "status",
+      label: "Status",
+      type: "select",
+      options: userStatusOptions.filter(
+        (opt) => opt.value !== UserStatusEnum.ACTIVE,
+      ),
+      placeholder: "Pilih Status...",
+    },
   ];
 
   // Build sync values from URL params - these will sync when URL changes (back navigation)
@@ -68,21 +97,35 @@ export const Filter = ({
 
     // PPDS option from URL
     if (currentFilters.ppds) {
-      const ppdsOpt = ppdsInactiveOptions.find(opt => opt.value === currentFilters.ppds);
+      const ppdsOpt = ppdsInactiveOptions.find(
+        (opt) => opt.value === currentFilters.ppds,
+      );
       if (ppdsOpt) values.ppds = ppdsOpt;
     }
+
     // Stase option from URL
     if (currentFilters.stase) {
-      const staseOpt = staseOptions.find(opt => opt.value === currentFilters.stase);
+      const staseOpt = staseOptions.find(
+        (opt) => opt.value === currentFilters.stase,
+      );
       if (staseOpt) values.stase = staseOpt;
     }
+
     // NIM is an input field, pass as string
     if (currentFilters.nim) {
       values.nim = currentFilters.nim;
     }
 
+    // Status option from URL
+    if (currentFilters.status) {
+      const userStatusOpt = userStatusOptions.find(
+        (opt) => opt.value === String(currentFilters.status),
+      );
+      if (userStatusOpt) values.status = userStatusOpt;
+    }
+
     return Object.keys(values).length > 0 ? values : undefined;
-  }, [currentFilters, ppdsInactiveOptions, staseOptions]);
+  }, [currentFilters, ppdsInactiveOptions, staseOptions, userStatusOptions]);
 
   const handleSearch = (data: Record<string, FilterValue>) => {
     // Helper to convert select FilterValue to number value
@@ -105,8 +148,8 @@ export const Filter = ({
       ppds: getSelectValue("ppds"),
       stase: getSelectValue("stase"),
       nim: getStringValue("nim"),
+      status: getSelectValue("status"),
     };
-
     onChange(filters);
   };
 
