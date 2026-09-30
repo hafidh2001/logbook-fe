@@ -21,6 +21,8 @@ import { exportToCSV, exportToExcel, ExportColumn } from "@/functions/export";
 import { useUrlParams } from "@/hooks/useUrlParams";
 import type { TRekapLogbookItem } from "@/types/rekap";
 import { StatusBadge } from "@/components/statusBadge";
+import { rekapApi } from "@/services/rekapApi";
+import { FormStase } from "@/pages/admin/rekap/rekapLogbook/_components/FormStase";
 
 export default function RekapLogbookPage() {
   const { width } = useWindowDimensions();
@@ -38,6 +40,11 @@ export default function RekapLogbookPage() {
     cancelExportLogbook,
     resetLogbook,
   } = useRekapStore();
+
+  // select
+  const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
+  const [isLoadingFormStase, setIsLoadingFormStase] = useState<boolean>(false);
+  console.log({ selectedIds });
 
   // Export state
   const [showExportModal, setShowExportModal] = useState(false);
@@ -265,7 +272,11 @@ export default function RekapLogbookPage() {
   };
 
   const handleRowClick = (row: Row<TRekapLogbookItem>) => {
-    navigate(ROUTES.rekapLogbookDetail(String(`${row.original.id}-${row.original.staff}`)));
+    navigate(
+      ROUTES.rekapLogbookDetail(
+        String(`${row.original.id}-${row.original.staff}`),
+      ),
+    );
   };
 
   const handleView = (e: React.MouseEvent, id: number, staff: string) => {
@@ -434,6 +445,15 @@ export default function RekapLogbookPage() {
           {/* Filter Section */}
           <Filter onChange={handleFilterChange} onReset={handleFilterReset} />
 
+          {selectedIds.length > 0 && (
+            <FormStase
+              selectedIds={selectedIds}
+              setSelectedIds={setSelectedIds}
+              isLoadingFormStase={isLoadingFormStase}
+              setIsLoadingFormStase={setIsLoadingFormStase}
+            />
+          )}
+
           {/* Table Section */}
           <div className="flex-1 min-h-0 bg-white rounded-lg border overflow-hidden">
             <BaseTable
@@ -453,6 +473,21 @@ export default function RekapLogbookPage() {
               onRowClick={handleRowClick}
               noDataText="Tidak ada data logbook"
               className="h-full"
+              selection={{
+                enabled: true,
+                selectedIds,
+                onSelectedIdsChange: setSelectedIds,
+                totalCount: rekapLogbookPagination.total,
+                onSelectAll: async () => {
+                  // panggil API yang sama tapi TANPA limit/pagination
+                  const res = await rekapApi.getRekapLogbookList({
+                    ...filters,
+                    id_client: user?.id_client ?? 0,
+                    limit: rekapLogbookPagination.total,
+                  });
+                  return res.data.map((row) => `${row.id}-${row.staff}`);
+                },
+              }}
             />
           </div>
         </div>
