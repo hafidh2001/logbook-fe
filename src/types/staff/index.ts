@@ -41,6 +41,7 @@ export interface IStaffListParams {
   search?: Nullable<string>;
   staff?: Nullable<number>;
   nim?: Nullable<string>;
+  role?: Nullable<string>;
 }
 
 // Payload for create Staff (matches PHP backend $post keys)

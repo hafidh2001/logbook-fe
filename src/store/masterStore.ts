@@ -94,17 +94,30 @@ export const useMasterStore = create<MasterStore>((set) => ({
   fetchStaffOptions: async (params) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await masterApi.getMasterUser({
+      const responseStaff = await masterApi.getMasterUser({
         role_name: RoleEnum.STAFF,
         ...params,
       });
-      const arr = response.data.map((item) => {
+      const arrStaff = responseStaff.data.map((item) => {
         return {
           label: item.name,
           value: item.id,
         };
       });
-      set({ staffOptions: arr, isLoading: false });
+      const responseStaffJejaring = await masterApi.getMasterUser({
+        role_name: RoleEnum.STAFF_JEJARING,
+        ...params,
+      });
+      const arrStaffJejaring = responseStaffJejaring.data.map((item) => {
+        return {
+          label: item.name,
+          value: item.id,
+        };
+      });
+      set({
+        staffOptions: [...arrStaff, ...arrStaffJejaring],
+        isLoading: false,
+      });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Terjadi kesalahan";

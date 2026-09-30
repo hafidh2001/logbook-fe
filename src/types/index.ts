@@ -27,6 +27,7 @@ export interface ApiPaginationResponse<T> extends ApiResponse<T> {
 export enum RoleEnum {
   PPDS = "ppds",
   STAFF = "staff",
+  STAFF_JEJARING = "staff jejaring",
   INSTITUTION = "institution",
   PATIENTS = "patients",
 }
