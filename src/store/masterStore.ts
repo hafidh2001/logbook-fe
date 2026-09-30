@@ -13,6 +13,7 @@ const initialState = {
   ppdsActiveOptions: [] as BasicSelectOpt<number>[],
   ppdsInactiveOptions: [] as BasicSelectOpt<number>[],
   staffOptions: [] as BasicSelectOpt<number>[],
+  roleStaffOptions: [] as BasicSelectOpt<number>[],
   staseOptions: [] as StaseSelectOpt[],
   stageOptions: [] as BasicSelectOpt<number>[],
   semesterOptions: [] as BasicSelectOpt<number>[],
@@ -93,17 +94,48 @@ export const useMasterStore = create<MasterStore>((set) => ({
   fetchStaffOptions: async (params) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await masterApi.getMasterUser({
+      const responseStaff = await masterApi.getMasterUser({
         role_name: RoleEnum.STAFF,
         ...params,
       });
+      const arrStaff = responseStaff.data.map((item) => {
+        return {
+          label: item.name,
+          value: item.id,
+        };
+      });
+      const responseStaffJejaring = await masterApi.getMasterUser({
+        role_name: RoleEnum.STAFF_JEJARING,
+        ...params,
+      });
+      const arrStaffJejaring = responseStaffJejaring.data.map((item) => {
+        return {
+          label: item.name,
+          value: item.id,
+        };
+      });
+      set({
+        staffOptions: [...arrStaff, ...arrStaffJejaring],
+        isLoading: false,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan";
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  fetchRoleStaffOptions: async (params) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await masterApi.getMasterRoleStaff({ ...params });
       const arr = response.data.map((item) => {
         return {
           label: item.name,
           value: item.id,
         };
       });
-      set({ staffOptions: arr, isLoading: false });
+      set({ roleStaffOptions: arr, isLoading: false });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Terjadi kesalahan";

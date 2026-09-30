@@ -52,12 +52,13 @@ export default function StaffListPage() {
   } = useUrlParams({
     defaultPage: 1,
     defaultLimit: DEFAULT_PAGE_SIZE,
-    filterKeys: ["staff", "nim"],
+    filterKeys: ["staff", "nim", "role"],
     searchDebounceMs: 500,
   });
 
   // Extract filter values from URL
   const staff = getNumberParam("staff");
+  const role = filters.role || undefined;
   const nim = filters.nim || undefined;
 
   // Export state
@@ -72,6 +73,7 @@ export default function StaffListPage() {
   const handleFilterChange = (newFilters: {
     staff?: number | null;
     nim?: string | null;
+    role?: string | null;
   }) => {
     setFilters(newFilters);
   };
@@ -97,8 +99,9 @@ export default function StaffListPage() {
       search: debouncedSearch || undefined,
       staff: staff ?? undefined,
       nim: nim ?? undefined,
+      role: role ?? undefined,
     });
-  }, [page, limit, debouncedSearch, staff, nim, loadStaffList]);
+  }, [page, limit, debouncedSearch, staff, nim, role, loadStaffList]);
 
   useEffect(() => {
     return () => reset();
@@ -128,6 +131,7 @@ export default function StaffListPage() {
         filterParams: {
           staff: staff ?? undefined,
           nim: nim ?? undefined,
+          role: role ?? undefined,
         },
         onProgress: (progress, offset) => {
           setExportProgress(progress);
@@ -239,6 +243,7 @@ export default function StaffListPage() {
           limit,
           staff: staff ?? undefined,
           nim: nim ?? undefined,
+          role: role ?? undefined,
         });
       } else {
         const errorMessage = useStaffStore.getState().error;

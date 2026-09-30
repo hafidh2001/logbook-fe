@@ -6,9 +6,15 @@ import type {
   RekapReportStore,
 } from "@/types/rekap/store";
 import { EXPORT_LIMIT } from "@/constants/export";
+import dayjs from "dayjs";
 
 // ============= Rekap Report Store =============
 const reportInitialState = {
+  filterRekapReport: {
+    start_date: "",
+    end_date: "",
+  },
+
   rekapReport: [] as any[],
   rekapReportSummary: null as any | null,
   rekapReportPagination: {
@@ -17,10 +23,21 @@ const reportInitialState = {
     total: 0,
     pageCount: 0,
   },
-  // rekapReportDetail: null as any | null,
   isLoadingReport: false,
-  // isLoadingDetail: false,
   isExportingReport: false,
+
+  rekapReportDetail: [] as any[],
+  rekapReportDetailPagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    pageCount: 0,
+  },
+  rekapReportDetailSummary: null as any | null,
+  rekapReportDetailActivity: [] as any[],
+  isLoadingReportDetail: false,
+  isExportingReportDetail: false,
+
   errorReport: null as string | null,
 };
 
@@ -63,13 +80,29 @@ export const useRekapStore = create<
   ...reportInitialState,
   ...penilaianInitialState,
   ...logbookInitialState,
-  // ============= Rekap Penilaian Actions =============
+
+  setFilterRekapReport: async (filter) => {
+    set({
+      filterRekapReport: {
+        start_date: filter.start_date,
+        end_date: filter.end_date,
+      },
+    });
+  },
+
+  // ============= Rekap Report Actions =============
   loadRekapReport: async (params) => {
     set({ isLoadingReport: true, errorReport: null });
     try {
       const response = await rekapApi.getRekapReportList(params);
 
       set({
+        filterRekapReport: {
+          start_date: dayjs(params.start_date)
+            .locale("id")
+            .format("YYYY-MM-DD"),
+          end_date: dayjs(params.end_date).locale("id").format("YYYY-MM-DD"),
+        },
         rekapReport: response.data,
         rekapReportSummary: response.summary,
         rekapReportPagination: {
@@ -164,6 +197,131 @@ export const useRekapStore = create<
   },
 
   resetReport: () => set(reportInitialState),
+
+  loadRekapReportDetail: async (params) => {
+    set({ isLoadingReportDetail: true, errorReport: null });
+    try {
+      const response = await rekapApi.getRekapReportDetail(params);
+
+      set({
+        rekapReportDetail: response.data,
+        rekapReportDetailSummary: response.summary,
+        rekapReportDetailActivity: response.activity,
+        rekapReportDetailPagination: {
+          page: response.pagination.page,
+          limit: response.pagination.limit,
+          total: response.total,
+          pageCount: Math.ceil(response.total / response.pagination.limit),
+        },
+        filterRekapReport: {
+          start_date: dayjs(response.summary.periode_mulai)
+            .locale("id")
+            .format("YYYY-MM-DD"),
+          end_date: dayjs(response.summary.periode_selesai)
+            .locale("id")
+            .format("YYYY-MM-DD"),
+        },
+        isLoadingReportDetail: false,
+      });
+    } catch (error) {
+      set({
+        errorReport:
+          error instanceof Error
+            ? error.message
+            : "Failed to load rekap report",
+        isLoadingReportDetail: false,
+      });
+    }
+  },
+
+  loadExportRekapReportDetail: async ({ filterParams, onProgress, signal }) => {
+    set({ isExportingReportDetail: true });
+
+    try {
+      // Step 1: Get total count from first fetch
+      const firstResponse = await rekapApi.getRekapReportDetail({
+        id: Number(filterParams.id),
+        id_client: filterParams.id_client!,
+        page: 1,
+        limit: 1,
+      });
+
+      // Check if cancelled before continuing
+      if (signal?.aborted) {
+        set({ isExportingReportDetail: false });
+        throw new Error("EXPORT_CANCELLED");
+      }
+
+      const total = firstResponse.total;
+
+      if (total === 0) {
+        set({ isExportingReportDetail: false });
+        return [];
+      }
+
+      // Step 2: Batch export with limit
+      const totalBatch = Math.ceil(total / EXPORT_LIMIT);
+      let allData: typeof firstResponse.data = [];
+
+      for (let i = 0; i < totalBatch; i++) {
+        // Check if cancelled before each batch
+        if (signal?.aborted) {
+          set({ isExportingReportDetail: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        const response = await rekapApi.getRekapReportDetail({
+          id: Number(filterParams.id),
+          id_client: filterParams.id_client!,
+          page: i + 1,
+          limit: EXPORT_LIMIT,
+          start_date: filterParams.start_date,
+          end_date: filterParams.end_date,
+        });
+
+        // Check if cancelled after each batch
+        if (signal?.aborted) {
+          set({ isExportingReportDetail: false });
+          throw new Error("EXPORT_CANCELLED");
+        }
+
+        allData.push(...response.data);
+
+        // Call progress callback
+        if (onProgress) {
+          onProgress(
+            Math.round(((i + 1) / totalBatch) * 100),
+            allData.length,
+            total,
+          );
+        }
+      }
+
+      set({ isExportingReportDetail: false });
+      return allData;
+    } catch (error) {
+      set({ isExportingReportDetail: false });
+      throw error;
+    }
+  },
+
+  cancelExportReportDetail: () => {
+    set({ isExportingReportDetail: false });
+  },
+
+  resetReportDetail: () =>
+    set({
+      rekapReportDetail: [] as any[],
+      rekapReportDetailPagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        pageCount: 0,
+      },
+      rekapReportDetailSummary: null as any | null,
+      rekapReportDetailActivity: [] as any[],
+      isLoadingReportDetail: false,
+    }),
 
   // ============= Rekap Penilaian Actions =============
   loadRekapPenilaian: async (params) => {

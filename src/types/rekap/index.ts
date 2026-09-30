@@ -50,6 +50,48 @@ export type TRekapReportData = {
   };
 };
 
+export type TRekapReportActivity = {
+  aktivitas: Nullable<string>;
+  jumlah: Nullable<number>;
+};
+
+export type TRekapReportLogbookDetail = {
+  id_logbook: number;
+  tanggal: Nullable<string>;
+  aktivitas: Nullable<string>;
+  judul: Nullable<string>;
+  stase: Nullable<string>;
+  status: Nullable<string>;
+};
+
+export interface IRekapReportDetailParams {
+  id: number;
+  id_client: number;
+  page?: number;
+  limit?: number;
+  start_date?: Nullable<string>;
+  end_date?: Nullable<string>;
+}
+
+export type TRekapReportDetailData = {
+  summary: {
+    ppds: Nullable<string>;
+    periode_mulai: Nullable<string>;
+    periode_selesai: Nullable<string>;
+    total_logbooks: Nullable<number>;
+    semester: Nullable<string>;
+    status: Nullable<string>;
+  };
+  activity: TRekapReportActivity[];
+  list: TRekapReportLogbookDetail[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pageCount: number;
+  };
+};
+
 // ============= Rekap Penilaian Types =============
 export type TRekapPenilaianItem = {
   id_logbook: number;

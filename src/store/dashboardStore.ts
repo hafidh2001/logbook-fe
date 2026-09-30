@@ -318,7 +318,9 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
           isShowTrue(item.is_show),
       ).length;
       const ppdsInactive = rawData.filter(
-        (item) => item.role_name === "ppds" && ( item.status === "Inactive" || item.status === "Lulus"),
+        (item) =>
+          item.role_name === "ppds" &&
+          (item.status === "Inactive" || item.status === "Lulus"),
       ).length;
       const staffCount = rawData.filter(
         (item) =>
@@ -528,7 +530,11 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     }
   },
 
-  loadExportUnverifiedLogbookList: async ({ filterParams, onProgress, signal }) => {
+  loadExportUnverifiedLogbookList: async ({
+    filterParams,
+    onProgress,
+    signal,
+  }) => {
     set({ isExporting: true });
 
     try {
@@ -579,7 +585,11 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
 
         // Call progress callback
         if (onProgress) {
-          onProgress(Math.round(((i + 1) / totalBatch) * 100), allData.length, total);
+          onProgress(
+            Math.round(((i + 1) / totalBatch) * 100),
+            allData.length,
+            total,
+          );
         }
       }
 

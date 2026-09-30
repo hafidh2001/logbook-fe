@@ -73,12 +73,12 @@ export const Filter = ({
     }),
   );
 
-  const activityNameOptions: BasicSelectOpt<string>[] = activityOptions.map(
-    (opt) => ({
+  const activityNameOptions: BasicSelectOpt<string>[] = activityOptions
+    .filter((opt) => opt.label != "Stase")
+    .map((opt) => ({
       label: String(opt.label),
       value: String(opt.label),
-    }),
-  );
+    }));
 
   const staseNameOptions: BasicSelectOpt<string>[] = staseOptions.map(
     (opt) => ({

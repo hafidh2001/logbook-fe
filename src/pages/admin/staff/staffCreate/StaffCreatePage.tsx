@@ -27,14 +27,20 @@ export default function StaffCreatePage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { hospitalOptions, fetchHospitalOptions } = useMasterStore();
+  const {
+    hospitalOptions,
+    roleStaffOptions,
+    fetchHospitalOptions,
+    fetchRoleStaffOptions,
+  } = useMasterStore();
 
   // Initial load
   useEffect(() => {
     if (user?.id_client) {
       fetchHospitalOptions({ id_client: user.id_client });
+      fetchRoleStaffOptions({ id_client: user.id_client });
     }
-  }, [user?.id_client, fetchHospitalOptions]);
+  }, [user?.id_client, fetchHospitalOptions, fetchRoleStaffOptions]);
 
   const {
     control,
@@ -52,6 +58,7 @@ export default function StaffCreatePage() {
       address: "",
       password: "",
       confirm_password: "",
+      id_role: null,
     },
   });
 
@@ -63,6 +70,7 @@ export default function StaffCreatePage() {
         : null,
       id_client: user?.id_client ?? 0,
       created_by: user?.id ?? 0,
+      id_role: data.id_role ?? 0,
     };
 
     const success = await createStaff(payload);
@@ -312,6 +320,33 @@ export default function StaffCreatePage() {
                         {errors.confirm_password?.message}
                       </p>
                     )}
+                  </div>
+                )}
+              />
+
+              <Controller
+                name="id_role"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-700">
+                      Role
+                    </label>
+                    <SingleSelect
+                      {...field}
+                      options={roleStaffOptions}
+                      value={
+                        roleStaffOptions.find(
+                          (opt) => opt.value === field.value,
+                        ) || null
+                      }
+                      onChange={(option) =>
+                        field.onChange(option?.value as number)
+                      }
+                      isSearchable={false}
+                      isClearable={false}
+                      errorMessage={errors.id_role?.message}
+                    />
                   </div>
                 )}
               />

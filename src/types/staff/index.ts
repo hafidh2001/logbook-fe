@@ -10,6 +10,7 @@ export type TStaff = {
   location: Nullable<string>;
   date_of_birth: Nullable<string>;
   nim: Nullable<string>;
+  id_role: number;
   role_name: Nullable<string>;
   stase_name: Nullable<string>;
   total_logbook: number;
@@ -29,6 +30,7 @@ export interface IStaffPayload {
   location?: Nullable<string>;
   date_of_birth?: Nullable<string>;
   nim?: Nullable<string>;
+  id_role: number;
 }
 
 export interface IStaffListParams {
@@ -39,6 +41,7 @@ export interface IStaffListParams {
   search?: Nullable<string>;
   staff?: Nullable<number>;
   nim?: Nullable<string>;
+  role?: Nullable<string>;
 }
 
 // Payload for create Staff (matches PHP backend $post keys)
@@ -55,6 +58,7 @@ export interface IStaffCreatePayload {
   location?: Nullable<string>;
   date_of_birth?: Nullable<string>;
   nim?: Nullable<string>;
+  id_role: number;
 }
 
 // Logbook types for Staff
@@ -66,7 +70,7 @@ export type TStaffLogbook = {
   verified_status: Nullable<string>;
   ppds_name: Nullable<string>;
   nim: Nullable<string>;
-  action_name: Nullable<string>
+  action_name: Nullable<string>;
   hospital_name: Nullable<string>;
   semester: Nullable<string>;
   stase_name: Nullable<string>;

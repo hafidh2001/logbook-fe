@@ -31,6 +31,19 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Pagination } from "./Pagination";
+import { Checkbox } from "@/components/ui/checkbox";
+
+export interface SelectionConfig<T> {
+  enabled: boolean;
+  selectedIds: Array<string | number>;
+  onSelectedIdsChange: (ids: Array<string | number>) => void;
+  getId?: (row: T, index: number) => string | number;
+  /** total record sesuai filter aktif — dipakai buat tau apakah "semua" sudah kepilih */
+  totalCount?: number;
+  /** fetch SEMUA id tanpa limit/pagination, dipanggil saat user klik "select all" */
+  onSelectAll?: () => Promise<Array<string | number>>;
+  isSelectAllLoading?: boolean;
+}
 
 // Extended ColumnDef type with alignment support
 export type ExtendedColumnDef<T> = ColumnDef<T> & {
@@ -67,7 +80,7 @@ export type TableMeta = {
   pageCount?: number;
 };
 
-// Enhanced interface based on Rapidsense BaseTable
+// Enhanced interface
 interface BaseTableProps<
   T extends Record<string, any>,
   COL extends Exclude<keyof T, symbol | number>,
@@ -91,6 +104,7 @@ interface BaseTableProps<
   className?: string;
   meta?: TableMeta;
   onPaginationChange?: (pageIndex: number, pageSize: number) => void;
+  selection?: SelectionConfig<T>;
 }
 
 export const BaseTable = <
@@ -253,6 +267,77 @@ export const BaseTable = <
     return 1;
   };
 
+  // Checkbox
+  const [isFetchingAll, setIsFetchingAll] = useState(false);
+
+  const getSelectionId = useCallback(
+    (row: T, index: number): string | number => {
+      if (opt.selection?.getId) return opt.selection.getId(row, index);
+      if (opt.getRowId) return opt.getRowId(row, index);
+      return (row as any).id ?? index;
+    },
+    [opt.selection, opt.getRowId],
+  );
+
+  const idsOnCurrentPage = useMemo(
+    () => opt.data.map((row, idx) => getSelectionId(row, idx)),
+    [opt.data, getSelectionId],
+  );
+
+  const handleToggleRow = useCallback(
+    (id: string | number) => {
+      if (!opt.selection) return;
+      const { selectedIds, onSelectedIdsChange } = opt.selection;
+      const isSelected = selectedIds.includes(id);
+      onSelectedIdsChange(
+        isSelected
+          ? selectedIds.filter((sid) => sid !== id)
+          : [...selectedIds, id],
+      );
+    },
+    [opt.selection],
+  );
+
+  const handleToggleAll = useCallback(async () => {
+    if (!opt.selection) return;
+    const { selectedIds, onSelectedIdsChange, onSelectAll, totalCount } =
+      opt.selection;
+
+    const hasGlobalTotal = totalCount !== undefined;
+    const isAllSelected = hasGlobalTotal
+      ? totalCount! > 0 && selectedIds.length === totalCount
+      : idsOnCurrentPage.length > 0 &&
+        idsOnCurrentPage.every((id) => selectedIds.includes(id));
+
+    // Sudah full-checked -> uncheck semua
+    if (isAllSelected) {
+      onSelectedIdsChange(
+        hasGlobalTotal
+          ? []
+          : selectedIds.filter((id) => !idsOnCurrentPage.includes(id)),
+      );
+      return;
+    }
+
+    // Belum full / indeterminate -> select all
+    if (onSelectAll) {
+      try {
+        setIsFetchingAll(true);
+        const allIds = await onSelectAll(); // <-- ini yg fetch API tanpa limit
+        onSelectedIdsChange(allIds);
+      } catch (err) {
+        console.error("Gagal fetch semua data untuk select all:", err);
+      } finally {
+        setIsFetchingAll(false);
+      }
+    } else {
+      // fallback kalau parent nggak kasih onSelectAll: select yg ke-load di page ini aja
+      onSelectedIdsChange(
+        Array.from(new Set([...selectedIds, ...idsOnCurrentPage])),
+      );
+    }
+  }, [opt.selection, idsOnCurrentPage]);
+
   // Enhanced column processing - uses context.table to avoid stale closure
   const visibleColumns = useMemo<ColumnDef<T>[]>(() => {
     let processedColumns: ColumnDef<T>[] = [];
@@ -346,6 +431,52 @@ export const BaseTable = <
       } as ColumnDef<T>);
     }
 
+    if (opt.selection?.enabled) {
+      const sel = opt.selection;
+      const hasGlobalTotal = sel.totalCount !== undefined;
+      const isAllSelected = hasGlobalTotal
+        ? sel.totalCount! > 0 && sel.selectedIds.length === sel.totalCount
+        : idsOnCurrentPage.length > 0 &&
+          idsOnCurrentPage.every((id) => sel.selectedIds.includes(id));
+      const isIndeterminate = sel.selectedIds.length > 0 && !isAllSelected;
+
+      filteredColumns.unshift({
+        id: "select",
+        size: 56,
+        minSize: 56,
+        maxSize: 56,
+        header: () => (
+          <div className="flex items-center justify-center ml-2 mr-5">
+            <Checkbox
+              checked={
+                isAllSelected ? true : isIndeterminate ? "indeterminate" : false
+              }
+              onCheckedChange={handleToggleAll}
+              disabled={isFetchingAll || sel.isSelectAllLoading}
+              aria-label="Select all rows"
+              className="border-white data-[state=checked]:bg-white data-[state=checked]:text-blue-600"
+            />
+          </div>
+        ),
+        cell: ({ row }) => {
+          const id = getSelectionId(row.original, row.index);
+          const checked = sel.selectedIds.includes(id);
+          return (
+            <div
+              className="flex items-center justify-center ml-2 mr-5"
+              onClick={(e) => e.stopPropagation()} // biar gak trigger onRowClick / expand
+            >
+              <Checkbox
+                checked={checked}
+                onCheckedChange={() => handleToggleRow(id)}
+                aria-label={`Select row ${id}`}
+              />
+            </div>
+          );
+        },
+      } as ColumnDef<T>);
+    }
+
     // Add expansion column if enabled
     if (opt.renderExpansion) {
       filteredColumns.push({
@@ -376,6 +507,12 @@ export const BaseTable = <
     opt.data,
     searchParams,
     pagination.pageSize,
+    opt.selection, // checkbox
+    idsOnCurrentPage, // checkbox
+    isFetchingAll, // checkbox
+    handleToggleAll, // checkbox
+    handleToggleRow, // checkbox
+    getSelectionId, // checkbox
   ]);
 
   // Build table instance
