@@ -5,6 +5,7 @@ import type {
   TStaseDetail,
   IStaseCreatePayload,
   IStaseUpdatePayload,
+  TMilestoneMorbiditasUndoInfo,
 } from "./index";
 
 export interface StaseData {
@@ -26,6 +27,11 @@ export interface StaseState {
   error: Nullable<string>;
   success: Nullable<string>;
   hasInitialized: boolean;
+  // Undo state
+  undoInfo: TMilestoneMorbiditasUndoInfo | null;
+  isLoadingUndo: boolean;
+  isExecutingUndo: boolean;
+  undoError: Nullable<string>;
 }
 
 export interface StaseActions {
@@ -40,6 +46,10 @@ export interface StaseActions {
     signal?: AbortSignal;
   }) => Promise<TStaseListItem[]>;
   cancelExport: () => void;
+  // Undo actions
+  fetchUndoInfo: (id_user: number) => Promise<void>;
+  executeUndo: (id_user: number) => Promise<boolean>;
+  clearUndoInfo: () => void;
   reset: () => void;
   resetDetail: () => void;
 }

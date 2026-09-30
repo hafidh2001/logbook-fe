@@ -40,6 +40,23 @@ export interface IStaseCreatePayload {
   created_by: number;
 }
 
+export interface TMilestoneMorbiditasUndoInfo {
+  id_user: number;
+  display_name?: string;
+  can_undo: boolean;
+  reason?: string | null;
+  current_semester_id?: number;
+  current_semester_name?: string;
+  current_active_points?: number;
+  restore_semester_id?: number;
+  restore_semester_name?: string;
+  restore_stase_id?: number;
+  restore_stase_name?: string;
+  restore_stage_id?: number;
+  restore_stage_name?: string;
+  restore_points?: number;
+}
+
 export interface IStaseUpdatePayload extends Omit<
   IStaseCreatePayload,
   "created_by"

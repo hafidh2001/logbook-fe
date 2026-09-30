@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { ApiResponse, ApiPaginationResponse } from "@/types";
-import type { TStaseListItem, TStaseDetail, IStaseListParams, IStaseCreatePayload, IStaseUpdatePayload } from "@/types/stase";
+import type { TStaseListItem, TStaseDetail, IStaseListParams, IStaseCreatePayload, IStaseUpdatePayload, TMilestoneMorbiditasUndoInfo } from "@/types/stase";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
@@ -128,6 +128,68 @@ export const staseApi = {
 
       if (responseData.status === false) {
         throw new Error(responseData.message || "Failed to update");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Get undo preview info for a user's milestone/morbiditas semester.
+   */
+  async getMorbiditasUndoInfo(params: {
+    created_by: number;
+    id_client: number;
+    id_user: number;
+  }): Promise<ApiResponse<TMilestoneMorbiditasUndoInfo>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetMorbiditasUndoInfo",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to fetch undo info");
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Execute undo of milestone/morbiditas semester.
+   */
+  async executeMorbiditasUndo(params: {
+    created_by: number;
+    id_client: number;
+    id_user: number;
+  }): Promise<ApiResponse<null>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "UndoMorbiditasStase",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to undo");
       }
 
       return responseData;

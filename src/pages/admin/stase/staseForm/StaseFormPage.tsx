@@ -17,7 +17,7 @@ import {
 import { useStaseStore } from "@/store/staseStore";
 import { useMasterStore } from "@/store/masterStore";
 import { useAuthStore } from "@/store/authStore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import dayjs from "dayjs";
 import { showToast } from "@/utils/toast";
 import { ConfirmationModal } from "@/components/confirmationModal";
@@ -36,6 +36,14 @@ export default function StaseFormPage() {
     updateStase,
     deleteStase,
     resetDetail,
+    // Undo
+    undoInfo,
+    isLoadingUndo,
+    isExecutingUndo,
+    undoError,
+    fetchUndoInfo,
+    executeUndo,
+    clearUndoInfo,
   } = useStaseStore();
 
   const {
@@ -67,8 +75,11 @@ export default function StaseFormPage() {
     if (idLogbook) {
       loadStaseDetail(Number(idLogbook));
     }
-    return () => resetDetail();
-  }, [idLogbook, loadStaseDetail, resetDetail]);
+    return () => {
+      resetDetail();
+      clearUndoInfo();
+    };
+  }, [idLogbook, loadStaseDetail, resetDetail, clearUndoInfo]);
 
   const isEditMode = !!idLogbook;
 
@@ -105,6 +116,7 @@ export default function StaseFormPage() {
   // Watch stase and stage values for cascading
   const watchedIdStase = useWatch({ control, name: "id_stase" });
   const watchedIdStage = useWatch({ control, name: "id_stage" });
+  const watchedIdUser = useWatch({ control, name: "id_user" });
 
   // When stase changes, fetch stage by stase and populate dropdown
   useEffect(() => {
@@ -119,6 +131,15 @@ export default function StaseFormPage() {
       fetchSemesterOptions({ id_stage: Number(watchedIdStage) });
     }
   }, [watchedIdStage, fetchSemesterOptions]);
+
+  // Fetch undo info when a PPDS user is selected (create mode only)
+  useEffect(() => {
+    if (watchedIdUser && !isEditMode) {
+      fetchUndoInfo(watchedIdUser);
+    } else {
+      clearUndoInfo();
+    }
+  }, [watchedIdUser, isEditMode, fetchUndoInfo, clearUndoInfo]);
 
   // Set initial values when selectedStase is loaded in edit mode
   useEffect(() => {
@@ -192,6 +213,32 @@ export default function StaseFormPage() {
 
   // Delete modal
   const { isShown: isShowDelete, toggle: toggleDelete } = useModal();
+  // Undo confirmation modal
+  const { isShown: isShowUndoConfirm, toggle: toggleUndoConfirm } = useModal();
+
+  const handleRefreshUndo = useCallback(() => {
+    if (watchedIdUser) {
+      fetchUndoInfo(watchedIdUser);
+    }
+  }, [watchedIdUser, fetchUndoInfo]);
+
+  const handleExecuteUndo = async () => {
+    if (!watchedIdUser) return;
+    const success = await executeUndo(watchedIdUser);
+    toggleUndoConfirm(false);
+    if (success) {
+      showToast("Undo berhasil! Semester & stase dikembalikan.", "success", {
+        duration: 3000,
+      });
+      // Refresh undo info after successful undo
+      fetchUndoInfo(watchedIdUser);
+    } else {
+      const errorMessage = useStaseStore.getState().undoError;
+      showToast(errorMessage ?? "Gagal melakukan undo", "error", {
+        duration: 4000,
+      });
+    }
+  };
 
   // Convert options helper
   const ppdsSelectOptions: BasicSelectOpt<number>[] = ppdsActiveOptions.map(
@@ -222,6 +269,12 @@ export default function StaseFormPage() {
     }),
   );
 
+  // Determine the selected user's display name for undo banner
+  const selectedUserName =
+    undoInfo?.display_name ??
+    ppdsSelectOptions.find((opt) => opt.value === watchedIdUser)?.label ??
+    "";
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-[114px] lg:pt-0">
       <Topbar
@@ -235,6 +288,138 @@ export default function StaseFormPage() {
       />
       <div className="flex-1 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
+          {/* Undo Banner — shown when a PPDS user is selected in create mode */}
+          {!isEditMode && watchedIdUser && (isLoadingUndo || undoInfo || undoError) && (
+            <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-4">
+              {isLoadingUndo ? (
+                <div className="flex items-center gap-2 text-amber-700">
+                  <svg
+                    className="h-4 w-4 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium">
+                    Memuat info undo...
+                  </span>
+                </div>
+              ) : undoError ? (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-amber-800">{undoError}</span>
+                  <button
+                    type="button"
+                    onClick={handleRefreshUndo}
+                    className="inline-flex items-center gap-1 rounded-md border border-amber-400 bg-white px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50 transition-colors"
+                  >
+                    <icons.RotateCcw className="h-3 w-3" />
+                    Refresh
+                  </button>
+                </div>
+              ) : undoInfo ? (
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 space-y-1">
+                      <h4 className="text-sm font-semibold text-amber-900">
+                        Undo Ganti Semester — {selectedUserName}
+                      </h4>
+                      {undoInfo.can_undo ? (
+                        <>
+                          <p className="text-xs text-amber-800">
+                            Sekarang:{" "}
+                            <span className="font-medium">
+                              {undoInfo.current_semester_name}
+                            </span>{" "}
+                            · Poin aktif{" "}
+                            <span className="font-medium">
+                              {undoInfo.current_active_points ?? 0}
+                            </span>
+                          </p>
+                          <p className="text-xs text-amber-800">
+                            Undo ke:{" "}
+                            <span className="font-medium">
+                              {undoInfo.restore_semester_name}
+                            </span>{" "}
+                            /{" "}
+                            <span className="font-medium">
+                              {undoInfo.restore_stase_name}
+                            </span>{" "}
+                            · Estimasi poin{" "}
+                            <span className="font-medium">
+                              {undoInfo.restore_points ?? 0}
+                            </span>
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-amber-800">
+                          {undoInfo.reason ?? "Tidak dapat melakukan undo."}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    {undoInfo.can_undo && (
+                      <button
+                        type="button"
+                        onClick={() => toggleUndoConfirm(true)}
+                        disabled={isExecutingUndo}
+                        className="inline-flex items-center gap-1.5 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors"
+                      >
+                        {isExecutingUndo ? (
+                          <>
+                            <svg
+                              className="h-3 w-3 animate-spin"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                              />
+                            </svg>
+                            Memproses...
+                          </>
+                        ) : (
+                          "Undo semester, stase & poin"
+                        )}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleRefreshUndo}
+                      disabled={isLoadingUndo}
+                      className="inline-flex items-center gap-1 rounded-md border border-amber-400 bg-white px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-50 transition-colors"
+                    >
+                      <icons.RotateCcw className="h-3 w-3" />
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          )}
+
           {/* Form - 2 Column Layout */}
           <div className="bg-white rounded-lg border p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
@@ -421,6 +606,19 @@ export default function StaseFormPage() {
         description="Apakah Anda yakin ingin menghapus data stase ini? Data yang dihapus tidak dapat dikembalikan."
         onConfirm={handleDelete}
         confirmText="Hapus"
+        cancelText="Batal"
+        confirmVariant="destructive"
+        cancelVariant="outline"
+      />
+
+      {/* Undo Confirmation Modal */}
+      <ConfirmationModal
+        isShown={isShowUndoConfirm}
+        toggle={toggleUndoConfirm}
+        title="Konfirmasi Undo Semester"
+        description={`Anda akan mengembalikan semester dari "${undoInfo?.current_semester_name ?? ""}" ke "${undoInfo?.restore_semester_name ?? ""}" / "${undoInfo?.restore_stase_name ?? ""}". Aksi ini akan memulihkan poin sebelumnya. Lanjutkan?`}
+        onConfirm={handleExecuteUndo}
+        confirmText="Ya, Undo"
         cancelText="Batal"
         confirmVariant="destructive"
         cancelVariant="outline"

@@ -25,6 +25,11 @@ const initialState: StaseState = {
   error: null,
   success: null,
   hasInitialized: false,
+  // Undo state
+  undoInfo: null,
+  isLoadingUndo: false,
+  isExecutingUndo: false,
+  undoError: null,
 };
 
 export const useStaseStore = create<StaseStore>((set) => ({
@@ -199,6 +204,51 @@ export const useStaseStore = create<StaseStore>((set) => ({
 
   cancelExport: () => {
     set({ isExporting: false });
+  },
+
+  fetchUndoInfo: async (id_user: number) => {
+    const { user } = useAuthStore.getState();
+    set({ isLoadingUndo: true, undoError: null });
+    try {
+      const response = await staseApi.getMorbiditasUndoInfo({
+        created_by: user?.id ?? 0,
+        id_client: user?.id_client ?? 0,
+        id_user,
+      });
+      set({ undoInfo: response.data, isLoadingUndo: false });
+    } catch (error) {
+      set({
+        undoError:
+          error instanceof Error ? error.message : "Failed to fetch undo info",
+        isLoadingUndo: false,
+        undoInfo: null,
+      });
+    }
+  },
+
+  executeUndo: async (id_user: number) => {
+    const { user } = useAuthStore.getState();
+    set({ isExecutingUndo: true, undoError: null });
+    try {
+      await staseApi.executeMorbiditasUndo({
+        created_by: user?.id ?? 0,
+        id_client: user?.id_client ?? 0,
+        id_user,
+      });
+      set({ isExecutingUndo: false, undoInfo: null });
+      return true;
+    } catch (error) {
+      set({
+        undoError:
+          error instanceof Error ? error.message : "Failed to execute undo",
+        isExecutingUndo: false,
+      });
+      return false;
+    }
+  },
+
+  clearUndoInfo: () => {
+    set({ undoInfo: null, isLoadingUndo: false, isExecutingUndo: false, undoError: null });
   },
 
   reset: () => set(initialState),
