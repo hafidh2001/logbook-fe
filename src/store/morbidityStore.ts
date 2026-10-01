@@ -135,6 +135,21 @@ export const useMorbidityStore = create<MorbidityStore>((set) => ({
     }
   },
 
+  updateVerifier: async (params) => {
+    try {
+      await morbidityApi.updateMorbiditasVerifier(params);
+      // Reload detail after successful update
+      const response = await morbidityApi.getMorbidityByUserDetail({
+        id: params.id_logbook,
+      });
+      set({
+        selectedMorbidityByUserDetail: response.data || null,
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
+
   reset: () => set(initialState),
   resetDetail: () =>
     set({

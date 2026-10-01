@@ -80,6 +80,64 @@ export const morbidityApi = {
     }
   },
 
+  async getMasterStaff(params: {
+    id_client: number;
+  }): Promise<ApiResponse<Array<{ id: number; name: string }>>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "GetMasterStaff",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(
+          responseData.message || "Failed to get master staff",
+        );
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async updateMorbiditasVerifier(params: {
+    id_logbook: number;
+    status_id: number;
+    new_id_user: number;
+  }): Promise<ApiResponse<null>> {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "UpdateMorbiditasVerifier",
+        params,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(
+          responseData.message || "Failed to update verifier",
+        );
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
   async getMorbidityByUserDetail(params: {
     id: number;
   }): Promise<ApiResponse<TMorbidityByUserDetail>> {

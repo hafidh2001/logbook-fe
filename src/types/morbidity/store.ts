@@ -46,6 +46,11 @@ export interface MorbidityActions {
     params?: Partial<IMorbidityByUserListParams>,
   ) => Promise<MorbidityByUserData>;
   loadMorbidityByUserDetail: (id: number) => Promise<void>;
+  updateVerifier: (params: {
+    id_logbook: number;
+    status_id: number;
+    new_id_user: number;
+  }) => Promise<void>;
   reset: () => void;
   resetDetail: () => void;
 }

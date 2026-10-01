@@ -43,8 +43,12 @@ export type TMorbidityByUserDetail = TMorbidityByUser & {
   kronologi_morbiditas: string;
   lampiran: string;
   staff: Array<{
+    status_id: number;
+    id_user: number;
+    id_action_role: number;
     name: string | null;
     role: string | null;
+    role_identifier: string | null;
     status: string | null;
     verify_notes: string | null;
   }>;
