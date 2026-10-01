@@ -183,3 +183,10 @@ export type TRekapLogbookData = {
     pageCount: number;
   };
 };
+
+export interface IMultipleUpdateLogbookPayload {
+  data: Array<string>;
+  id_stase: number;
+  id_client: number;
+  updated_by: number;
+}

@@ -2,7 +2,15 @@ import { SingleSelect } from "@/components/fields/singleSelect";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useMasterStore } from "@/store/masterStore";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useRekapStore } from "@/store/rekapStore";
+import { showToast } from "@/utils/toast";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 interface Props {
   selectedIds: Array<string | number>;
@@ -18,6 +26,7 @@ export const FormStase = ({
   setIsLoadingFormStase: setIsLoading,
 }: Props) => {
   const { staseOptions, fetchStaseOptions } = useMasterStore();
+  const { updateMultipleLogbook } = useRekapStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -28,11 +37,43 @@ export const FormStase = ({
 
   const [selectedStase, setSelectedStase] = useState<number | null>(null);
 
-  const handleSave = () => {
+  const handleSave = useCallback(async () => {
+    if (!selectedStase || selectedIds.length === 0) {
+      showToast("Pilih stase dan logbook terlebih dahulu!", "error");
+      return;
+    }
+
     setIsLoading(true);
-    console.log("save");
-    setIsLoading(false);
-  };
+
+    try {
+      const success = await updateMultipleLogbook({
+        id_client: user?.id_client ?? 0,
+        id_stase: selectedStase,
+        updated_by: user?.id ?? 0,
+        data: selectedIds.map(String),
+      });
+
+      if (success) {
+        const successMessage = useRekapStore.getState().successLogbook;
+        showToast(successMessage ?? "Data berhasil diperbarui!", "success");
+        setSelectedIds([]);
+      } else {
+        const errorMessage = useRekapStore.getState().error;
+        showToast(errorMessage ?? "Data gagal diperbarui!", "error", {
+          duration: 4000,
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    selectedStase,
+    selectedIds,
+    user,
+    updateMultipleLogbook,
+    setSelectedIds,
+    showToast,
+  ]);
 
   const handleCancel = () => {
     setSelectedIds([]);

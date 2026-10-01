@@ -11,6 +11,7 @@ import type {
   IRekapReportDetailParams,
   TRekapReportLogbookDetail,
   TRekapReportDetailData,
+  IMultipleUpdateLogbookPayload,
 } from "@/types/rekap";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -220,6 +221,35 @@ export const rekapApi = {
         throw new Error(
           responseData.message || "Failed to fetch rekap logbook detail",
         );
+      }
+
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
+        if (responseData?.message) {
+          throw new Error(responseData.message);
+        }
+        throw new Error(error.message);
+      }
+      throw error;
+    }
+  },
+
+  async updateMultipleLogbook(data: IMultipleUpdateLogbookPayload): Promise<
+    ApiResponse<{
+      total_logbook: number;
+      total_updated: number;
+    }>
+  > {
+    try {
+      const { data: responseData } = await apiClient.post(
+        "UpdateMultipleLogbook",
+        data,
+      );
+
+      if (responseData.status === false) {
+        throw new Error(responseData.message || "Failed to update");
       }
 
       return responseData;

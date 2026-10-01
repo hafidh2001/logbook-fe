@@ -10,6 +10,7 @@ import type {
   TRekapReportLogbookDetail,
   TRekapReportDetailData,
   IRekapReportDetailParams,
+  IMultipleUpdateLogbookPayload,
 } from "@/types/rekap";
 
 // ============= Rekap Report Store =============
@@ -120,6 +121,7 @@ export interface RekapLogbookState {
   isLoadingLogbookDetail: boolean;
   isExportingLogbook: boolean;
   errorLogbook: Nullable<string>;
+  successLogbook: Nullable<string>;
 }
 
 export interface RekapLogbookActions {
@@ -133,6 +135,9 @@ export interface RekapLogbookActions {
   cancelExportLogbook: () => void;
   resetLogbook: () => void;
   resetLogbookDetail: () => void;
+  updateMultipleLogbook: (
+    data: IMultipleUpdateLogbookPayload,
+  ) => Promise<boolean>;
 }
 
 export type RekapLogbookStore = RekapLogbookState & RekapLogbookActions;

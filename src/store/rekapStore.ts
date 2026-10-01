@@ -72,6 +72,7 @@ const logbookInitialState = {
   isLoadingLogbookDetail: false,
   isExportingLogbook: false,
   errorLogbook: null as string | null,
+  successLogbook: null as string | null,
 };
 
 export const useRekapStore = create<
@@ -593,4 +594,23 @@ export const useRekapStore = create<
   resetLogbook: () => set(logbookInitialState),
   resetLogbookDetail: () =>
     set({ rekapLogbookDetail: null, isLoadingLogbookDetail: false }),
+
+  updateMultipleLogbook: async (data) => {
+    set({ isLoadingLogbook: true, errorLogbook: null, successLogbook: null });
+    try {
+      const res = await rekapApi.updateMultipleLogbook(data);
+      set({
+        isLoadingLogbook: false,
+        successLogbook: `${res.data.total_updated} Data berhasil diupdate!`,
+      });
+      return true;
+    } catch (error) {
+      set({
+        errorLogbook:
+          error instanceof Error ? error.message : "Failed to update stase",
+        isLoadingLogbook: false,
+      });
+      return false;
+    }
+  },
 }));
