@@ -443,7 +443,7 @@ export default function StaseFormPage() {
                       onChange={(option) =>
                         field.onChange(option?.value as number)
                       }
-                      isSearchable={false}
+                      isSearchable
                       isClearable={false}
                       errorMessage={errors.id_user?.message}
                     />
@@ -499,7 +499,7 @@ export default function StaseFormPage() {
                         // Reset semester when stage changes
                         setValue("id_semester", null);
                       }}
-                      isSearchable={false}
+                      isSearchable
                       isClearable={false}
                       errorMessage={errors.id_stage?.message}
                     />
@@ -528,7 +528,7 @@ export default function StaseFormPage() {
                       onChange={(option) =>
                         field.onChange(option?.value as number)
                       }
-                      isSearchable={false}
+                      isSearchable
                       isClearable={false}
                       errorMessage={errors.id_semester?.message}
                     />

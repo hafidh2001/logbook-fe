@@ -326,7 +326,7 @@ export default function PpdsDetailPage() {
                       onChange={(option) =>
                         field.onChange(option?.value as string)
                       }
-                      isSearchable={false}
+                      isSearchable
                       isClearable={false}
                       isDisabled={UserStatusEnum.LULUS === selectedPpds?.status}
                     />

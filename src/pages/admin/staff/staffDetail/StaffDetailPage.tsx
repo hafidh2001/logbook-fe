@@ -279,7 +279,7 @@ export default function StaffDetailPage() {
                       onChange={(option) =>
                         field.onChange(option?.value as number)
                       }
-                      isSearchable={false}
+                      isSearchable
                       isClearable={false}
                       errorMessage={errors.location?.message}
                     />
@@ -308,7 +308,7 @@ export default function StaffDetailPage() {
                       onChange={(option) =>
                         field.onChange(option?.value as number)
                       }
-                      isSearchable={false}
+                      isSearchable
                       isClearable={false}
                       errorMessage={errors.id_role?.message}
                     />

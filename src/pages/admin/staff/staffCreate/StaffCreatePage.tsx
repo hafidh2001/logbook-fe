@@ -236,7 +236,7 @@ export default function StaffCreatePage() {
                       onChange={(option) =>
                         field.onChange(option?.value as number)
                       }
-                      isSearchable={false}
+                      isSearchable
                       isClearable={false}
                       errorMessage={errors.location?.message}
                     />
@@ -343,7 +343,7 @@ export default function StaffCreatePage() {
                       onChange={(option) =>
                         field.onChange(option?.value as number)
                       }
-                      isSearchable={false}
+                      isSearchable
                       isClearable={false}
                       errorMessage={errors.id_role?.message}
                     />
