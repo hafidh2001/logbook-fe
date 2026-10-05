@@ -182,7 +182,7 @@ export const Status = ({ data }: Props) => {
                         selections[statusId]?.value === item.id_user
                       }
                       onClick={() => handleSave(statusId)}
-                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-[#087F5B] rounded-lg hover:bg-[#066649] disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                     >
                       {saving[statusId] ? "Saving..." : "Simpan"}
                     </button>

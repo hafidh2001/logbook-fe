@@ -430,7 +430,7 @@ export default function StaseFormPage() {
                 render={({ field }) => (
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      User<span className="text-red-600 ml-1">*</span>
+                      User<span className="text-[#D95D43] ml-1">*</span>
                     </label>
                     <SingleSelect
                       {...field}
@@ -456,7 +456,7 @@ export default function StaseFormPage() {
                 render={({ field }) => (
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Stase<span className="text-red-600 ml-1">*</span>
+                      Stase<span className="text-[#D95D43] ml-1">*</span>
                     </label>
                     <SingleSelect
                       {...field}
@@ -484,7 +484,7 @@ export default function StaseFormPage() {
                 render={({ field }) => (
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Stage<span className="text-red-600 ml-1">*</span>
+                      Stage<span className="text-[#D95D43] ml-1">*</span>
                     </label>
                     <SingleSelect
                       {...field}
@@ -515,7 +515,7 @@ export default function StaseFormPage() {
                 render={({ field }) => (
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Semester<span className="text-red-600 ml-1">*</span>
+                      Semester<span className="text-[#D95D43] ml-1">*</span>
                     </label>
                     <SingleSelect
                       {...field}

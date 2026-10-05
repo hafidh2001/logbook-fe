@@ -32,7 +32,7 @@ export const StatCards = () => {
         </div>
         <p className="text-xs text-gray-500 mt-1 text-center">Active PPDS</p>
         <p
-          className="text-xs text-blue-600 mt-2 cursor-pointer hover:underline truncate text-center"
+          className="text-xs text-[#087F5B] mt-2 cursor-pointer hover:underline truncate text-center"
           onClick={() => navigate(ROUTES.ppdsInactive)}
         >
           {ppdsInactive} Inactive PPDS
@@ -90,7 +90,7 @@ export const StatCards = () => {
         </span>
         <p className="text-xs text-gray-500 mt-1 text-center">Logbook</p>
         <p
-          className="text-xs text-blue-600 mt-2 cursor-pointer hover:underline truncate text-center"
+          className="text-xs text-[#087F5B] mt-2 cursor-pointer hover:underline truncate text-center"
           onClick={() => navigate(ROUTES.unverifiedLogbook)}
         >
           {logbookPending} Unverified

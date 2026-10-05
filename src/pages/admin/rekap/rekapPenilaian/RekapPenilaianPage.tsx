@@ -325,7 +325,7 @@ export default function RekapPenilaianPage() {
       size: 130,
       cell: ({ row: { original } }) => {
         return original.stase ? (
-          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
+          <span className="px-2 py-1 bg-[#EAF6EF] text-[#066649] rounded-md text-xs font-medium whitespace-nowrap">
             {original.stase}
           </span>
         ) : (
@@ -410,7 +410,7 @@ export default function RekapPenilaianPage() {
               variant="ghost"
               size="sm"
               onClick={(e) => handleView(e, original.id_logbook)}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-[#087F5B] text-white hover:bg-[#066649]"
             >
               <icons.Eye className="h-4 w-4" />
               <span className="hidden sm:inline">View</span>
@@ -448,7 +448,7 @@ export default function RekapPenilaianPage() {
         <div className="h-full flex flex-col gap-2">
           {/* Filter Section */}
           <div className="flex flex-col-reverse sm:flex-row items-end sm:items-center justify-between gap-2">
-            <div className="w-full sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
+            <div className="w-full sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-[#087F5B] text-white rounded-md">
               <span className="font-semibold text-xs text-nowrap">Total Nilai</span>
               <span className="font-bold text-sm">{averageRekapPenilaian ?? 0}</span>
             </div>

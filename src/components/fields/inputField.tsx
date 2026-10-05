@@ -35,7 +35,7 @@ export const InputField = forwardRef<HTMLInputElement, Props>(({
 
   const inputClassName = cn(
     "bg-white rounded-md border border-input ring-0 shadow-2xs outline-none focus:border-2 focus:border-primary focus:ring-0 focus:shadow-none hover:border-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 h-10",
-    errorMessage && "border-red-500",
+    errorMessage && "border-[#E76F51]",
     startIcon && "pl-10",
     endIcon && "pr-10"
   );
@@ -47,7 +47,7 @@ export const InputField = forwardRef<HTMLInputElement, Props>(({
       {label && (
         <label className={cn("text-sm font-medium text-gray-700", labelClassName)}>
           {label}
-          {required && <span className="text-red-600 ml-1">*</span>}
+          {required && <span className="text-[#D95D43] ml-1">*</span>}
         </label>
       )}
       {hasIcon ? (
@@ -92,7 +92,7 @@ export const InputField = forwardRef<HTMLInputElement, Props>(({
         />
       )}
       {errorMessage && (
-        <p className="text-sm text-red-600">{errorMessage}</p>
+        <p className="text-sm text-[#D95D43]">{errorMessage}</p>
       )}
     </div>
   );

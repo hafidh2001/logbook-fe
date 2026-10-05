@@ -46,7 +46,7 @@ export const ExportModal = ({
           ) : (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <svg
-                className="w-4 h-4 animate-spin text-blue-600"
+                className="w-4 h-4 animate-spin text-[#087F5B]"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -71,7 +71,7 @@ export const ExportModal = ({
 
           <div className="w-full h-3 bg-gray-200 rounded overflow-hidden">
             <div
-              className="h-3 bg-blue-600 rounded transition-all"
+              className="h-3 bg-[#087F5B] rounded transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -98,7 +98,7 @@ export const ExportModal = ({
             ) : (
               <button
                 onClick={onCancel}
-                className="px-4 py-2 border border-red-600 text-red-600 rounded hover:bg-red-50 text-sm"
+                className="px-4 py-2 border border-[#D95D43] text-[#D95D43] rounded hover:bg-[#FFF5F2] text-sm"
               >
                 Batalkan
               </button>

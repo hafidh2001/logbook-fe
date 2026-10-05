@@ -38,7 +38,7 @@ export const PasswordField = forwardRef<HTMLInputElement, Props>(({
 
   const inputClassName = cn(
     "bg-[#fff] rounded-md ring-0 shadow-2xs active:border-2 outline-none focus:border-2 focus:outline-none focus:border-primary focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none border-[#ccc] hover:border-[#999999]",
-    errorMessage && "border-red-500",
+    errorMessage && "border-[#E76F51]",
     (showToggle || endIcon) && "pr-10",
     startIcon && "pl-10"
   );
@@ -48,7 +48,7 @@ export const PasswordField = forwardRef<HTMLInputElement, Props>(({
       {label && (
         <label className={cn("text-sm font-medium text-gray-700", labelClassName)}>
           {label}
-          {required && <span className="text-red-600 ml-1">*</span>}
+          {required && <span className="text-[#D95D43] ml-1">*</span>}
         </label>
       )}
       <div className="relative">
@@ -90,7 +90,7 @@ export const PasswordField = forwardRef<HTMLInputElement, Props>(({
         )}
       </div>
       {errorMessage && (
-        <p className="text-sm text-red-600">{errorMessage}</p>
+        <p className="text-sm text-[#D95D43]">{errorMessage}</p>
       )}
     </div>
   );

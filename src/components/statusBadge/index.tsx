@@ -33,7 +33,7 @@ export const StatusBadge = ({ status }: Props) => {
 
     case LogbookStatusEnum.REJECTED:
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-md">
+        <span className="inline-flex items-center gap-1 px-2 py-1 bg-[#FFE5DE] text-[#B84732] text-xs font-medium rounded-md">
           <icons.X className="h-3 w-3" />
           {LogbookStatusEnum.REJECTED}
         </span>

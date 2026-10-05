@@ -26,7 +26,7 @@ export const LoginPage = () => {
     defaultValues: {
       username: "",
       password: "",
-      rememberMe: false,
+      rememberMe: true,
     },
   });
 
@@ -70,8 +70,8 @@ export const LoginPage = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="mb-4 p-3 bg-[#FFF5F2] border border-[#FFC9BD] rounded-lg">
+              <p className="text-sm text-[#D95D43]">{error}</p>
             </div>
           )}
 
@@ -108,7 +108,7 @@ export const LoginPage = () => {
             />
 
             {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
+            <div className="items-center justify-between hidden">
               <Controller
                 name="rememberMe"
                 control={control}

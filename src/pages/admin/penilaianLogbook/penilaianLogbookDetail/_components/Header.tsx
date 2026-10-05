@@ -10,8 +10,8 @@ export const Header = ({ data }: Props) => {
     <div className="bg-white rounded-lg border overflow-hidden">
       <div className="p-4">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-            <icons.User className="h-9 w-9 text-blue-600" />
+          <div className="w-16 h-16 rounded-full bg-[#EAF6EF] flex items-center justify-center">
+            <icons.User className="h-9 w-9 text-[#087F5B]" />
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-semibold text-gray-800">

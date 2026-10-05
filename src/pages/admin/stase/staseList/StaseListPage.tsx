@@ -293,8 +293,8 @@ export default function StaseListPage() {
         return original.stase_name ? (
           <span
             className={cn(
-              "px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap",
-              original.is_retake && "bg-red-100 text-red-700",
+              "px-2 py-1 bg-[#EAF6EF] text-[#066649] rounded-md text-xs font-medium whitespace-nowrap",
+              original.is_retake && "bg-[#FFE5DE] text-[#B84732]",
             )}
           >
             {original.stase_name}
@@ -354,7 +354,7 @@ export default function StaseListPage() {
               variant="ghost"
               size="sm"
               onClick={handleView}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-[#087F5B] text-white hover:bg-[#066649]"
             >
               <icons.Eye className="h-4 w-4" />
               <span className="hidden sm:inline">View</span>
@@ -363,7 +363,7 @@ export default function StaseListPage() {
               variant="ghost"
               size="sm"
               onClick={handleDeleteClick}
-              className="bg-red-600 text-white hover:bg-red-700"
+              className="bg-[#D95D43] text-white hover:bg-[#B84732]"
             >
               <icons.Trash className="h-4 w-4" />
               <span className="hidden sm:inline">Delete</span>

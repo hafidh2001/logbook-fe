@@ -252,7 +252,7 @@ export default function StaffCreatePage() {
                 render={({ field }) => (
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Password<span className="text-red-600 ml-1">*</span>
+                      Password<span className="text-[#D95D43] ml-1">*</span>
                     </label>
                     <div className="relative">
                       <Input
@@ -276,7 +276,7 @@ export default function StaffCreatePage() {
                       </button>
                     </div>
                     {errors.password && (
-                      <p className="text-sm text-red-600">
+                      <p className="text-sm text-[#D95D43]">
                         {errors.password.message}
                       </p>
                     )}
@@ -290,7 +290,7 @@ export default function StaffCreatePage() {
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
                       Konfirmasi Password
-                      <span className="text-red-600 ml-1">*</span>
+                      <span className="text-[#D95D43] ml-1">*</span>
                     </label>
                     <div className="relative">
                       <Input
@@ -316,7 +316,7 @@ export default function StaffCreatePage() {
                       </button>
                     </div>
                     {errors.confirm_password && (
-                      <p className="text-sm text-red-600">
+                      <p className="text-sm text-[#D95D43]">
                         {errors.confirm_password?.message}
                       </p>
                     )}

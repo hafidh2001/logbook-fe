@@ -16,7 +16,7 @@ export const ActivityBreakdown = ({ data }: Props) => {
           key={index}
           className="shrink-0 flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 sm:!w-[250px]"
         >
-          <div className="!w-14 !h-14 flex items-center justify-center bg-blue-100 text-blue-600 font-bold rounded-lg">
+          <div className="!w-14 !h-14 flex items-center justify-center bg-[#EAF6EF] text-[#087F5B] font-bold rounded-lg">
             {item.jumlah}
           </div>
           <span className="text-sm font-medium text-gray-700">

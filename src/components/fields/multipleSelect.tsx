@@ -138,7 +138,7 @@ export const MultipleSelect = forwardRef<Select, Props>(({
         {...(rest as any)}
       />
       {errorMessage && (
-        <p className="text-sm text-red-600">{errorMessage}</p>
+        <p className="text-sm text-[#D95D43]">{errorMessage}</p>
       )}
     </div>
   );

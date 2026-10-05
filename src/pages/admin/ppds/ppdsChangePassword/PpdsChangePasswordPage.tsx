@@ -76,8 +76,8 @@ export default function PpdsChangePasswordPage() {
           {/* Profile Card */}
           <CardWrapper title="Profil" className="mb-4">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
-                <icons.User className="h-11 w-11 text-blue-600" />
+              <div className="w-20 h-20 rounded-full bg-[#EAF6EF] flex items-center justify-center">
+                <icons.User className="h-11 w-11 text-[#087F5B]" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-800">

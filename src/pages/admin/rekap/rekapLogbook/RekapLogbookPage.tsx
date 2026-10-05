@@ -325,7 +325,7 @@ export default function RekapLogbookPage() {
       size: 130,
       cell: ({ row: { original } }) => {
         return original.stase ? (
-          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
+          <span className="px-2 py-1 bg-[#EAF6EF] text-[#066649] rounded-md text-xs font-medium whitespace-nowrap">
             {original.stase}
           </span>
         ) : (
@@ -406,7 +406,7 @@ export default function RekapLogbookPage() {
               variant="ghost"
               size="sm"
               onClick={(e) => handleView(e, original.id, original.staff ?? "")}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-[#087F5B] text-white hover:bg-[#066649]"
             >
               <icons.Eye className="h-4 w-4" />
               <span className="hidden sm:inline">View</span>

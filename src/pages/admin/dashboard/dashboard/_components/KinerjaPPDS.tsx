@@ -25,7 +25,7 @@ export const KinerjaPPDS = () => {
               className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-[#EAF6EF] text-[#087F5B] flex items-center justify-center">
                   <icons.User className="h-5 w-5" />
                 </div>
                 <div>
@@ -35,7 +35,7 @@ export const KinerjaPPDS = () => {
                   <p className="text-xs text-gray-500">{item.stase}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-xs text-blue-600">
+              <div className="flex items-center gap-1 text-xs text-[#087F5B]">
                 <icons.Check className="h-3 w-3" />
                 {item.verified_count}
               </div>

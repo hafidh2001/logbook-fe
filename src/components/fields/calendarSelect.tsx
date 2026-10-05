@@ -97,7 +97,7 @@ export const CalendarSelect = forwardRef<HTMLInputElement, Props>(
         cn(
           "pr-10 rounded-md h-10 bg-white border-input focus:border-2 focus:border-primary outline-none hover:border-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200",
           openPopover && !isDisabled && "border-2 border-primary",
-          errorMessage && "border-red-500",
+          errorMessage && "border-[#E76F51]",
         ),
       [openPopover, isDisabled, errorMessage],
     );
@@ -118,7 +118,7 @@ export const CalendarSelect = forwardRef<HTMLInputElement, Props>(
             className={cn("text-sm font-medium text-gray-700", labelClassName)}
           >
             {label}
-            {required && <span className="text-red-600 ml-1">*</span>}
+            {required && <span className="text-[#D95D43] ml-1">*</span>}
           </label>
         )}
         <Popover open={openPopover} onOpenChange={handleOpenChange}>
@@ -147,7 +147,7 @@ export const CalendarSelect = forwardRef<HTMLInputElement, Props>(
             </div>
           </PopoverTrigger>
           {errorMessage && (
-            <p className="text-sm text-red-600">{errorMessage}</p>
+            <p className="text-sm text-[#D95D43]">{errorMessage}</p>
           )}
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar

@@ -454,7 +454,7 @@ export const BaseTable = <
               onCheckedChange={handleToggleAll}
               disabled={isFetchingAll || sel.isSelectAllLoading}
               aria-label="Select all rows"
-              className="border-white data-[state=checked]:bg-white data-[state=checked]:text-blue-600"
+              className="border-white data-[state=checked]:bg-white data-[state=checked]:text-[#087F5B]"
             />
           </div>
         ),
@@ -596,13 +596,13 @@ export const BaseTable = <
               )}
               <Table className="w-full" style={{ tableLayout: "fixed" }}>
                 <TableHeader
-                  className="sticky top-0 z-20 bg-blue-600"
+                  className="sticky top-0 z-20 bg-[#087F5B]"
                   style={{ position: "sticky" }}
                 >
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow
                       key={headerGroup.id}
-                      // className="border-b border-blue-700"
+                      // className="border-b border-[#066649]"
                     >
                       {headerGroup.headers.map((header) => {
                         const columnSize = header.column.columnDef.size;
@@ -627,7 +627,7 @@ export const BaseTable = <
                           <TableHead
                             key={header.id}
                             className={cn(
-                              "bg-blue-600 text-white font-semibold border-r last:border-r-0 h-12 px-4 text-center",
+                              "bg-[#087F5B] text-white font-semibold border-r last:border-r-0 h-12 px-4 text-center",
                             )}
                             style={{
                               width: finalWidth,
@@ -712,7 +712,7 @@ export const BaseTable = <
                           {row.getIsExpanded() && opt.renderExpansion ? (
                             <TableRow className="bg-slate-50/50 border-b border-slate-200">
                               <TableCell
-                                className="p-0 border-l-4 border-l-blue-500"
+                                className="p-0 border-l-4 border-l-[#0BA875]"
                                 colSpan={table.getAllColumns().length}
                               >
                                 <div className="p-4">

@@ -40,14 +40,14 @@ export const CheckboxLabel = forwardRef<HTMLDivElement, Props>(({
         className={cn(
           "text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
           labelClassName,
-          { "text-red-600": !!message }
+          { "text-[#D95D43]": !!message }
         )}
       >
         {label}
-        {required && <span className="text-red-600 ml-1">*</span>}
+        {required && <span className="text-[#D95D43] ml-1">*</span>}
       </label>
       {message && (
-        <p className="text-sm text-red-600 mt-2">{message}</p>
+        <p className="text-sm text-[#D95D43] mt-2">{message}</p>
       )}
     </div>
   );

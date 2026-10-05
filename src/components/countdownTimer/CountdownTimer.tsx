@@ -22,7 +22,7 @@ export const CountdownTimer = memo(({
   const isWarning = totalMinutes < 15; // Less than 15 minutes
 
   const getTimeColor = () => {
-    if (isUrgent) return 'text-red-600 font-bold animate-pulse';
+    if (isUrgent) return 'text-[#D95D43] font-bold animate-pulse';
     if (isWarning && showWarning) return 'text-orange-500 font-semibold';
     return 'text-gray-700';
   };

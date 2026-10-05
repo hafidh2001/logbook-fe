@@ -312,7 +312,7 @@ export default function PpdsDetailPage() {
                 render={({ field }) => (
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Status<span className="text-red-600 ml-1">*</span>
+                      Status<span className="text-[#D95D43] ml-1">*</span>
                     </label>
                     <SingleSelect
                       {...field}

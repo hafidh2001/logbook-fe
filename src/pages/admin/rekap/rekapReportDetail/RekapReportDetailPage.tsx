@@ -270,8 +270,8 @@ export default function RekapReportDetailPage() {
         return original.stase ? (
           <span
             className={cn(
-              "px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap",
-              // original.is_retake && "bg-red-100 text-red-700",
+              "px-2 py-1 bg-[#EAF6EF] text-[#066649] rounded-md text-xs font-medium whitespace-nowrap",
+              // original.is_retake && "bg-[#FFE5DE] text-[#B84732]",
             )}
           >
             {original.stase}

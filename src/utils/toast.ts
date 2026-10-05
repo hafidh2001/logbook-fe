@@ -30,7 +30,7 @@ export function showToast(
   if (type === 'success') {
     toast.className += ` bg-green-500`;
   } else {
-    toast.className += ` bg-red-500`;
+    toast.className += ` bg-[#E76F51]`;
   }
   
   toast.textContent = message;

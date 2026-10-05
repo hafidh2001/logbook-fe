@@ -1166,7 +1166,7 @@ cell: ({ row: { original } }) => {
 ```typescript
 cell: ({ row: { original } }) => {
   return original.stase ? (
-    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium whitespace-nowrap">
+    <span className="px-2 py-1 bg-[#EAF6EF] text-[#066649] rounded-md text-xs font-medium whitespace-nowrap">
       {original.stase}
     </span>
   ) : (

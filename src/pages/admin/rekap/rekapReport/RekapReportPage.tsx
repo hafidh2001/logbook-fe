@@ -466,7 +466,7 @@ export default function RekapReportPage() {
               variant="ghost"
               size="sm"
               onClick={(e) => handleView(e, original.id)}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-[#087F5B] text-white hover:bg-[#066649]"
             >
               <icons.Eye className="h-4 w-4" />
               <span className="hidden sm:inline">View</span>

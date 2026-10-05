@@ -15,11 +15,11 @@ export const Summary = ({ data }: Props) => {
   return (
     <div className="w-full sm:w-fit flex flex-col sm:flex-row gap-1">
       <div className="flex flex-row gap-1">
-        <div className="w-1/2 sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
+        <div className="w-1/2 sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-[#087F5B] text-white rounded-md">
           <span className="font-semibold text-xs text-nowrap">Total PPDS</span>
           <span className="font-bold text-sm">{data?.total_ppds ?? 0}</span>
         </div>
-        <div className="w-1/2 sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
+        <div className="w-1/2 sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-[#087F5B] text-white rounded-md">
           <span className="font-semibold text-xs text-nowrap">
             Total Logbooks
           </span>
@@ -27,20 +27,20 @@ export const Summary = ({ data }: Props) => {
         </div>
       </div>
       <div className="flex flex-row gap-1">
-        <div className="w-1/2 sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
+        <div className="w-1/2 sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-[#087F5B] text-white rounded-md">
           <span className="font-semibold text-xs text-nowrap">
             Avg per PPDS
           </span>
           <span className="font-bold text-sm">{data?.avg_per_ppds ?? 0}</span>
         </div>
-        <div className="w-1/2 sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
+        <div className="w-1/2 sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-[#087F5B] text-white rounded-md">
           <span className="font-semibold text-xs text-nowrap">Semester</span>
           <span className="font-bold text-sm">
             {data?.total_semesters ?? 0}
           </span>
         </div>
       </div>
-      <div className="w-full sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-md">
+      <div className="w-full sm:w-fit flex flex-col items-center gap-1 px-4 py-2 bg-[#087F5B] text-white rounded-md">
         <span className="font-semibold text-xs text-nowrap">Period</span>
         <span className="font-bold text-sm text-nowrap">
           {dayjs(start_date).locale("id").format("DD/MM/YYYY")} -{" "}

@@ -388,14 +388,14 @@ export function FilterPanel({
           {activeFilterChips.map((chip) => (
             <div
               key={chip.key}
-              className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-sm"
+              className="inline-flex items-center gap-1 px-2 py-1 bg-[#EAF6EF] text-[#066649] rounded-md text-sm"
             >
               <span className="font-medium">{chip.label}:</span>
               <span>{chip.displayValue}</span>
               {!chip.disabled && chip.isClearable && (
                 <button
                   onClick={() => handleRemoveChip(chip.key)}
-                  className="ml-1 hover:bg-blue-300 rounded-full p-0.5 transition-colors"
+                  className="ml-1 hover:bg-[#63C9A8] rounded-full p-0.5 transition-colors"
                 >
                   <icons.X size={14} />
                 </button>

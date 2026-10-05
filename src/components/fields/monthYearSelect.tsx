@@ -146,7 +146,7 @@ export const MonthYearSelect = forwardRef<HTMLDivElement, Props>(({
   const inputClassName = useMemo(() => cn(
     "pr-10 rounded-md h-10 bg-white border-input focus:border-2 focus:border-primary outline-none hover:border-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200",
     openPopover && !isDisabled && "border-2 border-primary",
-    errorMessage && "border-red-500"
+    errorMessage && "border-[#E76F51]"
   ), [openPopover, isDisabled, errorMessage]);
 
   const clearIconClassName = useMemo(() => cn(
@@ -175,7 +175,7 @@ export const MonthYearSelect = forwardRef<HTMLDivElement, Props>(({
       {label && (
         <label className={cn("text-sm font-medium text-gray-700", labelClassName)}>
           {label}
-          {required && <span className="text-red-600 ml-1">*</span>}
+          {required && <span className="text-[#D95D43] ml-1">*</span>}
         </label>
       )}
       <Popover
@@ -204,7 +204,7 @@ export const MonthYearSelect = forwardRef<HTMLDivElement, Props>(({
           </div>
         </PopoverTrigger>
         {errorMessage && (
-          <p className="mt-0.5 text-sm text-red-500">{errorMessage}</p>
+          <p className="mt-0.5 text-sm text-[#E76F51]">{errorMessage}</p>
         )}
         <PopoverContent
           className="w-auto p-3 bg-white flex items-center gap-2"

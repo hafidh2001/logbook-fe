@@ -14,7 +14,7 @@ export const Loading = ({ className = "", size = "md" }: LoadingProps) => {
 
   return (
     <div className={`flex items-center justify-center ${className}`}>
-      <icons.Loader className={`${sizeClasses[size]} animate-spin text-blue-600`} />
+      <icons.Loader className={`${sizeClasses[size]} animate-spin text-[#087F5B]`} />
     </div>
   );
 };
