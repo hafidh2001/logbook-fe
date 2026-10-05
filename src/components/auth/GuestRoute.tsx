@@ -23,10 +23,20 @@ export const GuestRoute = ({ children }: GuestRouteProps) => {
     );
   }
 
-  // Already authenticated - redirect to dashboard
+  // Already authenticated - redirect to previous page
   if (isAuthenticated) {
-    const from = (location.state as { from?: Location })?.from?.pathname || ROUTES.dashboard;
-    return <Navigate to={from} state={{ from: location }} replace />;
+    const from = location.state?.from;
+
+    const redirectTo = from
+      ? `${from.pathname}${from.search || ""}${from.hash || ""}`
+      : ROUTES.dashboard;
+
+    return (
+      <Navigate
+        to={redirectTo}
+        replace
+      />
+    );
   }
 
   return <>{children}</>;

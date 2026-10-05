@@ -5,9 +5,12 @@ import type { TAuthUser } from "@/types/auth";
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 const USER_DATA_KEY = "user_data";
-const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || "logbook-secret-key-change-in-production";
-const ACCESS_TOKEN_EXPIRY = "15m";
-const REFRESH_TOKEN_EXPIRY = "7d";
+
+const JWT_SECRET =
+  import.meta.env.VITE_JWT_SECRET || "logbook-secret-key-change-in-production";
+
+const TOKEN_EXPIRY = "7d";
+const COOKIE_EXPIRY_DAYS = 7;
 
 export type JWTPayload = {
   id_user: string;
@@ -18,13 +21,24 @@ export type JWTPayload = {
 
 const secret = new TextEncoder().encode(JWT_SECRET);
 
-const setCookie = (name: string, value: string, days: number) => {
+const setCookie = (
+  name: string,
+  value: string,
+  days: number = COOKIE_EXPIRY_DAYS,
+) => {
   const maxAge = days * 24 * 60 * 60;
-  document.cookie = `${name}=${value}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
+
+  document.cookie = [
+    `${name}=${value}`,
+    "Path=/",
+    `Max-Age=${maxAge}`,
+    "SameSite=Lax",
+  ].join("; ");
 };
 
 const getCookie = (name: string): string | undefined => {
   const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+
   return match ? match[2] : undefined;
 };
 
@@ -36,41 +50,61 @@ export const jwtService = {
   /**
    * Generate access and refresh tokens
    */
-  generateTokens: async (payload: JWTPayload): Promise<{
+  generateTokens: async (
+    payload: JWTPayload,
+  ): Promise<{
     accessToken: string;
     refreshToken: string;
   }> => {
     const accessToken = await new jose.SignJWT({ ...payload })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime(ACCESS_TOKEN_EXPIRY)
+      .setExpirationTime(TOKEN_EXPIRY)
       .sign(secret);
 
     const refreshToken = await new jose.SignJWT({ ...payload })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime(REFRESH_TOKEN_EXPIRY)
+      .setExpirationTime(TOKEN_EXPIRY)
       .sign(secret);
 
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+    };
   },
 
   /**
    * Set tokens and user data in cookies
    * @param rememberMe - if true, keep user logged in for 7 days, otherwise 1 day
    */
-  setTokens: (accessToken: string, refreshToken: string, userData: TAuthUser, rememberMe: boolean = false): void => {
-    setCookie(ACCESS_TOKEN_KEY, accessToken, 0.0104); // ~15 minutes
-    const refreshExpiry = rememberMe ? 7 : 1; // 7 days if remember me, 1 day otherwise
-    setCookie(REFRESH_TOKEN_KEY, refreshToken, refreshExpiry);
-    // Store user data as JSON cookie
-    setCookie(USER_DATA_KEY, encodeURIComponent(JSON.stringify(userData)), refreshExpiry);
+  setTokens: (
+    accessToken: string,
+    refreshToken: string,
+    userData: TAuthUser,
+    _rememberMe: boolean = false,
+  ): void => {
+    // Access token: 7 hari
+    setCookie(ACCESS_TOKEN_KEY, accessToken, COOKIE_EXPIRY_DAYS);
+
+    // Refresh token: 7 hari
+    setCookie(REFRESH_TOKEN_KEY, refreshToken, COOKIE_EXPIRY_DAYS);
+
+    // User data: 7 hari
+    setCookie(
+      USER_DATA_KEY,
+      encodeURIComponent(JSON.stringify(userData)),
+      COOKIE_EXPIRY_DAYS,
+    );
   },
 
   /**
    * Get tokens from cookies
    */
-  getTokens: (): { accessToken?: string; refreshToken?: string } => {
+  getTokens: (): {
+    accessToken?: string;
+    refreshToken?: string;
+  } => {
     return {
       accessToken: getCookie(ACCESS_TOKEN_KEY),
       refreshToken: getCookie(REFRESH_TOKEN_KEY),
@@ -82,7 +116,11 @@ export const jwtService = {
    */
   getUserData: (): TAuthUser => {
     const userDataCookie = getCookie(USER_DATA_KEY);
-    if (!userDataCookie) return {} as TAuthUser;
+
+    if (!userDataCookie) {
+      return {} as TAuthUser;
+    }
+
     try {
       return JSON.parse(decodeURIComponent(userDataCookie)) as TAuthUser;
     } catch {
@@ -96,6 +134,7 @@ export const jwtService = {
   verifyToken: async (token: string): Promise<JWTPayload | null> => {
     try {
       const { payload } = await jose.jwtVerify(token, secret);
+
       return payload as unknown as JWTPayload;
     } catch {
       return null;
@@ -147,7 +186,7 @@ export const jwtService = {
     const { accessToken, refreshToken: newRefreshToken } =
       await jwtService.generateTokens(payload);
 
-    jwtService.setTokens(accessToken, newRefreshToken, userData!);
+    jwtService.setTokens(accessToken, newRefreshToken, userData);
 
     return true;
   },

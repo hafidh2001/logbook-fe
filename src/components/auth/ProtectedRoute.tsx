@@ -29,7 +29,19 @@ export const ProtectedRoute = ({
 
   // Not authenticated - redirect to login
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.login} state={{ from: location }} replace />;
+    return (
+      <Navigate
+        to={ROUTES.login}
+        state={{
+          from: {
+            pathname: location.pathname,
+            search: location.search,
+            hash: location.hash,
+          },
+        }}
+        replace
+      />
+    );
   }
 
   // Check role authorization if roles are specified
