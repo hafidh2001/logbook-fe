@@ -184,7 +184,7 @@ export default function RekapLogbookPage() {
           header: "Tanggal",
           accessorKey: "date",
           formatter: (value) =>
-            value ? dayjs(value).locale("id").format("DD MMMM YYYY") : "-",
+            value ? dayjs(value).locale("id").format("DD MMM YYYY - HH:mm - HH:mm") : "-",
         },
         { header: "PPDS", accessorKey: "ppds" },
         { header: "NIM", accessorKey: "nim" },
@@ -289,11 +289,11 @@ export default function RekapLogbookPage() {
     {
       accessorKey: "date",
       header: "Date",
-      size: 150,
+      size: 180,
       cell: ({ row: { original } }) =>
         original.date ? (
           <span className="whitespace-nowrap">
-            {dayjs(original.date).locale("id").format("DD MMM YYYY")}
+            {dayjs(original.date).locale("id").format("DD MMM YYYY - HH:mm - HH:mm")}
           </span>
         ) : (
           "-"

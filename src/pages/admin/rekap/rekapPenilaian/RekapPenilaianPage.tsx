@@ -287,7 +287,7 @@ export default function RekapPenilaianPage() {
       cell: ({ row: { original } }) =>
         original.date_logbook ? (
           <span className="whitespace-nowrap">
-            {dayjs(original.date_logbook).locale("id").format("DD MMM YYYY")}
+            {dayjs(original.date_logbook).locale("id").format("DD MMM YYYY - HH:mm")}
           </span>
         ) : (
           "-"

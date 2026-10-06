@@ -17,7 +17,7 @@ export const Kegiatan = ({ data }: Props) => {
         <span className="text-sm text-gray-500 w-24">Date</span>
         <span className="text-sm font-medium text-gray-800">
           {data?.date
-            ? dayjs(data.date).locale("id").format("DD MMM YYYY")
+            ? dayjs(data.date).locale("id").format("DD MMM YYYY - HH:mm")
             : "-"}
         </span>
       </div>

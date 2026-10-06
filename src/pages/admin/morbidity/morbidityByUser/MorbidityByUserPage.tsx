@@ -87,7 +87,7 @@ export default function MorbidityByUserPage() {
       size: 150,
       cell: ({ row: { original } }) =>
         original.date
-          ? dayjs(original.date).locale("id").format("DD MMM YYYY")
+          ? dayjs(original.date).locale("id").format("DD MMM YYYY - HH:mm")
           : "-",
     },
     {

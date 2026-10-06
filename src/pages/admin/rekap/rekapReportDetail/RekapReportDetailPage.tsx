@@ -167,7 +167,7 @@ export default function RekapReportDetailPage() {
         },
         {
           label: "Date Range",
-          value: `${dayjs(start_date).locale("id").format("DD MMM YYYY")} - ${dayjs(end_date).locale("id").format("DD MMM YYYY")}`,
+          value: `${dayjs(start_date).locale("id").format("DD MMM YYYY - HH:mm")} - ${dayjs(end_date).locale("id").format("DD MMM YYYY - HH:mm")}`,
         },
       ];
 

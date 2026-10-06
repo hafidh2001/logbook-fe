@@ -274,7 +274,7 @@ export default function UnverifiedLogbookPage() {
       cell: ({ row: { original } }) => {
         return original.date ? (
           <span className="whitespace-nowrap">
-            {dayjs(original.date).locale("id").format("DD MMM YYYY")}
+            {dayjs(original.date).locale("id").format("DD MMM YYYY - HH:mm")}
           </span>
         ) : (
           <span className="text-gray-400">-</span>
