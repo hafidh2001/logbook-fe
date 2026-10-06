@@ -1,4 +1,5 @@
 import { CardWrapper } from "@/components/card/cardWrapper";
+import dayjs from "dayjs";
 
 interface Props {
   data: any;
@@ -14,7 +15,7 @@ export const Identitas = ({ data }: Props) => {
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-28">Date Logbook</span>
         <span className="text-sm font-medium text-gray-800">
-          {data?.date_logbook ?? "-"}
+          {data?.date_logbook ? dayjs(data?.date_logbook).locale("id").format("DD MMM YYYY - HH:mm") : "-"}
         </span>
       </div>
       <div className="flex items-center gap-2">

@@ -46,12 +46,7 @@ export const Detail = ({ data }: Props) => {
         </span>
       </div>
       {/* Row 4 */}
-      <div className="flex items-center gap-2 col-span-1 sm:col-span-2">
-        <span className="text-sm text-gray-500 w-24">Lampiran (Opsional)</span>
-        <span className="text-sm font-medium text-gray-800">
-          {data?.lampiran ?? "-"}
-        </span>
-      </div>
+
       {/* Row 5 */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Date Morbidity</span>
@@ -87,6 +82,42 @@ export const Detail = ({ data }: Props) => {
           {data?.category ?? "-"}
         </span>
       </div>
+
+      {data?.lampiran ? (
+        <div className="flex flex-col gap-2 sm:col-span-2">
+          <span className="text-sm text-gray-500 w-24">
+            Lampiran (Opsional)
+          </span>
+          <div className="flex flex-col w-1/2 gap-2">
+            <img
+              src={
+                import.meta.env.VITE_API_URL.split("/index.php")[0] +
+                "/_file" +
+                data?.lampiran.split("_file")[1]
+              }
+              alt="img"
+              className="w-full h-auto"
+              onClick={() =>
+                window.open(
+                  import.meta.env.VITE_API_URL.split("/index.php")[0] +
+                    "/" +
+                    data?.lampiran,
+                  "_blank", // <- This is what makes it open in a new window.
+                )
+              }
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 col-span-1 sm:col-span-2">
+          <span className="text-sm text-gray-500 w-24">
+            Lampiran (Opsional)
+          </span>
+          <span className="text-sm font-medium text-gray-800">
+            {data?.lampiran ?? "-"}
+          </span>
+        </div>
+      )}
       <div></div>
     </CardWrapper>
   );

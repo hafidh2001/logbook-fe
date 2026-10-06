@@ -21,12 +21,6 @@ export const Kegiatan = ({ data }: Props) => {
             : "-"}
         </span>
       </div>
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500 w-24">Catatan</span>
-        <span className="text-sm font-medium text-gray-800">
-          {data?.attachment ?? "-"}
-        </span>
-      </div>
       {/* Row 2 */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500 w-24">Activity</span>
@@ -77,6 +71,41 @@ export const Kegiatan = ({ data }: Props) => {
           {data?.treatment ?? "-"}
         </span>
       </div>
+      {data?.attachment ? (
+        <div className="flex flex-col gap-2 sm:col-span-2">
+          <span className="text-sm text-gray-500 w-24">Catatan</span>
+          <div className="flex flex-col w-1/2 gap-2">
+            {(data.attachment as string).split(";").map((item: string) => {
+              let url =
+                import.meta.env.VITE_API_URL.split("/index.php")[0] +
+                "/_file" +
+                item.split("_file")[1];
+
+              return (
+                <img
+                  src={url}
+                  alt="img"
+                  className="w-full h-auto"
+                  onClick={() =>
+                    window.open(
+                      url,
+                      "_blank", // <- This is what makes it open in a new window.
+                    )
+                  }
+                />
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500 w-24">Catatan</span>
+          <div className="bg-red-200">hai</div>
+          <span className="text-sm font-medium text-gray-800">
+            {data?.attachment ?? "-"}
+          </span>
+        </div>
+      )}
     </CardWrapper>
   );
 };
