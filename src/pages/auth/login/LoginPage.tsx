@@ -1,7 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import logbook from "@/assets/images/logbook.png";
+import orthoLogo from "@/assets/images/logo_uns_ortho.png";
 import { useAuthStore } from "@/store/authStore";
 import { ROUTES } from "@/utils/routes";
 import { Button } from "@/components/ui/button";
@@ -54,8 +54,12 @@ export const LoginPage = () => {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md">
           {/* Mobile Logo (visible only on mobile) */}
-          <div className="lg:hidden flex flex-col items-center mb-8">
-            <img src={logbook} alt="Logo" className="w-40 h-auto mb-4" />
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+            <img src={orthoLogo} alt="Logo UNS Orthopaedi" className="h-16 w-16 object-contain" />
+            <div className="flex flex-col gap-1.5">
+              <span className="text-2xl font-bold leading-none tracking-tight text-[#04563D]">Logbook</span>
+              <span className="text-xs font-semibold uppercase leading-none tracking-[0.22em] text-[#087F5B]">Medlink</span>
+            </div>
           </div>
 
           {/* Header */}
