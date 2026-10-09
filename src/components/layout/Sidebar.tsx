@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { icons } from "@/assets/images/Icon";
 import { ROUTES } from "@/utils/routes";
-import logbook from "@/assets/images/logbook.png";
+import orthoLogo from "@/assets/images/logo_uns_ortho.png";
 import { navItems } from "@/data/sidebar";
 import { useAuthStore } from "@/store/authStore";
 import { ConfirmationModal } from "@/components/confirmationModal";
@@ -35,7 +35,13 @@ export const Sidebar = () => {
     <>
       {/* Mobile Header - Visible only on mobile, acts as header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 z-40 shadow-sm">
-        <img src={logbook} alt="Logo" className="h-8 w-auto" />
+        <div className="flex items-center gap-3">
+          <img src={orthoLogo} alt="Logo UNS Orthopaedi" className="h-10 w-10 object-contain" />
+          <div className="flex flex-col gap-1">
+            <span className="text-lg font-bold leading-none tracking-tight text-[#04563D]">Logbook</span>
+            <span className="text-[10px] font-semibold uppercase leading-none tracking-[0.22em] text-[#087F5B]">Medlink</span>
+          </div>
+        </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -51,8 +57,12 @@ export const Sidebar = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:w-64 lg:h-screen lg:bg-white lg:border-r lg:border-gray-100 lg:flex-col lg:px-4 lg:py-6 lg:gap-1">
         {/* Logo */}
-        <div className="flex items-center justify-center px-2 mb-7">
-          <img src={logbook} alt="Logo" className="w-40 h-auto" />
+        <div className="flex items-center justify-center gap-3 px-2 mb-7">
+          <img src={orthoLogo} alt="Logo UNS Orthopaedi" className="w-20 h-20 object-contain" />
+          <div className="flex flex-col gap-1.5">
+            <span className="text-2xl font-bold leading-none tracking-tight text-[#04563D]">Logbook</span>
+            <span className="text-xs font-semibold uppercase leading-none tracking-[0.22em] text-[#087F5B]">Medlink</span>
+          </div>
         </div>
 
         {/* Nav */}
