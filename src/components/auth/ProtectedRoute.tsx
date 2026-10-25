@@ -1,3 +1,4 @@
+import { useMobileSession } from "@/mobile/session";
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
@@ -26,6 +27,8 @@ export const ProtectedRoute = ({
       </div>
     );
   }
+
+  if (useMobileSession.getState().user) return <Navigate to="/mobile" replace />;
 
   // Not authenticated - redirect to login
   if (!isAuthenticated) {

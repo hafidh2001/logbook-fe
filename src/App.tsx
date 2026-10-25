@@ -1,3 +1,4 @@
+import MobileApp from "@/mobile/MobileApp";
 import { useEffect, useCallback } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { ROUTES } from "@/utils/routes";
@@ -73,6 +74,7 @@ function App() {
       future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
       <Routes>
+        <Route path="/mobile/*" element={<MobileApp />} />
         {/* Redirect root to dashboard */}
         <Route path="/" element={<Navigate to={ROUTES.dashboard} replace />} />
 

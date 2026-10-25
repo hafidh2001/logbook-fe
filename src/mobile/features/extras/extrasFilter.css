@@ -1,0 +1,24 @@
+/* Deliberately scoped to Explore and Staff Milestone filters, never editors. */
+.mweb-extras .extras-filter{background:#fff;border:1px solid #d7e8de;border-radius:18px;padding:20px;margin-bottom:22px;min-width:0;box-shadow:0 2px 6px #102c2308}
+.mweb-extras .extras-filter h2{display:flex;align-items:center;gap:9px;margin:0 0 20px;font-size:16px;font-weight:700;color:#164b3c}
+.extras-filter-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px 16px;align-items:start}
+.mweb-extras .extras-filter .mweb-extras-field{display:flex;flex-direction:column;min-width:0;gap:7px;color:#62766f;font-size:13px;font-weight:600;margin:0}
+.mweb-extras .extras-filter .mweb-extras-field>input,.mweb-extras .extras-filter .mweb-extras-field>select{height:48px;min-height:48px;width:100%;min-width:0;max-width:100%;padding:10px 12px;background:#fff;border:1px solid #cddfd5;border-radius:11px;color:#153c2b;font:inherit;font-size:14px;font-weight:400}
+.mweb-extras .extras-filter .mweb-extras-field>input:focus,.mweb-extras .extras-filter .mweb-extras-field>select:focus{outline:none;border-color:#087f5b;box-shadow:0 0 0 2px #087f5b20}
+.extras-filter .extras-choice__control{min-height:48px;border-radius:11px;border:1px solid #cddfd5;background:#fff;box-shadow:none;color:#153c2b;font-size:14px;font-weight:400}
+.extras-filter .extras-choice__control:hover{border-color:#087f5b}
+.extras-filter .extras-choice__control--is-focused{border-color:#087f5b;box-shadow:0 0 0 2px #087f5b20}
+.extras-filter .extras-choice__value-container{padding:5px 10px;min-width:0}
+.extras-filter .extras-choice__input-container{margin:0;padding:0;color:#153c2b}
+.mweb-extras .extras-filter .extras-choice__input-container input{min-height:0;height:auto;border:0;border-radius:0;padding:0!important;box-shadow:none;outline:none}
+.extras-filter .extras-choice__multi-value{background:#eaf6ef;border-radius:6px;max-width:100%}
+.extras-filter .extras-choice__multi-value__label{color:#164b3c;white-space:normal;overflow-wrap:anywhere}
+.extras-filter .extras-choice__multi-value__remove{color:#087f5b;cursor:pointer}
+.extras-filter .extras-choice__placeholder{color:#789087}
+.mweb-extras .extras-filter-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;flex-wrap:wrap}
+.mweb-extras .extras-filter-actions button{min-height:48px;border-radius:11px;font-size:14px}
+.mweb-extras .extras-filter-actions button:first-child{background:#087f5b;border-color:#087f5b;color:white}
+.mweb-extras .extras-filter-actions button:first-child:hover{background:#06674a}
+@media(min-width:640px){.extras-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1100px){.extras-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:639px){.mweb-extras .extras-filter{padding:16px}.mweb-extras .extras-filter-actions{flex-direction:column}.mweb-extras .extras-filter-actions button{width:100%}}

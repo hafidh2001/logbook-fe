@@ -1,0 +1,357 @@
+/* Milestone only: no shared form, auth, backoffice or logout overrides. */
+.milestone-scope{
+  min-width:0}
+.milestone-scope .mweb-extras{
+  padding-bottom:160px}
+.milestone-scope .mweb-extras-hero{
+  background:transparent;
+  border:0;
+  border-radius:0;
+  padding:0 4px 14px;
+  margin-bottom:8px}
+.milestone-scope .mweb-extras-hero h2{
+  font-size:22px;
+  color:#101828}
+.milestone-scope .mweb-extras-hero p{
+  font-size:13px;
+  margin-bottom:10px}
+.milestone-staff-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:14px}
+.milestone-scope .milestone-staff-card{
+  display:flex;
+  gap:16px;
+  align-items:stretch;
+  text-align:left;
+  border:1px solid #d7e8de;
+  border-radius:16px;
+  background:#fff;
+  padding:18px;
+  min-width:0;
+  box-shadow:0 2px 6px #102c2310;
+  font-weight:400}
+.milestone-date-rail{
+  width:52px;
+  flex:none;
+  border-right:1px solid #d7e8de;
+  padding-right:14px;
+  display:flex;
+  align-items:center;
+  flex-direction:column;
+  font-variant-numeric:tabular-nums}
+.milestone-date-rail strong{
+  font-size:30px;
+  line-height:36px;
+  color:#087f5b;
+  font-weight:700}
+.milestone-date-rail>span{
+  font-size:12px;
+  line-height:18px;
+  text-transform:uppercase;
+  color:#164b3c;
+  letter-spacing:.8px;
+  font-weight:600}
+.milestone-date-rail small{
+  font-size:11px;
+  color:#667085;
+  line-height:18px}
+.milestone-card-body{
+  flex:1;
+  min-width:0}
+.milestone-card-title{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px}
+.milestone-scope .milestone-card-title h2{
+  font-size:18px;
+  line-height:25px;
+  margin:0;
+  font-weight:700;
+  color:#164b3c;
+  overflow-wrap:anywhere}
+.milestone-card-title svg{
+  flex:none;
+  margin-top:3px}
+.milestone-card-user{
+  display:block;
+  font-size:14px;
+  line-height:20px;
+  color:#667085;
+  font-weight:500;
+  margin-top:4px;
+  overflow-wrap:anywhere}
+.milestone-repeat{
+  display:block;
+  margin-top:7px;
+  font-size:12px;
+  line-height:18px;
+  color:#b54708;
+  font-weight:600;
+  background:none}
+.milestone-card-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+  font-size:12px;
+  line-height:19px;
+  color:#667085}
+.milestone-scope .milestone-add{
+  position:fixed;
+  z-index:35;
+  right:24px;
+  bottom:calc(110px + env(safe-area-inset-bottom,0px));
+  border-radius:50%;
+  width:56px;
+  height:56px;
+  min-height:56px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#087f5b;
+  color:#fff;
+  border:0;
+  box-shadow:0 5px 18px #087f5b40}
+.milestone-scope .milestone-add:hover{
+  background:#06674a}
+.milestone-add svg{
+  display:block;
+  flex:none}
+.milestone-scope .mweb-extras-pagination{
+  margin:24px auto 0;
+  position:sticky;
+  bottom:112px;
+  z-index:30;
+  flex-wrap:wrap;
+  padding:10px 12px;
+  width:fit-content;
+  max-width:100%;
+  border:1px solid #d7e8de;
+  border-radius:16px;
+  background:#ffffffed;
+  box-shadow:0 3px 14px #102d2510;
+  backdrop-filter:blur(8px)}
+.milestone-editor-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:20px;
+  align-items:start}
+.milestone-editor{
+  min-width:0}
+.milestone-editor fieldset{
+  border:0;
+  padding:0;
+  margin:0;
+  min-width:0}
+.milestone-form-fields{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:16px}
+.milestone-scope .mweb-extras-field{
+  min-width:0;
+  gap:7px;
+  color:#344054;
+  font-size:13px;
+  font-weight:700}
+.milestone-scope .milestone-form-fields input,.milestone-scope .milestone-form-fields textarea{
+  min-width:0;
+  max-width:100%;
+  min-height:50px;
+  background:#fff;
+  border-radius:14px;
+  border:1px solid #d7e8de;
+  padding:12px 13px;
+  font-weight:500;
+  color:#101828;
+  font-size:14px}
+.milestone-scope input[type=date]{
+  display:block;
+  width:100%;
+  min-width:0}
+.milestone-scope .milestone-form-fields textarea{
+  min-height:100px;
+  resize:vertical}
+.milestone-switch-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  min-height:48px;
+  font-size:14px;
+  font-weight:500}
+.milestone-scope .milestone-switch{
+  min-height:24px;
+  width:42px;
+  min-width:42px;
+  height:24px;
+  background:#667085;
+  border:0;
+  border-radius:14px;
+  padding:3px;
+  display:flex;
+  align-items:center}
+.milestone-scope .milestone-switch[aria-checked=true]{
+  background:#087f5b;
+  justify-content:flex-end}
+.milestone-switch span{
+  display:block;
+  width:18px;
+  height:18px;
+  background:#fff;
+  border-radius:50%}
+.milestone-form-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:22px}
+.milestone-scope .milestone-form-actions .mweb-extras-danger{
+  margin-top:0}
+.milestone-undo{
+  min-width:0;
+  border:1px solid #f4d592;
+  background:#fffaeb;
+  border-radius:16px;
+  padding:18px}
+.milestone-scope .milestone-undo h2{
+  font-size:16px;
+  margin:0 0 8px;
+  color:#7a2e0e}
+.milestone-scope .milestone-undo p{
+  font-size:13px;
+  line-height:20px;
+  color:#7a2e0e;
+  overflow-wrap:anywhere}
+.milestone-undo .mweb-extras-actions{
+  margin-top:14px}
+.milestone-scope .milestone-undo .mweb-extras-danger{
+  margin-top:0}
+.milestone-select .milestone-choice__control{
+  border:1px solid #d7e8de;
+  border-radius:14px;
+  min-height:50px;
+  background:white;
+  font-size:14px;
+  font-weight:500}
+.milestone-select .milestone-choice__value-container{
+  padding:5px 12px}
+.milestone-select .milestone-choice__input-container{
+  margin:0;
+  padding:0;
+  min-height:26px}
+.milestone-scope .milestone-select .milestone-choice__input-container input{
+  min-height:0;
+  border:0;
+  box-shadow:none;
+  padding:0!important;
+  border-radius:0;
+  outline:none}
+.milestone-select .milestone-choice__menu{
+  z-index:45;
+  font-size:14px;
+  font-weight:500}
+.milestone-select .milestone-choice__option--is-selected{
+  background:#087f5b}
+.milestone-select .milestone-choice__option--is-focused{
+  background:#eaf6ef;
+  color:#164b3c}
+.milestone-select .milestone-choice__control--is-focused{
+  border-color:#087f5b;
+  box-shadow:0 0 0 1px #087f5b}
+.milestone-editor fieldset:disabled .milestone-select{
+  pointer-events:none;
+  opacity:.65}
+.milestone-dialog-overlay{
+  position:fixed;
+  inset:0;
+  background:#102d2566;
+  z-index:120;
+  backdrop-filter:blur(3px)}
+.milestone-dialog{
+  box-sizing:border-box;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  z-index:121;
+  width:min(480px,calc(100vw - 32px));
+  padding:26px;
+  border:1px solid #d7e8de;
+  border-radius:24px;
+  background:#fff;
+  color:#164b3c;
+  box-shadow:0 18px 80px #102d2533}
+.milestone-dialog h2{
+  font-size:21px;
+  font-weight:750;
+  margin:0 0 12px}
+.milestone-dialog p{
+  color:#62766f;
+  font-size:14px;
+  line-height:1.6;
+  margin-bottom:22px}
+.milestone-dialog>div{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px}
+.milestone-dialog button{
+  font:inherit;
+  min-height:44px;
+  border-radius:12px;
+  padding:10px 18px;
+  border:1px solid #d7e8de;
+  background:#fff;
+  cursor:pointer}
+.milestone-dialog .milestone-confirm-danger{
+  background:#b53830;
+  color:white;
+  border-color:#b53830}
+.milestone-dialog button:focus-visible{
+  outline:3px solid #74c5a5;
+  outline-offset:2px}
+
+@media(min-width:720px){
+  .milestone-staff-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))}
+.milestone-form-fields{
+  grid-template-columns:repeat(2,minmax(0,1fr))}
+.milestone-notes{
+  grid-column:1/-1}
+}
+
+@media(min-width:1100px){
+  .milestone-editor{grid-column:1;grid-row:1}
+  .milestone-undo{grid-column:2;grid-row:1}
+  .milestone-staff-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))}
+.milestone-editor-layout{
+  grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+}
+
+@media(max-width:480px){
+  .milestone-scope .mweb-extras-header{
+  gap:10px;
+  margin-bottom:18px}
+.milestone-scope .mweb-extras-header h1{
+  font-size:25px}
+.milestone-scope .mweb-extras-header .mweb-extras-actions{
+  gap:6px}
+.milestone-scope .mweb-extras-header button{
+  padding:9px 12px}
+.milestone-scope .milestone-add{
+  right:20px}
+.milestone-scope .mweb-extras-card.milestone-editor{
+  padding:16px}
+.milestone-scope .mweb-extras-pagination{
+  font-size:12px;
+  gap:8px}
+.milestone-scope .mweb-extras-pagination button{
+  padding:10px 12px}
+}
+
+
+@media(max-width:719px){
+  .milestone-scope:has(.mweb-extras-pagination) .milestone-add{bottom:calc(190px + env(safe-area-inset-bottom,0px));}
+}

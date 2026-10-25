@@ -1,0 +1,71 @@
+import { useEffect, useRef, useState } from 'react';
+import { enabled, getDynamicAnotherRoles, getDynamicAsmParams, getDynamicCategories, getDynamicHospitals, getDynamicRoleMaps, getDynamicScoreOptions, getDynamicStases, getEligibleStaffJejaringConfig, getMorbiditasDefaultVerifierUserIds, getRequiredDynamicVerifierRoleIds, isMorbiditasAction, shouldShowDynamicScoreFields, type DynamicChoice, type DynamicLogbookAction, type DynamicLogbookFormValues, type UserRole } from './dynamicLogbookForm';
+import { arr, dateInput, fieldsFor, formPayload, localNow, validateValues, valuesFromRecord, type Row } from './model';
+import { AttachmentFields, activeAttachments, type UploadDraft } from './AttachmentFields';
+import { uploadAttachment } from './attachments';
+import { useMobileSession } from '../../session';
+import { getInitialExamParticipant, mergeCurrentExamParticipant } from './ActionLogbookEditParticipant';
+export function SelectField({label,value,options,onChange,disabled=false,required=false}:{label:string;value?:number;options:DynamicChoice[];onChange:(id:number|undefined)=>void;disabled?:boolean;required?:boolean}) {return <label className="mweb-field"><span>{label}{required?' *':''}</span><select value={value??''} disabled={disabled} required={required} onChange={e=>onChange(e.target.value?Number(e.target.value):undefined)}><option value="">Pilih {label}</option>{value&&!options.some(o=>o.id===value)&&<option value={value}>Pilihan tersimpan (ID {value})</option>}{options.map(o=><option key={o.id} value={o.id}>{o.label}</option>)}</select>{!options.length&&<small>Opsi belum tersedia dari server.</small>}</label>;}
+export function ScoreFields({action,values,onChange,disabled=false}:{action:DynamicLogbookAction;values:Record<string,string|number>;onChange:(v:Record<string,string|number>)=>void;disabled?:boolean}) {const options=getDynamicScoreOptions(action);return <fieldset className="mweb-score" disabled={disabled}><legend>Penilaian ASM</legend>{getDynamicAsmParams(action).map(p=><label className="mweb-field" key={p.id}><span>{p.label} *</span>{enabled(action.has_score_option)?<select required value={values[p.id]??''} onChange={e=>onChange({...values,[p.id]:e.target.value})}><option value="">Pilih nilai</option>{options.map(n=><option key={n} value={n}>{n}</option>)}</select>:<input required type="number" min={p.minScore} max={p.maxScore} step="any" value={values[p.id]??''} onChange={e=>onChange({...values,[p.id]:e.target.value})}/>}<small>{p.minScore!==undefined?`Min. ${p.minScore}`:''}{p.maxScore!==undefined?` · Maks. ${p.maxScore}`:''}</small></label>)}</fieldset>;}
+export default function LogbookForm({action,record,role,identity,participants:serverParticipants,onSubmit,onCancel,onPreview,onDirty}:{action:DynamicLogbookAction;record?:Row;role:UserRole;identity:{id:number;id_client:number;id_stase?:number|null};participants:DynamicChoice[];onSubmit:(payload:Row)=>Promise<void>;onCancel:()=>void;onPreview:(url:string)=>void;onDirty?:()=>void}) {
+  const participants=record ? mergeCurrentExamParticipant(serverParticipants,getInitialExamParticipant(record)) : serverParticipants;
+  const [values,setValues]=useState<DynamicLogbookFormValues>(()=>record?{...valuesFromRecord(record,action),userStaseId:Number(record.id_stase ?? record.m_user?.id_stase)||identity.id_stase}:{date:new Date(),userStaseId:identity.id_stase,roleUsers:getMorbiditasDefaultVerifierUserIds(action),emr:{},asm:{},is_presentation:false,is_retake:false});
+  const [date,setDate]=useState(()=>record?dateInput(record.date):localNow());const [retained,setRetained]=useState(()=>record?activeAttachments(record):[]);const [drafts,setDrafts]=useState<UploadDraft[]>([]);const [busy,setBusy]=useState(false);const [errors,setErrors]=useState<string[]>([]);const lock=useRef(false);const form=useRef<HTMLFormElement>(null);
+  // The shell owns its floating navbar. Measure its actual safe-area/font height
+  // locally rather than restyling it or assuming a phone-specific fixed offset.
+  useEffect(() => {
+    const nav = document.querySelector<HTMLElement>('.mobile-bottom-nav');
+    const measure = () => {
+      const clearance = nav ? Math.max(0, window.innerHeight - nav.getBoundingClientRect().top) + 12 : 12;
+      form.current?.style.setProperty('--mweb-form-nav-clearance', `${clearance}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    if (nav) observer.observe(nav);
+    window.addEventListener('resize', measure);
+    return () => { observer.disconnect(); window.removeEventListener('resize', measure); };
+  }, []);
+  const update=(patch:Partial<DynamicLogbookFormValues>)=>{setValues(v=>({...v,...patch}));onDirty?.();};const fields=fieldsFor(action,role);const morbid=isMorbiditasAction(action);const jejaring=getEligibleStaffJejaringConfig(action,values.userStaseId);
+  function sameSession(){const u=useMobileSession.getState().user;return u?.id===identity.id&&u.id_client===identity.id_client;}
+  async function submit(e:React.FormEvent){e.preventDefault();if(lock.current)return;if(!sameSession()){setErrors(['Sesi berubah. Buka kembali form dari sesi aktif.']);return;}const errs=validateValues(action,values,role,!!record);if(enabled(action.is_exam)&&!participants.some(p=>p.id===values.participantId))errs.push('Pilih peserta PPDS dari daftar server.');if(drafts.some(d=>d.state==='uploading'))errs.push('Tunggu upload lampiran selesai.');if(errs.length){setErrors(errs);form.current?.querySelector<HTMLElement>('[aria-invalid="true"],input:invalid,select:invalid')?.focus();return;}lock.current=true;setBusy(true);setErrors([]);const c=new AbortController();const abort=()=>c.abort();window.addEventListener('mobile:session-cleared',abort);try{const payload=formPayload(action,values,role,date,record?.date);const all=[...drafts];for(let i=0;i<all.length;i++){if(!sameSession())throw new Error('Sesi telah berubah.');if(all[i].uploaded)continue;all[i]={...all[i],state:'uploading',progress:0};setDrafts([...all]);try{const uploaded=await uploadAttachment(all[i].file,all[i].label,identity,p=>{all[i]={...all[i],progress:p};setDrafts([...all]);},c.signal);all[i]={...all[i],state:'done',uploaded};setDrafts([...all]);}catch(error){all[i]={...all[i],state:'error',error:error instanceof Error?error.message:'Upload gagal.'};setDrafts([...all]);throw error;}}
+    if(enabled(action.has_attachment))payload.t_logbook_attachment=[...retained.map(a=>{if(a.id==null)throw new Error('ID lampiran tersimpan tidak tersedia. Muat ulang sebelum menyimpan.');return {id:a.id};}),...all.flatMap(a=>a.uploaded?[{name:a.uploaded.name,url_file:a.uploaded.url_file}]:[])];
+    if(record&&Array.isArray(payload.t_logbook_status)){payload.t_logbook_status=payload.t_logbook_status.filter((s:Row)=>!morbid||getDynamicRoleMaps(action).some(r=>r.idActionRole===s.id_action_role&&/pelapor|reporter|melaporkan/i.test(`${r.label} ${r.identifier}`))).map((s:Row)=>{const old=arr(record.t_logbook_status).find(r=>Number(r.id_action_role)===s.id_action_role&&String(r.notes??'').includes('__staff_jejaring__')===String(s.notes??'').includes('__staff_jejaring__'));return {...s,status:old?.status??'pending'};});if(!payload.t_logbook_status.length)delete payload.t_logbook_status;}
+    if(!sameSession())throw new Error('Sesi telah berubah.');await onSubmit(payload);
+  }catch(error){setErrors([error instanceof Error?error.message:'Gagal menyimpan logbook.']);}finally{window.removeEventListener('mobile:session-cleared',abort);lock.current=false;setBusy(false);}}
+  // Presentation groups only: each unchanged metadata branch renders exactly once.
+  // DOM/tab order follows the complete activity column, then documentation; no
+  // CSS order/masonry that would make keyboard navigation jump across columns.
+  const documentationKeys = new Set(['emr', 'notes', 'attachments', 'asm']);
+  const documentationFields = fields.filter(field => documentationKeys.has(field.key) && (field.key !== 'asm' || shouldShowDynamicScoreFields(action,role,values)));
+  const activityFields = fields.filter(field => !documentationKeys.has(field.key));
+  const renderField = (field: typeof fields[number]) => {switch(field.key){case 'action_roles':return <section key={field.key} className="mweb-section"><h3>Staff / Verifikator</h3>{getDynamicRoleMaps(action).map(r=><SelectField key={r.idActionRole} label={r.label} required={!record&&getRequiredDynamicVerifierRoleIds(action).includes(r.idActionRole)} disabled={!!record&&morbid&&!/pelapor|reporter|melaporkan/i.test(`${r.label} ${r.identifier}`)} value={values.roleUsers?.[r.idActionRole]} options={r.users} onChange={id=>update({roleUsers:{...values.roleUsers,[r.idActionRole]:id??0}})}/>)}{jejaring&&<SelectField label="Staff Pengajar Jejaring (opsional)" value={values.staffJejaringUserId} options={jejaring.users} onChange={staffJejaringUserId=>update({staffJejaringUserId})}/>}</section>;
+    case 'date':return <label className="mweb-field mweb-form-wide" key="date"><span>Tanggal & waktu *</span><input type="datetime-local" required step="1" value={date} onChange={e=>{setDate(e.target.value);onDirty?.();}}/><small>Waktu lokal perangkat. Tanggal tersimpan tidak dikonversi ke UTC.</small></label>;
+    case 'title':case 'notes':case 'location':{const key=field.key;const label=String(action[`${key}_name`]??{title:'Judul',notes:'Catatan',location:'Lokasi'}[key]);return <label className={`mweb-field${key==='notes'||key==='title'?' mweb-form-wide':''}`} key={key}><span>{label} *</span>{key==='notes'?<textarea required rows={4} value={values[key]??''} onChange={e=>update({[key]:e.target.value})}/>:<input required value={values[key]??''} onChange={e=>update({[key]:e.target.value})}/>}</label>;}
+    case 'another_role':return <SelectField key={field.key} label={String(action.another_role_name??'Peran')} required options={getDynamicAnotherRoles(action)} value={values.anotherRoleId} onChange={anotherRoleId=>update({anotherRoleId})}/>;
+    case 'category':return <SelectField key={field.key} label={String(action.category_name??'Kategori')} required options={getDynamicCategories(action)} value={values.categoryId} onChange={categoryId=>update({categoryId})}/>;
+    case 'hospital':return <SelectField key={field.key} label="Rumah Sakit" required options={getDynamicHospitals(action)} value={values.hospitalId} onChange={hospitalId=>update({hospitalId})}/>;
+    case 'stase':return <SelectField key={field.key} label="Stase" required options={getDynamicStases(action)} value={values.staseId} onChange={staseId=>update({staseId})}/>;
+    case 'exam_result':return <label className="mweb-field" key={field.key}><span>Hasil Ujian *</span><select required value={values.exam_result??''} onChange={e=>update({exam_result:e.target.value})}><option value="">Pilih Status</option>{['Lolos','Remidi','Tidak Lolos'].map(v=><option key={v}>{v}</option>)}</select></label>;
+    case 'is_presentation':case 'is_retake':return <label key={field.key} className="mweb-checkbox"><input type="checkbox" checked={!!values[field.key]} onChange={e=>update({[field.key]:e.target.checked})}/>{field.key==='is_presentation'?'Presentasi':'Mengulang'}</label>;
+    case 'emr':return <section className="mweb-section" key="emr"><h3>Data Pasien</h3>{(morbid?[['patient_name','Nama Pasien'],['emr_number','Nomor CM / EMR'],['age','Usia (tahun)'],['diagnosis','Diagnosis']]:[['patient_name','Nama Pasien'],['age','Usia (tahun)'],['month','Usia (bulan)'],['gender','Jenis Kelamin'],['diagnosis','Diagnosis'],['treatment','Tatalaksana']]).map(([key,label])=><label className={`mweb-field${['diagnosis','treatment'].includes(key)?' mweb-form-wide':''}`} key={key}><span>{label}{key!=='emr_number'?' *':''}</span>{key==='gender'?<select required value={values.emr?.gender??''} onChange={e=>update({emr:{...values.emr,gender:e.target.value}})}><option value="">Pilih Jenis Kelamin</option><option>Male (M)</option><option>Female (F)</option></select>:<input required={key!=='emr_number'} type={['age','month'].includes(key)?'number':'text'} min={['age','month'].includes(key)?0:undefined} max={key==='month'?11:undefined} step={key==='month'?1:undefined} value={values.emr?.[key as keyof NonNullable<typeof values.emr>]??''} onChange={e=>update({emr:{...values.emr,[key]:e.target.value}})}/>}</label>)}</section>;
+    case 'attachments':return <AttachmentFields key="attachments" action={action} identity={identity} retained={retained} drafts={drafts} onRetained={a=>{setRetained(a);onDirty?.();}} onDrafts={a=>{setDrafts(a);onDirty?.();}} onPreview={onPreview} disabled={busy}/>;
+    case 'asm':return shouldShowDynamicScoreFields(action,role,values)?<ScoreFields key="asm" action={action} values={values.asm??{}} onChange={asm=>update({asm})}/>:null;
+    default:return null;}};
+  return <form ref={form} className="mweb-form" onSubmit={submit}>
+    {errors.length>0&&<div className="mweb-error-panel" role="alert" tabIndex={-1}><strong>Data belum dapat disimpan</strong><ul>{errors.map((err,i)=><li key={i}>{err}</li>)}</ul></div>}
+    <p className="mweb-muted">Lengkapi data kegiatan. Kolom bertanda * wajib diisi; lampiran selalu opsional.</p>
+    <fieldset disabled={busy} className={`mweb-form-fields${documentationFields.length?'':' mweb-form-single'}`}>
+      <legend className="mweb-form-legend">Data logbook</legend>
+      <section className="mweb-form-column" aria-label="Informasi kegiatan">
+        <h3 className="mweb-form-column-heading">Informasi kegiatan</h3>
+        {enabled(action.is_exam)&&<SelectField label="Peserta PPDS" required value={values.participantId} options={participants} onChange={participantId=>update({participantId})}/>}
+        {activityFields.map(renderField)}
+      </section>
+      {documentationFields.length>0&&<section className="mweb-form-column" aria-label="Dokumentasi kegiatan">
+        <h3 className="mweb-form-column-heading">{enabled(action.has_emr)?'Data pasien & dokumentasi':'Catatan & dokumentasi'}</h3>
+        {documentationFields.map(renderField)}
+      </section>}
+    </fieldset>
+    <footer className="mweb-actions"><button type="button" className="mweb-btn" disabled={busy} onClick={onCancel}>Batal</button><button type="submit" className="mweb-btn mweb-primary" disabled={busy||drafts.some(d=>d.state==='uploading')}>{busy?'Menyimpan…':'Simpan Logbook'}</button></footer>
+  </form>;
+}

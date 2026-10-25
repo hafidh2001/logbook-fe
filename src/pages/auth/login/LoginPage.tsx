@@ -1,3 +1,4 @@
+import { useMobileSession } from "@/mobile/session";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,7 @@ export const LoginPage = () => {
   const {
     control,
     handleSubmit,
+    resetField,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -32,13 +34,14 @@ export const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     const success = await login(data);
+    resetField("password");
 
     if (success) {
       const successMessage = useAuthStore.getState().success;
       showToast(successMessage ?? "Login berhasil", "success", {
         duration: 3000,
       });
-      navigate(ROUTES.dashboard);
+      navigate(useMobileSession.getState().user ? "/mobile" : ROUTES.dashboard);
     } else {
       const errorMessage = useAuthStore.getState().error;
       showToast(errorMessage ?? "Login gagal", "error", { duration: 4000 });

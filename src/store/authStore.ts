@@ -1,4 +1,7 @@
 import { create } from "zustand";
+import { useMobileSession } from "@/mobile/session";
+import { ROUTES } from "@/utils/routes";
+import { authDestination } from "@/mobile/types";
 import { authApi } from "@/services/authApi";
 import { jwtService } from "@/functions/jwt";
 import { RoleEnum } from "@/types";
@@ -23,7 +26,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const payload = await jwtService.getCurrentUser();
 
-      if (payload) {
+      if (payload && jwtService.getUserData()?.role_name === RoleEnum.INSTITUTION && !useMobileSession.getState().user) {
         const userData = jwtService.getUserData();
         set({
           user: userData,
@@ -49,18 +52,25 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true, error: null, success: null });
 
     try {
-      const response = await authApi.login(credentials);
-      const userData = response.data;
-
-      // Check if user has INSTITUTION role
-      if (userData.role_name !== RoleEnum.INSTITUTION) {
-        set({
-          isLoading: false,
-          error:
-            "Akses terbatas, role anda tidak memiliki izin untuk mengakses website",
-        });
-        return false;
+      let response;
+      try { response = await authApi.login(credentials); }
+      catch {
+        await useMobileSession.getState().login(credentials.username, credentials.password);
+        jwtService.clearTokens();
+        set({ ...initialState, isInitialized: true, success: 'Login berhasil' });
+        return true;
       }
+      const userData = response.data;
+      const destination = authDestination(userData.role_name);
+      if (destination === ROUTES.login) throw new Error('Role tidak memiliki izin untuk mengakses aplikasi.');
+      if (destination === '/mobile') {
+        // Authenticate again against the actual mobile contract; never promote WEB data.
+        await useMobileSession.getState().login(credentials.username, credentials.password);
+        jwtService.clearTokens();
+        set({ ...initialState, isInitialized: true, success: 'Login berhasil' });
+        return true;
+      }
+      useMobileSession.getState().logout();
 
       // Generate JWT tokens from user data
       const jwtPayload = {

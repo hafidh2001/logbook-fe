@@ -1,0 +1,14 @@
+/* Saved Detail only: Create/Edit and filter control grids are intentionally untouched. */
+.mweb-detail .mweb-detail-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;min-width:0}
+.mweb-detail .mweb-detail-field{min-width:0;padding:12px 0;border-bottom:1px solid var(--mweb-border);overflow-wrap:anywhere}
+.mweb-detail .mweb-detail-field small{display:block;font-size:12px;line-height:1.5;margin-bottom:5px}
+.mweb-detail .mweb-detail-field p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.6;color:#183f33}
+.mweb-detail .mweb-detail-wide{grid-column:1/-1;min-width:0}
+.mweb-detail .mweb-detail-attachment{padding:16px 0;border-bottom:1px solid var(--mweb-border)}
+.mweb-detail .mweb-file{min-width:0}.mweb-detail .mweb-file>div{min-width:0;overflow-wrap:anywhere}
+.mweb-detail .mweb-exam-lolos{color:#087F5B!important;background:#EAF6EF}
+.mweb-detail .mweb-exam-remidi{color:#B54708!important;background:#FFF4E8}
+.mweb-detail .mweb-exam-tidak-lolos{color:#D92D20!important;background:#FFF0EE}
+.mweb-detail .mweb-exam-unknown{color:#667085!important;background:#F2F4F7}
+.mweb-detail p[class*="mweb-exam-"]{border-radius:8px;padding:6px 10px;width:fit-content}
+@media(max-width:760px){.mweb-detail .mweb-detail-fields{grid-template-columns:minmax(0,1fr);gap:0}.mweb-detail .mweb-detail-columns{gap:16px}.mweb-detail .mweb-detail-field{padding:12px 0}}

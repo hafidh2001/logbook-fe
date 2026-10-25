@@ -1,0 +1,50 @@
+/* Scoped to the mobile-style web area; institution/login branding is unchanged. */
+.mobile-app .mobile-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 1 auto;
+  min-width: 0;
+  text-decoration: none;
+}
+.mobile-app .mobile-brand img.mobile-brand-emblem {
+  display: block;
+  width: 64px;
+  height: 64px;
+  max-height: none;
+  flex: 0 0 64px;
+  object-fit: contain;
+}
+.mobile-app .mobile-brand-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  white-space: nowrap;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.mobile-app .mobile-brand-wordmark strong {
+  color: #00564F;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.5px;
+}
+.mobile-app .mobile-brand-wordmark > span {
+  color: #00969A;
+  font-size: 12px;
+  line-height: 1.1;
+  letter-spacing: 3px;
+}
+@media (max-width: 700px) {
+  .mobile-app .mobile-brand { gap: 7px; flex: 0 1 auto; }
+  .mobile-app .mobile-brand img.mobile-brand-emblem { width: 44px; height: 44px; flex-basis: 44px; }
+  .mobile-app .mobile-brand-wordmark { gap: 4px; }
+  .mobile-app .mobile-brand-wordmark strong { font-size: clamp(15px, 4.2vw, 19px); letter-spacing: -.4px; }
+  .mobile-app .mobile-brand-wordmark > span { font-size: 9px; letter-spacing: 2px; }
+}
+@media (max-width: 350px) {
+  .mobile-app .mobile-brand { gap: 5px; }
+  .mobile-app .mobile-brand img.mobile-brand-emblem { width: 36px; height: 36px; flex-basis: 36px; }
+  .mobile-app .mobile-brand-wordmark strong { font-size: 14px; }
+  .mobile-app .mobile-brand-wordmark > span { font-size: 8px; letter-spacing: 1.7px; }
+}

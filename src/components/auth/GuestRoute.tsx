@@ -1,3 +1,4 @@
+import { useMobileSession } from "@/mobile/session";
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
@@ -9,7 +10,9 @@ interface GuestRouteProps {
 
 export const GuestRoute = ({ children }: GuestRouteProps) => {
   const location = useLocation();
-  const { isAuthenticated, isInitialized } = useAuthStore();
+  const mobileUser = useMobileSession(s => s.user);
+  const { isAuthenticated, isInitialized, user } = useAuthStore();
+  if (mobileUser) return <Navigate to="/mobile" replace />;
 
   // Still initializing auth state
   if (!isInitialized) {
@@ -24,10 +27,10 @@ export const GuestRoute = ({ children }: GuestRouteProps) => {
   }
 
   // Already authenticated - redirect to previous page
-  if (isAuthenticated) {
+  if (isAuthenticated && user.role_name === 'institution') {
     const from = location.state?.from;
 
-    const redirectTo = from
+    const redirectTo = from?.pathname?.startsWith("/") && !from.pathname.startsWith("//") && !from.pathname.startsWith("/mobile") && from.pathname !== ROUTES.login
       ? `${from.pathname}${from.search || ""}${from.hash || ""}`
       : ROUTES.dashboard;
 

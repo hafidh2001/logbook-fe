@@ -1,0 +1,156 @@
+/* Mobile source palette: src/theme/colors.ts. Scoped to avoid institution CSS changes. */
+/* Urgency is independent of unread state; text labels carry the same meaning. */
+.mobile-app .mobile-notifications .mobile-notification-card.is-rejected,.mobile-app .mobile-notifications .mobile-notification-card.is-revised{border-color:#e3a2a2;border-left:4px solid #ad2626;background:#fff7f7}
+.mobile-app .mobile-notification-card.is-rejected>strong,.mobile-app .mobile-notification-card.is-revised>strong,.mobile-app .mobile-notification-card.is-rejected>small,.mobile-app .mobile-notification-card.is-revised>small{color:#982020}
+.mobile-app .mobile-notification-status{display:inline-flex;align-self:flex-start;margin:8px 0 0;padding:4px 10px;border:1px solid #e1a0a0;border-radius:999px;background:#feeaea;color:#982020;font-size:12px;font-weight:700}
+.mobile-app .mobile-todo-summary{color:#365b49;margin:6px 0 16px;font-size:14px}
+.mobile-app .mobile-todo-triage{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:#496454}
+.mobile-app .mobile-todo-triage>span{display:flex;gap:5px;align-items:baseline}
+.mobile-app .mobile-todo-triage strong{font-size:12px;overflow-wrap:anywhere}
+.mobile-app {--primary:#087F5B;--heading:#164B3C;--soft:#EAF6EF;--border:#D7E8DE;--muted:#667085; min-height:100dvh;background:#F5FAF7;color:#101828;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.5;isolation:isolate;}
+.mobile-app * {box-sizing:border-box;min-width:0;}
+.mobile-app h1,.mobile-app h2,.mobile-app h3,.mobile-app p {margin:0;}
+.mobile-app h1 {font-size:clamp(23px,3vw,32px);font-weight:750;color:var(--heading);}
+.mobile-app h2 {font-size:22px;font-weight:750;color:var(--heading);}
+.mobile-app h3 {font-size:17px;font-weight:650;color:var(--heading);}
+.mobile-app a {color:inherit;text-decoration:none;}
+.mobile-app button,.mobile-app input,.mobile-app select,.mobile-app textarea {font:inherit;}
+.mobile-app button {border:1px solid var(--border);border-radius:14px;padding:9px 15px;background:white;color:var(--heading);cursor:pointer;font-weight:650;min-height:42px;}
+.mobile-app button:disabled {opacity:.5;cursor:not-allowed;}
+.mobile-app :is(a,button,input,select,textarea):focus-visible {outline:3px solid #52B788;outline-offset:3px;}
+.mobile-app .mobile-primary {background:var(--primary);color:white;border-color:var(--primary);}
+.mobile-app .mobile-header {height:88px;background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:16px 32px;gap:20px;}
+.mobile-app .mobile-brand img {width:160px;max-height:53px;}
+.mobile-app .mobile-header-actions {display:flex;align-items:center;gap:17px;color:var(--heading);flex-shrink:0;}
+.mobile-app .mobile-header-actions a,.mobile-app .mobile-header-actions button {display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;min-width:44px;min-height:44px;padding:0;}
+.mobile-app .mobile-avatar {border-radius:50%;background:var(--soft);font-weight:750;}
+.mobile-app .mobile-main {width:100%;max-width:none;padding:28px 32px 140px;margin:auto;}
+.mobile-app .mobile-main>section {margin-bottom:28px;}
+.mobile-app .mobile-hero {position:relative;--hero-art-width:clamp(100px,20vw,240px);border:1px solid var(--border);border-radius:26px;background:var(--soft);padding:28px 32px;min-height:220px;display:flex;align-items:center;}
+.mobile-app .mobile-hero-illustration {position:absolute;right:20px;bottom:12px;width:var(--hero-art-width);max-width:35%;height:auto;max-height:75%;object-fit:contain;opacity:.6;pointer-events:none;}
+.mobile-app .mobile-hero>div {max-width:calc(100% - var(--hero-art-width) - 8px);min-width:0;overflow-wrap:anywhere;}
+.mobile-app .mobile-eyebrow {font-size:12px;font-weight:750;letter-spacing:1.2px;text-transform:uppercase;color:#527568;margin-bottom:6px;}
+.mobile-app .mobile-muted {color:var(--muted);font-size:12px;margin-top:17px;}
+.mobile-app .mobile-stats {display:flex;gap:36px;margin-top:18px;}
+.mobile-app .mobile-stats>div {display:flex;flex-direction:column;gap:3px;}
+.mobile-app .mobile-stats small {color:#527568;}
+.mobile-app .mobile-stats strong {font-size:17px;color:var(--heading);}
+.mobile-app .mobile-section-heading {display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:17px;}
+.mobile-app .mobile-section-heading>span {color:var(--muted);font-size:13px;}
+.mobile-app .mobile-menu-grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
+.mobile-app .mobile-menu-card {background:white;border:1px solid var(--border);border-radius:21px;padding:20px;display:flex;align-items:center;gap:14px;min-height:105px;transition:box-shadow .15s,border-color .15s;}
+.mobile-app .mobile-menu-card:hover {border-color:var(--primary);box-shadow:0 5px 16px #164b3c0c;}
+.mobile-app .mobile-menu-card>strong {flex:1;font-size:15px;color:var(--heading);overflow-wrap:anywhere;}
+.mobile-app .mobile-menu-icon {width:54px;height:54px;flex-shrink:0;border-radius:17px;background:var(--soft);color:var(--heading);display:flex;align-items:center;justify-content:center;}
+.mobile-app .mobile-todo {background:white;border:1px solid var(--border);border-radius:25px;padding:24px;}
+.mobile-app .mobile-badge {font-size:13px;display:inline-flex;align-items:center;justify-content:center;border-radius:30px;background:var(--soft);min-width:27px;padding:3px 8px;}
+.mobile-app .mobile-todo-list {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:15px 0;}
+.mobile-app .mobile-todo-card {display:flex;align-items:center;gap:14px;border:1px solid var(--border);border-left:4px solid var(--primary);border-radius:17px;padding:16px;background:#fff;}
+.mobile-app .mobile-todo-card>div {flex:1;min-width:0;overflow-wrap:anywhere;}
+.mobile-app .mobile-todo-more {display:inline-flex;align-items:center;gap:8px;color:var(--primary);font-weight:700;padding:10px 0;}
+.mobile-app section[aria-label="Menu"]>.mobile-section-heading {flex-wrap:wrap;}
+.mobile-app section[aria-label="Menu"]>.mobile-section-heading .mobile-actions {margin-top:0;gap:8px;}
+.mobile-app .mobile-menu-loading {display:flex;align-items:center;justify-content:center;gap:12px;min-height:150px;padding:24px;color:var(--primary);font-weight:600;background:var(--surface,#fff);border-radius:18px;margin:12px 0;}
+.mobile-app .mobile-menu-refreshing {min-height:0;justify-content:flex-start;padding:10px 0;background:transparent;font-size:14px;}
+.mobile-app .mobile-menu-spinner {display:inline-block;width:24px;height:24px;flex-shrink:0;border:3px solid #cde8dc;border-top-color:var(--primary);border-radius:50%;}
+.mobile-app .mobile-todo-loading {display:flex;align-items:center;gap:8px;color:var(--primary);}
+.mobile-app .mobile-spinner {animation:mobile-todo-spin 1s linear infinite;}
+.mobile-app .mobile-todo-pagination {margin-top:18px;}
+.mobile-app .mobile-todo-pagination .mobile-actions {align-items:center;flex-wrap:wrap;}
+.mobile-app .mobile-todo .mobile-section-heading {flex-wrap:wrap;gap:12px;}
+@keyframes mobile-todo-spin {to {transform:rotate(360deg);}}
+@media(prefers-reduced-motion:reduce) {.mobile-app .mobile-spinner {animation:none;}}
+.mobile-app .mobile-todo-card strong {color:var(--heading);font-size:15px;}
+.mobile-app .mobile-todo-card p,.mobile-app .mobile-todo-card small {font-size:12px;color:var(--muted);}
+.mobile-app .mobile-empty {padding:35px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--muted);}
+.mobile-app .mobile-empty img {width:150px;max-height:130px;}
+.mobile-app .mobile-panel {padding:20px;border:1px solid var(--border);border-radius:19px;background:white;margin-bottom:14px;}
+.mobile-app summary {font-weight:650;color:var(--heading);cursor:pointer;}
+.mobile-app .mobile-filter-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:15px;}
+.mobile-app label {display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600;color:var(--heading);}
+.mobile-app input,.mobile-app select,.mobile-app textarea {width:100%;border:1px solid var(--border);border-radius:11px;background:white;padding:11px;color:#101828;min-height:44px;}
+.mobile-app .mobile-error {border:1px solid #FDA29B;background:#FEF3F2;color:#B42318;border-radius:15px;padding:15px;margin-bottom:20px;display:flex;gap:15px;align-items:center;justify-content:space-between;}
+.mobile-app .mobile-notice {padding:15px;background:var(--soft);border:1px solid var(--border);border-radius:15px;margin-bottom:20px;}
+.mobile-app .mobile-actions {display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:18px;flex-wrap:wrap;}
+.mobile-app .mobile-bottom-nav {position:fixed;z-index:40;bottom:20px;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 32px));display:flex;align-items:center;justify-content:space-around;gap:6px;background:#fff;border:1px solid var(--border);border-radius:25px;padding:11px 12px calc(11px + env(safe-area-inset-bottom));box-shadow:0 8px 32px #164b3c1a;}
+.mobile-app .mobile-bottom-nav a {display:flex;flex:1 1 0;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px clamp(4px,2vw,15px);border-radius:17px;font-size:11px;font-weight:650;color:#98A2B3;min-width:0;min-height:44px;overflow-wrap:anywhere;text-align:center;}
+.mobile-app .mobile-bottom-nav a.active {background:var(--soft);color:var(--primary);}
+.mobile-app .mobile-modal-backdrop {position:fixed;inset:0;background:#0f172a5c;z-index:70;display:grid;place-items:center;padding:20px;}
+.mobile-app .mobile-modal {max-width:480px;width:100%;background:white;border-radius:26px;padding:26px;max-height:90dvh;overflow:auto;}
+.mobile-app .mobile-modal p {margin-top:14px;font-size:14px;color:var(--muted);}
+.mobile-app .mobile-menu-options {display:grid;gap:10px;margin-top:18px;}
+.mobile-app .mobile-menu-options label {flex-direction:row;align-items:center;padding:10px;border:1px solid var(--border);border-radius:12px;}
+.mobile-app .mobile-menu-options input {width:20px;min-height:20px;accent-color:var(--primary);}
+.mobile-app .mobile-notification-bell {position:relative;}
+.mobile-app .mobile-notification-count {position:absolute;top:0;right:0;background:var(--primary);color:white;min-width:19px;height:19px;border-radius:10px;padding:0 4px;font-size:11px;display:flex;align-items:center;justify-content:center;}
+.mobile-app .mobile-notification-card.is-unread {border-left:4px solid var(--primary);background:#f2faf5;}
+@media(max-width:1100px) {.mobile-app .mobile-menu-grid {grid-template-columns:repeat(3,minmax(0,1fr));}.mobile-app .mobile-menu-card {padding:16px;gap:10px;}.mobile-app .mobile-todo-list {grid-template-columns:1fr;}}
+/* Preserve native Home's three columns. Size only menu glyphs against each card's
+   available inline content (cqi), not the viewport; allow labels to grow the row. */
+@media(max-width:700px) {.mobile-app .mobile-header {height:76px;padding:13px clamp(12px,4.6vw,20px);gap:8px;}.mobile-app .mobile-brand {flex:0 1 135px;}.mobile-app .mobile-brand img {display:block;width:100%;height:auto;}.mobile-app .mobile-header-actions {gap:clamp(4px,1.8vw,8px);}.mobile-app .mobile-header-actions button {padding:8px;border:none;}.mobile-app .mobile-main {padding:20px clamp(12px,4.6vw,20px) 132px;}.mobile-app .mobile-hero {--hero-art-width:clamp(100px,26vw,140px);padding:23px 21px;min-height:210px;}.mobile-app .mobile-hero-illustration {right:12px;}.mobile-app .mobile-hero>div {position:relative;}.mobile-app .mobile-hero .mobile-stats {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}.mobile-app .mobile-hero h1 {overflow-wrap:anywhere;}.mobile-app .mobile-hero h1 {font-size:23px;}.mobile-app .mobile-menu-grid {grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,2.8vw,12px);}.mobile-app .mobile-menu-card {container-type:inline-size;flex-direction:column;justify-content:center;text-align:center;padding:clamp(12px,3.5vw,16px) clamp(6px,1.8vw,10px);gap:clamp(8px,2.3vw,10px);min-height:clamp(124px,34vw,140px);box-shadow:0 6px 12px #164b3c0f;}.mobile-app .mobile-menu-card>svg {display:none;}.mobile-app .mobile-menu-card>strong {flex:none;width:100%;font-size:clamp(.75rem,3.33vw,.8125rem);line-height:1.4;font-weight:600;display:block;overflow-wrap:anywhere;}.mobile-app .mobile-menu-icon {width:clamp(44px,46cqi,52px);height:auto;aspect-ratio:1;border-radius:clamp(13px,14cqi,16px);}.mobile-app .mobile-menu-icon>svg {width:clamp(24px,25cqi,28px);height:auto;aspect-ratio:1;flex-shrink:0;display:block;}.mobile-app .mobile-todo {padding:18px 14px;}.mobile-app .mobile-filter-grid {grid-template-columns:1fr;}.mobile-app .mobile-stats {gap:24px;}.mobile-app .mobile-section-heading>span {font-size:11px;}.mobile-app .mobile-error {align-items:flex-start;flex-direction:column;}.mobile-app .mobile-bottom-nav a {padding:6px 4px;}}
+
+/* Dedicated queue heading; Home and other page headers keep their hierarchy. */
+.mobile-app .mobile-todo-page-heading {display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.mobile-app .mobile-todo-page-identity {display:flex;align-items:center;gap:14px;}
+.mobile-app .mobile-todo-back {display:flex;align-items:center;justify-content:center;width:44px;height:44px;flex-shrink:0;border:1px solid var(--border);border-radius:13px;color:var(--heading);background:white;}
+.mobile-app .mobile-todo-back:hover {background:var(--soft);border-color:var(--primary);}
+.mobile-app .mobile-todo-page-heading>button {flex-shrink:0;min-height:44px;}
+.mobile-app .mobile-todo-page-heading .mobile-eyebrow {margin-bottom:3px;}
+.mobile-app .mobile-todo-title {display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;}
+.mobile-app .mobile-todo-title h1 {line-height:1.2;overflow-wrap:anywhere;}
+.mobile-app .mobile-todo-title .mobile-badge {color:var(--heading);font-weight:700;}
+.mobile-app .mobile-todo-range {font-size:14px;line-height:1.5;color:var(--muted);margin:12px 0 20px;}
+/* Shared Home/full To Do filter controls; react-select's input is not a text field. */
+.mobile-app .mobile-todo-filters {padding:16px 18px;border-radius:16px;background:#fbfdfb;}
+.mobile-app .mobile-todo-filters summary {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:28px;list-style:none;font-size:14px;}
+.mobile-app .mobile-todo-filters summary::-webkit-details-marker {display:none;}
+.mobile-app .mobile-todo-filters summary>svg {flex-shrink:0;}
+.mobile-app .mobile-todo-filters[open] summary>svg {transform:rotate(180deg);}
+.mobile-app .mobile-todo-filters .mobile-filter-grid {gap:16px;margin-top:18px;}
+.mobile-app .mobile-todo-filters label {font-size:13px;font-weight:600;line-height:20px;gap:7px;}
+.mobile-app .mobile-todo-filters select,.mobile-app .mobile-todo-filters input[type=date] {height:48px;min-height:48px;font-size:14px;font-weight:400;}
+.mobile-app .mobile-todo-ppds .todo-ppds__control {font-size:14px;font-weight:400;}
+.mobile-app .mobile-todo-ppds .todo-ppds__value-container {padding:4px 10px;}
+.mobile-app .mobile-todo-filters .mobile-actions button {min-height:44px;}
+@media(min-width:701px) and (max-width:1100px) {.mobile-app .mobile-todo-filters .mobile-filter-grid {grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:700px) {
+  .mobile-app .mobile-todo-page-heading {gap:10px;}
+  .mobile-app .mobile-todo-page-identity {gap:10px;}
+  .mobile-app .mobile-todo-title h1 {font-size:22px;}
+  .mobile-app .mobile-todo-page-heading>button {padding:9px 11px;font-size:13px;}
+  .mobile-app .mobile-todo-range {margin:14px 0 18px;}
+  .mobile-app .mobile-todo-filters {padding:14px;}
+  .mobile-app .mobile-todo-filters .mobile-actions {flex-direction:column;align-items:stretch;gap:10px;}
+  .mobile-app .mobile-todo-filters .mobile-actions button {width:100%;flex:none;}
+}
+.mobile-app .mobile-todo-ppds {min-width:0;}
+.mobile-app .mobile-todo-ppds>label {margin-bottom:7px;}
+.mobile-app .mobile-todo-ppds input {min-height:0;padding:0;border:0;border-radius:0;box-shadow:none;}
+.mobile-app .mobile-todo-filters .mobile-actions {grid-column:1/-1;justify-content:flex-start;margin-top:0;}
+.mobile-app .mobile-todo-filters .mobile-error {grid-column:1/-1;flex-wrap:wrap;overflow-wrap:anywhere;}
+.mobile-app .mobile-todo-filters :focus-visible {outline:2px solid var(--primary);outline-offset:3px;}
+.mobile-app .mobile-todo-ppds .todo-ppds__control--is-focused {outline:2px solid var(--primary);outline-offset:2px;}
+.mobile-app .mobile-todo-ppds .todo-ppds__multi-value__label {white-space:normal;overflow-wrap:anywhere;}
+
+/* Notification-only composition: title never competes with two action labels. */
+.mobile-app .mobile-notifications {padding-bottom:calc(var(--mobile-nav-height, 0px) + 16px);}
+.mobile-app .mobile-notifications-heading {flex-wrap:wrap;gap:16px;}
+.mobile-app .mobile-notifications-heading h1 {flex:1 1 220px;overflow-wrap:anywhere;}
+.mobile-app .mobile-notifications-tools {display:flex;flex-wrap:wrap;gap:12px;}
+.mobile-app .mobile-notifications-tools button {display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 12px;font-size:14px;line-height:1.4;}
+.mobile-app .mobile-notifications-tools svg {flex-shrink:0;}
+.mobile-app .mobile-notification-refreshing {animation:mobile-notification-spin .8s linear infinite;}
+@keyframes mobile-notification-spin {to {transform:rotate(360deg);}}
+@media(prefers-reduced-motion:reduce) {.mobile-app .mobile-notification-refreshing {animation:none;}}
+.mobile-app .mobile-notification-card {overflow-wrap:anywhere;}
+.mobile-app .mobile-notification-card > span {display:block;margin-top:4px;font-size:13px;line-height:1.5;}
+.mobile-app .mobile-notification-card p {margin-top:8px;line-height:1.6;white-space:normal;}
+.mobile-app .mobile-notification-card small {display:block;margin-top:8px;line-height:1.5;}
+.mobile-app .mobile-notification-card .mobile-actions {display:flex;justify-content:flex-end;gap:12px;margin-top:16px;}
+.mobile-app .mobile-notification-card .mobile-actions button {min-height:44px;padding:10px 12px;font-size:14px;line-height:1.4;}
+@media(max-width:600px) {
+ .mobile-app .mobile-notifications-heading {display:grid;grid-template-columns:minmax(0,1fr);gap:12px;}
+ .mobile-app .mobile-notifications-tools {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:12px;}
+ .mobile-app .mobile-notifications-tools button {padding:10px 8px;gap:6px;}
+ .mobile-app .mobile-notification-card .mobile-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+}

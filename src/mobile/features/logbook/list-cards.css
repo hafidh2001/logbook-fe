@@ -1,0 +1,32 @@
+/* Only the per-action list surface: no Detail, editor, Milestone or Home styles. */
+.mweb-logbook .mweb-record-grid:has(>.mweb-list-card,>.mweb-bimbingan-category){grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+.mweb-logbook .mweb-list-card{--list-tone:#087F5B;--list-soft:#EAF6EF;position:relative;display:block;width:100%;min-width:0;padding:12px 14px 12px 17px;border:1px solid var(--mweb-border);border-radius:16px;background:white;box-shadow:0 2px 5px #164b3c0a;text-align:left;color:#0B1730;line-height:1.5;overflow:hidden;transition:background .12s,box-shadow .12s}
+.mweb-logbook .mweb-list-card::before{content:'';position:absolute;inset:0 auto 0 0;width:3px;background:var(--list-tone)}
+.mweb-logbook .mweb-list-card:hover{background:#FAFDFA;box-shadow:0 3px 8px #164b3c12}
+.mweb-logbook .mweb-list-card:active{background:#EAF6EF;transform:translateY(1px)}
+.mweb-logbook .mweb-list-card:focus-visible{outline:3px solid #5DB89A;outline-offset:3px}
+.mweb-logbook .mweb-list-top{display:flex;align-items:flex-start;gap:10px;justify-content:space-between;margin-bottom:8px}
+.mweb-logbook .mweb-list-heading{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+.mweb-logbook .mweb-list-headline{font-size:16px;line-height:1.4;font-weight:800;color:#0B1730;overflow-wrap:anywhere}
+.mweb-logbook .mweb-list-subheadline{font-size:12px;line-height:1.5;color:#667085;font-weight:500;overflow-wrap:anywhere}
+.mweb-logbook .mweb-list-status{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:0 0 auto;max-width:115px;padding:4px 8px;border-radius:999px;background:var(--list-soft);color:var(--list-tone);font-size:12px;line-height:18px;font-weight:700}
+.mweb-logbook .mweb-list-status svg{flex-shrink:0;display:block}
+.mweb-logbook .mweb-list-info{display:flex;flex-direction:column;gap:6px}
+.mweb-logbook .mweb-list-info-row{display:grid;grid-template-columns:20px 44px minmax(0,1fr);gap:6px;align-items:start;color:#164B3C;font-size:13px;line-height:19px;font-weight:600;overflow-wrap:anywhere}
+.mweb-logbook .mweb-list-info-row>svg{display:block;margin-top:2px}
+.mweb-logbook .mweb-list-label{color:#667085;font-size:12px;font-weight:400}
+.mweb-logbook .mweb-list-tone-pending,.mweb-logbook .mweb-list-tone-remidi{--list-tone:#B54708;--list-soft:#FFF4E8}
+.mweb-logbook .mweb-list-tone-rejected,.mweb-logbook .mweb-list-tone-tidak-lolos{--list-tone:#D92D20;--list-soft:#FEECEE}
+.mweb-logbook .mweb-list-tone-unknown{--list-tone:#667085;--list-soft:#F2F4F7}
+/* Ordinary lifecycle accents remain medical green as on Native; Exam follows result. */
+.mweb-logbook .mweb-list-tone-pending::before,.mweb-logbook .mweb-list-tone-rejected::before{background:#087F5B}
+.mweb-logbook .mweb-list-bimbingan-entry .mweb-list-top{margin-bottom:0}
+.mweb-logbook .mweb-list-bimbingan-entry .mweb-list-subheadline{display:block;font-size:13px;font-weight:600;margin-top:4px}
+/* Dedicated native category/counter overview, never a generic record summary. */
+.mweb-logbook .mweb-bimbingan-category{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;min-height:72px;padding:14px 16px;border-radius:16px;text-align:left}
+.mweb-logbook .mweb-bimbingan-category>strong{min-width:0;flex:1;overflow-wrap:anywhere;color:#164B3C}
+.mweb-logbook .mweb-bimbingan-counts{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mweb-logbook .mweb-bimbingan-counts>b,.mweb-logbook .mweb-bimbingan-counts>small{display:block;padding:4px 10px;border-radius:999px;background:#EAF6EF;color:#087F5B;font-size:13px;font-weight:700}
+.mweb-logbook .mweb-bimbingan-counts>small{background:#FFF4E8;color:#B54708}
+@media(max-width:1100px){.mweb-logbook .mweb-record-grid:has(>.mweb-list-card,>.mweb-bimbingan-category){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.mweb-logbook .mweb-record-grid:has(>.mweb-list-card,>.mweb-bimbingan-category){grid-template-columns:minmax(0,1fr);gap:8px}}
