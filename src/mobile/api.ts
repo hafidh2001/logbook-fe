@@ -2,13 +2,13 @@ import { businessRefused, mutationAudit, sanitizeAuditEvent, type AuditEvent } f
 import { useMobileSession } from './session';
 import { navigationSessionKey } from './navigation';
 // Source: READONLY Mobile src/api/{authApi,masterApi}.ts. Not the institution API.
-// Same-origin in development AND production. Production requires the documented
-// fixed-upstream reverse proxy; Vite's proxy is not included in dist/.
+// Direct Hachi transport by default in development and production.
+// Browser CORS/preflight must be allowed by Hachi; never auto-retry through a proxy.
 export function resolveMobileApiUrl(configured?: string): string {
-  const value = configured || '/mobile-api/index.php?r=apiMobileService/';
-  // Explicit legacy direct mode is supported, but still requires working server CORS.
+  const value = configured || import.meta.env.VITE_MOBILE_API_URL;
+  // The relative gateway remains explicit opt-in only, not an automatic fallback.
   // No arbitrary hosts, embedded credentials, controller switches or proxy targets.
-  if (!['/mobile-api/index.php?r=apiMobileService/', 'https://hachi.kelava.id/index.php?r=apiMobileService/'].includes(value)) {
+  if (!['/mobile-api/index.php?r=apiMobileService/', import.meta.env.VITE_MOBILE_API_URL].includes(value)) {
     throw new Error('Konfigurasi VITE_MOBILE_API_URL tidak valid.');
   }
   return value;
