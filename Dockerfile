@@ -17,11 +17,7 @@ COPY . .
 # These must be provided during docker build using --build-arg
 ARG VITE_DECRYPT_SECRET_KEY
 ARG VITE_API_URL
-<<<<<<< HEAD
-ARG VITE_MOBILE_API_URL=https://hachi.kelava.id/index.php?r=apiMobileService/
-=======
 ARG VITE_MOBILE_API_URL
->>>>>>> fbbc6625e5441b1efb4cbdaa90ca8cd3257b8dae
 ARG VITE_API_TOKEN
 ARG VITE_JWT_SECRET
 

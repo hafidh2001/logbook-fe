@@ -9,11 +9,7 @@ services:
         # Pass environment variables during build
         VITE_DECRYPT_SECRET_KEY: ${VITE_DECRYPT_SECRET_KEY}
         VITE_API_URL: ${VITE_API_URL}
-<<<<<<< HEAD
-        VITE_MOBILE_API_URL: ${VITE_MOBILE_API_URL:-https://hachi.kelava.id/index.php?r=apiMobileService/}
-=======
         VITE_MOBILE_API_URL: ${VITE_MOBILE_API_URL}
->>>>>>> fbbc6625e5441b1efb4cbdaa90ca8cd3257b8dae
         VITE_API_TOKEN: ${VITE_API_TOKEN}
         VITE_JWT_SECRET: ${VITE_JWT_SECRET}
     image: hafidh2001/logbook:latest
