@@ -5,10 +5,14 @@ import { navigationSessionKey } from './navigation';
 // Direct Hachi transport by default in development and production.
 // Browser CORS/preflight must be allowed by Hachi; never auto-retry through a proxy.
 export function resolveMobileApiUrl(configured?: string): string {
+<<<<<<< HEAD
   const value = configured || 'https://hachi.kelava.id/index.php?r=apiMobileService/';
+=======
+  const value = configured || import.meta.env.VITE_MOBILE_API_URL;
+>>>>>>> fbbc6625e5441b1efb4cbdaa90ca8cd3257b8dae
   // The relative gateway remains explicit opt-in only, not an automatic fallback.
   // No arbitrary hosts, embedded credentials, controller switches or proxy targets.
-  if (!['/mobile-api/index.php?r=apiMobileService/', 'https://hachi.kelava.id/index.php?r=apiMobileService/'].includes(value)) {
+  if (!['/mobile-api/index.php?r=apiMobileService/', import.meta.env.VITE_MOBILE_API_URL].includes(value)) {
     throw new Error('Konfigurasi VITE_MOBILE_API_URL tidak valid.');
   }
   return value;
