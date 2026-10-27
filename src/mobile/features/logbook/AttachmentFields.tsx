@@ -22,6 +22,7 @@ export type UploadDraft = {
   label: string;
   state: 'ready' | 'uploading' | 'done' | 'error';
   progress: number | null;
+  phase?: 'uploading' | 'processing';
   error?: string;
   uploaded?: Attachment;
 };
@@ -146,6 +147,7 @@ export function AttachmentFields({
   disabled = false,
   readOnly = false,
   onPreview,
+  onPendingChange,
 }: {
   action: DynamicLogbookAction;
   retained: Attachment[];
@@ -156,107 +158,158 @@ export function AttachmentFields({
   disabled?: boolean;
   readOnly?: boolean;
   onPreview: (url: string) => void;
+  onPendingChange?: (pending: boolean) => void;
 }) {
   const [review, setReview] = useState<UploadDraft[] | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const inputBlocked = disabled || readOnly || drafts.some(d => d.state === 'uploading');
+  const [working, setWorking] = useState(false);
+  const locked = useRef(false);
+  const reviewRef = useRef<UploadDraft[] | null>(null);
+  const errorRef = useRef<Record<string, string>>({});
   const controller = useRef(new AbortController());
+  const operations = useRef(new Map<string, AbortController>());
   const current = useRef(drafts);
+  const callbacks = useRef({ onDrafts, onPendingChange });
+  callbacks.current = { onDrafts, onPendingChange };
   current.current = drafts;
+  const inputBlocked = disabled || readOnly || working || drafts.some(d => d.state === 'uploading');
+  function reportPending() {
+    callbacks.current.onPendingChange?.(locked.current || !!reviewRef.current ||
+      Object.values(errorRef.current).some(Boolean) || current.current.some(d => d.state !== 'done' || !d.uploaded));
+  }
+  function publish(next: UploadDraft[]) {
+    current.current = next;
+    callbacks.current.onDrafts?.(next);
+    reportPending();
+  }
+  function change(key: string, patch: Partial<UploadDraft>) {
+    publish(current.current.map(d => d.key === key ? { ...d, ...patch } : d));
+  }
+  function showReview(next: UploadDraft[] | null) {
+    reviewRef.current = next;
+    setReview(next);
+    reportPending();
+  }
+  function setLock(next: boolean) {
+    locked.current = next;
+    setWorking(next);
+    reportPending();
+  }
   useEffect(() => {
     const c = new AbortController();
     controller.current = c;
-    setReview(null);
-    setErrors({});
+    locked.current = false;
+    reviewRef.current = null;
+    errorRef.current = {};
+    setWorking(false); setReview(null); setErrors({});
     const cancel = () => {
       c.abort();
+      operations.current.forEach(op => op.abort());
+      reviewRef.current = null;
       setReview(null);
+      callbacks.current.onPendingChange?.(true);
     };
     window.addEventListener('mobile:session-cleared', cancel);
     return () => {
       c.abort();
+      operations.current.forEach(op => op.abort());
+      operations.current.clear();
       window.removeEventListener('mobile:session-cleared', cancel);
     };
   }, [identity.id, identity.id_client]);
-  function change(key: string, patch: Partial<UploadDraft>) {
-    const next = current.current.map((d) => (d.key === key ? { ...d, ...patch } : d));
-    current.current = next;
-    onDrafts?.(next);
+  function alive(owner: AbortController) {
+    return controller.current === owner && !owner.signal.aborted;
   }
-  async function upload(draft: UploadDraft) {
-    if (inputBlocked || review || controller.current.signal.aborted) return;
-    change(draft.key, { state: 'uploading', error: undefined, progress: 0 });
+  async function uploadOne(candidate: UploadDraft, owner: AbortController) {
+    const original = current.current.find(d => d.key === candidate.key);
+    if (!alive(owner) || !original || operations.current.has(candidate.key)) return;
+    const op = new AbortController();
+    operations.current.set(candidate.key, op);
+    const abort = () => op.abort();
+    owner.signal.addEventListener('abort', abort, { once: true });
+    const valid = () => alive(owner) && !op.signal.aborted &&
+      operations.current.get(candidate.key) === op && current.current.some(d => d.key === candidate.key);
+    change(candidate.key, { state: 'uploading', error: undefined, progress: 0, phase: 'uploading' });
     try {
-      const uploaded = await uploadAttachment(
-        draft.file,
-        draft.label,
-        identity,
-        (v) => change(draft.key, { progress: v }),
-        controller.current.signal,
-      );
-      change(draft.key, { state: 'done', uploaded });
+      const uploaded = await uploadAttachment(candidate.file, candidate.label, identity,
+        (progress, phase) => { if (valid()) change(candidate.key, { progress, phase }); }, op.signal);
+      if (valid()) change(candidate.key, { ...candidate, state: 'done', uploaded, error: undefined });
     } catch (e) {
-      change(draft.key, {
-        state: 'error',
-        error: e instanceof Error ? e.message : 'Upload gagal.',
-      });
+      if (valid()) {
+        const message = e instanceof Error ? e.message : 'Upload gagal.';
+        change(candidate.key, original.uploaded
+          ? { ...original, state: 'done', error: `Gambar asli dipertahankan. ${message}` }
+          : { state: 'error', error: message });
+      }
+    } finally {
+      owner.signal.removeEventListener('abort', abort);
+      if (operations.current.get(candidate.key) === op) operations.current.delete(candidate.key);
     }
   }
   function append(valid: UploadDraft[]) {
-    const updated = new Map(valid.map((d) => [d.key, d]));
-    const existing = new Set(current.current.map((d) => d.key));
-    const next = [
-      ...current.current.map((d) => updated.get(d.key) ?? d),
-      ...valid.filter((d) => !existing.has(d.key)),
-    ];
-    current.current = next;
-    onDrafts?.(next);
+    const existing = new Set(current.current.map(d => d.key));
+    publish([...current.current, ...valid.filter(d => !existing.has(d.key))]);
   }
-  function commitReview(files: ReviewImage[]) {
-    if (!review || inputBlocked || controller.current.signal.aborted) return;
-    const outputs = new Map(files.map((file) => [file.key, file]));
-    const next: UploadDraft[] = review.flatMap((d) => {
-      const output = outputs.get(d.key);
-      if (/\.(jpe?g|png|webp)$/i.test(d.file.name) && !output) return [];
-      return [
-        {
-          ...d,
-          file: output?.file ?? d.file,
-          edit:
-            output?.crop && output.rotation !== undefined
-              ? { crop: output.crop, rotation: output.rotation }
-              : d.edit,
-          state: 'ready' as const,
-          uploaded: undefined,
-          progress: 0,
-        },
-      ];
+  async function runBatch(batch: UploadDraft[], owner: AbortController) {
+    for (const draft of batch) {
+      if (!alive(owner)) return;
+      await uploadOne(draft, owner);
+    }
+  }
+  async function retry(key: string) {
+    const draft = current.current.find(d => d.key === key);
+    if (disabled || readOnly || locked.current || reviewRef.current || draft?.state !== 'error' || !alive(controller.current)) return;
+    const owner = controller.current;
+    setLock(true);
+    try { await uploadOne(draft, owner); }
+    finally { if (alive(owner)) setLock(false); }
+  }
+  async function commitReview(files: ReviewImage[]) {
+    const session = reviewRef.current;
+    if (!session || disabled || readOnly || locked.current || !alive(controller.current)) return;
+    const outputs = new Map(files.map(file => [file.key, file]));
+    if (session.some(d => !outputs.has(d.key))) return;
+    const owner = controller.current;
+    setLock(true);
+    const next: UploadDraft[] = session.map(d => {
+      const output = outputs.get(d.key)!;
+      return { ...d, file: output.file,
+        edit: output.crop && output.rotation !== undefined ? { crop: output.crop, rotation: output.rotation } : d.edit,
+        state: 'ready', uploaded: undefined, progress: 0 };
     });
     append(next);
-    setReview(null);
+    showReview(null);
+    try { await runBatch(next, owner); }
+    finally { if (alive(owner)) setLock(false); }
   }
-  function pick(files: readonly File[], label: string, sourceErrors: string[] = []) {
-    if (inputBlocked || review || controller.current.signal.aborted) return;
+  async function pick(files: readonly File[], label: string, sourceErrors: string[] = []) {
+    if (inputBlocked || locked.current || reviewRef.current || !alive(controller.current)) return;
+    const owner = controller.current;
+    setLock(true);
     const valid: UploadDraft[] = [];
-    const errors: string[] = [...sourceErrors];
-    for (const file of Array.from(files)) {
+    const messages = [...sourceErrors];
+    for (const file of files) {
       try {
         validateFile(file);
-        valid.push({
-          key: crypto.randomUUID(),
-          file,
-          original: file,
-          label,
-          state: 'ready',
-          progress: 0,
-        });
-      } catch (e) {
-        errors.push(`${file.name}: ${e instanceof Error ? e.message : 'File tidak valid.'}`);
-      }
+        valid.push({ key: crypto.randomUUID(), file, original: file, label, state: 'ready', progress: 0 });
+      } catch (e) { messages.push(`${file.name}: ${e instanceof Error ? e.message : 'File tidak valid.'}`); }
     }
-    if (valid.some((d) => /\.(jpe?g|png|webp)$/i.test(d.file.name))) setReview(valid);
-    else append(valid);
-    setErrors(previous => ({ ...previous, [label]: errors.join('\n') }));
+    errorRef.current = { ...errorRef.current, [label]: messages.join('\n') };
+    setErrors(errorRef.current);
+    const images = valid.filter(d => /\.(jpe?g|png|webp)$/i.test(d.file.name));
+    const documents = valid.filter(d => !images.includes(d));
+    append(documents);
+    try {
+      // Documents finish first; canceling the later image review keeps them.
+      await runBatch(documents, owner);
+      if (alive(owner) && images.length) showReview(images);
+    } finally { if (alive(owner)) setLock(false); }
+  }
+  function remove(key: string) {
+    if (disabled || readOnly) return;
+    operations.current.get(key)?.abort();
+    operations.current.delete(key);
+    publish(current.current.filter(d => d.key !== key));
   }
 
   const slots = attachmentSlots(action, retained);
@@ -273,7 +326,7 @@ export function AttachmentFields({
               crop: d.edit?.crop,
               rotation: d.edit?.rotation,
             }))}
-          onCancel={() => setReview(null)}
+          onCancel={() => showReview(null)}
           onConfirm={commitReview}
         />
       )}
@@ -321,9 +374,9 @@ export function AttachmentFields({
                     {d.state === 'done'
                       ? 'Terunggah; akan dilampirkan saat Simpan'
                       : d.state === 'uploading'
-                        ? d.progress === null
+                        ? d.phase === 'processing'
                           ? 'Memproses di server…'
-                          : `Mengunggah ${d.progress}%`
+                          : d.progress === null ? 'Mengunggah…' : `Mengunggah ${d.progress}%`
                         : 'Belum diunggah'}
                   </small>
                   {d.state === 'uploading' && (
@@ -331,33 +384,17 @@ export function AttachmentFields({
                   )}{' '}
                   {d.error && <span className="mweb-error">{d.error}</span>}
                 </div>
-                {d.state !== 'uploading' && !inputBlocked && !review && (
-                  <>
-                    {/\.(jpe?g|png|webp)$/i.test(d.file.name) && (
-                      <button type="button" className="mweb-btn" onClick={() => setReview([d])}>
-                        Tinjau ulang
-                      </button>
-                    )}
-                    <button type="button" className="mweb-btn" onClick={() => upload(d)}>
-                      {d.state === 'error'
-                        ? 'Coba lagi'
-                        : d.state === 'done'
-                          ? 'Unggah ulang'
-                          : 'Unggah'}
-                    </button>
-                    <button
-                      type="button"
-                      className="mweb-btn mweb-danger"
-                      onClick={() => {
-                        const next = current.current.filter((f) => f.key !== d.key);
-                        current.current = next;
-                        onDrafts?.(next);
-                      }}
-                    >
-                      Hapus
-                    </button>
-                  </>
-                )}
+                {!disabled && !readOnly && <>
+                  {d.state === 'done' && !inputBlocked && !review && /\.(jpe?g|png|webp)$/i.test(d.file.name) && (
+                    <button type="button" className="mweb-btn" onClick={() => {
+                      if (!locked.current && !reviewRef.current) showReview([d]);
+                    }}>Tinjau ulang</button>
+                  )}
+                  {d.state === 'error' && !inputBlocked && !review && (
+                    <button type="button" className="mweb-btn" onClick={() => retry(d.key)}>Coba lagi</button>
+                  )}
+                  <button type="button" className="mweb-btn mweb-danger" onClick={() => remove(d.key)}>Hapus</button>
+                </>}
               </article>
             ))}
           {!readOnly && (
@@ -368,6 +405,11 @@ export function AttachmentFields({
               onFiles={(files, errors) => pick(files, slot.label, errors)}
             />
           )}
+          {errors[slot.label] && !disabled && !readOnly && <button type="button" className="mweb-btn"
+            aria-label={`Tutup pesan lampiran ${slot.label}`} onClick={() => {
+              errorRef.current = { ...errorRef.current, [slot.label]: '' };
+              setErrors(errorRef.current); reportPending();
+            }}>Tutup pesan</button>}
           {readOnly && !slot.files.length && <p className="mweb-muted">Tidak ada lampiran.</p>}
         </section>
       ))}

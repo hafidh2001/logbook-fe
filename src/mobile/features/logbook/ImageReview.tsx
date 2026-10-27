@@ -72,7 +72,6 @@ export function ImageReview({
   onConfirm: (files: ReviewImage[]) => void;
   onCancel: () => void;
 }) {
-  const [skipped, setSkipped] = useState<Set<string>>(() => new Set());
   const [index, setIndex] = useState(0);
   const [drafts, setDrafts] = useState(() =>
     images.map((image) => ({
@@ -171,7 +170,6 @@ export function ImageReview({
     try {
       const result: ReviewImage[] = [];
       for (let i = 0; i < images.length; i++) {
-        if (skipped.has(images[i].key)) continue;
         const d = drafts[i];
         result.push({
           ...images[i],
@@ -206,9 +204,6 @@ export function ImageReview({
           Geser kotak / sudut untuk crop. Gunakan kontrol angka untuk keyboard. File asli
           dipertahankan sampai konfirmasi seluruh batch.
         </p>
-        {skipped.has(item.key) && (
-          <p role="status">Gambar ini dilewati; lampiran lain tetap tersedia.</p>
-        )}
         {error && (
           <p role="alert" className="mweb-error">
             {error}
@@ -289,21 +284,6 @@ export function ImageReview({
           <button
             type="button"
             className="mweb-btn"
-            disabled={busy}
-            onClick={() =>
-              setSkipped((prev) => {
-                const next = new Set(prev);
-                if (next.has(item.key)) next.delete(item.key);
-                else next.add(item.key);
-                return next;
-              })
-            }
-          >
-            {skipped.has(item.key) ? 'Sertakan gambar ini' : 'Lewati gambar ini'}
-          </button>
-          <button
-            type="button"
-            className="mweb-btn"
             disabled={busy || !ready}
             onClick={() =>
               update({ rotation: (draft.rotation + 90) % 360, crop: { ...FULL_CROP } })
@@ -340,7 +320,7 @@ export function ImageReview({
             <button
               type="button"
               className="mweb-btn mweb-primary"
-              disabled={busy || (!ready && !skipped.has(item.key))}
+              disabled={busy || !ready}
               onClick={confirm}
             >
               {busy ? 'Memproses…' : 'Gunakan semua gambar'}

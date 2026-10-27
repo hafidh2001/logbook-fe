@@ -5,6 +5,20 @@ import { installDirtyNavigationGuard } from './dirtyNavigation';
 import { createRoot } from 'react-dom/client';
 import { AttachmentFields, AttachmentPreview, type UploadDraft } from './AttachmentFields';
 import { attachmentGroup, type Attachment } from './attachments';
+import LogbookForm from './LogbookForm';
+function FormFixture() {
+  const [payloads, setPayloads] = useState<unknown[]>([]);
+  const [mounted, setMounted] = useState(true);
+  const edit = new URLSearchParams(location.search).has('edit');
+  return <main className="mweb-logbook">
+    <button onClick={() => setMounted(v => !v)}>Toggle form mount</button>
+    {mounted && <LogbookForm action={{ id: 26, has_attachment: true, attachment_name: '["Before","After"]' }}
+      identity={{ id: 1, id_client: 1 }} role="ppds" participants={[]}
+      record={edit ? { id: 91, date: '2026-10-26 10:11:12', t_logbook_attachment: [{ id: 71, name: 'Before', url_file: '_file/2026-10/26/attachment-before/existing.pdf' }] } : undefined}
+      onPreview={() => {}} onCancel={() => {}} onSubmit={async payload => { setPayloads(v => [...v, payload]); }} />}
+    <output id="payload-output">{JSON.stringify(payloads)}</output>
+  </main>;
+}
 import './logbook.css';
 import LogbookWorkspace from '../LogbookWorkspace';
 import { useMobileSession } from '../../session';
@@ -143,6 +157,11 @@ function Harness() {
             type: d.file.type,
             size: d.file.size,
             state: d.state,
+            uploaded: d.uploaded,
+            edit: d.edit,
+            error: d.error,
+            phase: d.phase,
+            progress: d.progress,
           })),
         )}
       </output>
@@ -150,6 +169,8 @@ function Harness() {
     </main>
   );
 }
+const formFixture = new URLSearchParams(location.search).has('formFixture');
+if (formFixture) useMobileSession.setState({ user: parseMobileUser({ success: true, data: { id: 1, id_client: 1, id_role: 2, role_name: 'PPDS', username: 'synthetic-fixture' } }), isAuthenticated: true });
 const workspaceFixture = new URLSearchParams(location.search).has('workspaceFixture');
 if (workspaceFixture)
   useMobileSession.setState({
@@ -162,7 +183,7 @@ if (workspaceFixture)
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      {workspaceFixture ? <LogbookWorkspace actionId="26" mode="list" /> : <Harness />}
+      {workspaceFixture ? <LogbookWorkspace actionId="26" mode="list" /> : formFixture ? <FormFixture /> : <Harness />}
     </BrowserRouter>
   </React.StrictMode>,
 );

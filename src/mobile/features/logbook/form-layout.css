@@ -44,7 +44,7 @@
 .mweb-form .mweb-field > input,
 .mweb-form .mweb-field > select,
 .mweb-form .mweb-field > textarea {
-  /* Reserve scroll targeting space for sticky actions and the shell navbar. */
+  /* Keep focused fields clear of the shell navbar while scrolling. */
   scroll-margin-bottom:calc(var(--mweb-form-nav-clearance) + 100px);
   display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;
   min-height:48px;padding:12px 14px;border:1px solid #cbded2;border-radius:10px;
@@ -83,6 +83,16 @@
 .mweb-form .mweb-score > legend {padding:0 6px;font-size:13px;font-weight:650;}
 .mweb-form .mweb-score .mweb-field:last-child {margin-bottom:0;}
 .mweb-form .mweb-checkbox {display:flex;align-items:center;gap:10px;min-height:48px;padding:10px 12px;margin:0;border:1px solid var(--mweb-border);border-radius:10px;background:#f7fbf8;font-size:14px;}
+.mweb-form .mweb-presentation-toggle {display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:64px;padding:10px 16px;border:1px solid var(--mweb-border);border-radius:10px;background:#f7fbf8;}
+.mweb-form .mweb-presentation-toggle > span {font-size:14px;font-weight:600;color:var(--mweb-heading);}
+.mweb-form .mweb-switch {display:flex;align-items:center;justify-content:center;flex:0 0 48px;width:48px;min-width:48px;height:44px;padding:0;border:0;background:transparent;box-shadow:none;border-radius:16px;cursor:pointer;}
+.mweb-form .mweb-switch-track {display:block;width:48px;height:28px;padding:3px;border-radius:999px;background:#c5d3cc;transition:background .18s ease;}
+.mweb-form .mweb-switch-thumb {display:block;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #164b3c30;transform:translateX(0);transition:transform .18s ease;}
+.mweb-form .mweb-switch[aria-checked=true] .mweb-switch-track {background:var(--mweb-green);}
+.mweb-form .mweb-switch[aria-checked=true] .mweb-switch-thumb {transform:translateX(20px);}
+.mweb-form .mweb-switch:focus-visible {outline:3px solid #52b788;outline-offset:3px;}
+.mweb-form .mweb-switch:disabled {cursor:not-allowed;opacity:.55;}
+@media(prefers-reduced-motion:reduce) {.mweb-form .mweb-switch-track,.mweb-form .mweb-switch-thumb {transition:none;}}
 .mweb-form .mweb-checkbox input {width:18px;height:18px;flex:0 0 18px;accent-color:var(--mweb-green);}
 .mweb-form .mweb-attachments {min-width:0;margin:4px 0 0;padding-top:20px;border-top:1px solid var(--mweb-border);}
 .mweb-form .mweb-attachments > h3 {font-size:13px;color:var(--mweb-heading);}
@@ -92,14 +102,15 @@
 .mweb-form .mweb-attachment-dropzone .mweb-btn {min-height:44px;}
 .mweb-form .mweb-attachment-dropzone small {line-height:1.7;}
 .mweb-form .mweb-actions {
-  position:sticky;bottom:var(--mweb-form-nav-clearance);z-index:3;
-  display:flex;align-items:center;justify-content:flex-end;gap:12px;
+  position:static;bottom:auto;z-index:auto;
+  display:flex;align-items:stretch;justify-content:flex-end;gap:12px;
   margin:0 -4px;padding:14px 4px 4px;border-top:1px solid var(--mweb-border);
-  background:#fff;box-shadow:0 -10px 0 #fff,0 -16px 16px -16px #164b3c30;
+  background:#fff;box-shadow:none;
 }
-.mweb-form .mweb-actions .mweb-btn {min-height:48px;padding:12px 20px;font-size:14px;}
+.mweb-form .mweb-actions .mweb-btn {min-height:48px;min-width:0;padding:12px 20px;font-size:14px;white-space:normal;}
 .mweb-form .mweb-actions .mweb-primary {min-width:180px;}
-.mweb-form-history {border-style:dashed;}
+.mweb-form .mweb-form-history {margin:0 0 24px;padding:20px 0 0;border:0;border-top:1px solid var(--mweb-border);}
+.mweb-form .mweb-delete-action {margin-right:auto;}
 .mweb-form-history > .mweb-form-history-label {font-size:12px;font-weight:600;color:#667085;margin-bottom:18px;}
 @media(max-width:600px) {
   .mweb-form .mweb-form-fields,.mweb-form .mweb-section,.mweb-form .mweb-score {grid-template-columns:minmax(0,1fr);gap:20px;}
@@ -107,7 +118,7 @@
   .mweb-form .mweb-field > input[type=datetime-local] {padding-left:8px;padding-right:8px;}
   .mweb-form .mweb-score {padding:14px;}
   .mweb-form .mweb-actions {gap:10px;padding-top:12px;padding-bottom:4px;}
-  .mweb-form .mweb-actions .mweb-btn {padding:12px 15px;}
+  .mweb-form .mweb-actions .mweb-btn {padding:12px 10px;}
   .mweb-form .mweb-actions .mweb-primary {flex:1;min-width:0;}
 }
 @media(max-width:360px) {.mweb-form .mweb-field > input[type=datetime-local] {font-size:14px;}}

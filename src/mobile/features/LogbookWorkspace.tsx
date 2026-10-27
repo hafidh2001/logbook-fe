@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import DeleteLogbookDialog from './logbook/DeleteLogbookDialog';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import FloatingAddButton from '../FloatingAddButton';
 import { mobileRequest } from '../api';
@@ -605,17 +606,18 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
           }),
         );
         if (response.data && response.data.deleted_at == null)
-          throw new Error('Server menerima arsip tetapi record masih aktif. Muat ulang daftar.');
+          throw new Error('Server menerima penghapusan tetapi record masih aktif. Muat ulang daftar.');
         if(response.data)assertReadScope([response.data],{id_client:user.id_client,id_action:Number(actionId)});
       } catch (e) {
         const message = errorMessage(e);
         if (/masih aktif/.test(message)) throw e;
         if (!/not found|tidak ditemukan|tidak tersedia|404|deleted|archiv/i.test(message))
-          throw new Error(`Arsip diterima tetapi pembacaan ulang gagal: ${message}`);
+          throw new Error(`Penghapusan diterima tetapi pembacaan ulang gagal: ${message}`);
       }
       dirty.current = false;
       navigate(base);
-      setNotice('Logbook diarsipkan.');
+      setArchiveConfirm(false);
+      setNotice('Logbook berhasil dihapus.');
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -659,6 +661,14 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
     setFilterDraft((d) => ({ ...d, [key]: value }));
   return (
     <main className={`mweb-logbook${mode === 'list' && !initialLoading && canCreate && !filterOpen ? ' mweb-has-add' : ''}`} aria-busy={loading || (initialLoading && !scopedError) || busy}>
+      {mode === 'list' && busy && entryLock.current === viewKey && (
+        <div className="mweb-opening-overlay">
+          <div className="mweb-opening-status" role="status" aria-live="polite" aria-atomic="true">
+            <span className="mweb-spinner" aria-hidden="true" />
+            Memuat logbook…
+          </div>
+        </div>
+      )}
       <header className="mweb-workspace-header">
         <button
           className="mweb-back"
@@ -975,6 +985,16 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
                       role={role}
                       identity={user!}
                       participants={participants}
+                      externalBusy={busy}
+                      history={mode === 'edit' && record ? (
+                        <section className="mweb-form-history" aria-label="Riwayat verifikasi">
+                          <p className="mweb-form-history-label">Riwayat tersimpan · hanya baca</p>
+                          <VerifierCards record={record} edit />
+                        </section>
+                      ) : undefined}
+                      onDelete={mode === 'edit' && record ? () => {setError('');setArchiveConfirm(true);} : undefined}
+
+
                       onSubmit={save}
                       onCancel={() => returnBack(recordId ? `${base}/${recordId}` : base)}
                       onPreview={setPreview}
@@ -983,40 +1003,6 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
                       }}
                     />
                   </section>
-                  {mode === 'edit' && record && (
-                    <section className="mweb-card mweb-form-history">
-                      <p className="mweb-form-history-label">Riwayat tersimpan · hanya baca</p>
-                      <VerifierCards record={record} edit />
-                      <button
-                        className="mweb-btn mweb-danger"
-                        disabled={busy}
-                        onClick={() => setArchiveConfirm(true)}
-                      >
-                        Arsipkan Logbook
-                      </button>
-                      {archiveConfirm && (
-                        <div className="mweb-confirm" role="group" aria-label="Konfirmasi arsip">
-                          <p>Arsipkan kegiatan ini? Berkas dan riwayat tetap dikelola server.</p>
-                          <div className="mweb-row">
-                            <button
-                              className="mweb-btn"
-                              disabled={busy}
-                              onClick={() => setArchiveConfirm(false)}
-                            >
-                              Batal
-                            </button>
-                            <button
-                              className="mweb-btn mweb-danger"
-                              disabled={busy}
-                              onClick={archive}
-                            >
-                              {busy ? 'Memproses…' : 'Ya, arsipkan'}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </section>
-                  )}
                 </>
               ) : (
                 <p className="mweb-notice">
@@ -1039,6 +1025,7 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
           ) : null}
         </>
       )}
+      <DeleteLogbookDialog open={archiveConfirm && mode==='edit' && !!record && canEdit} busy={busy} error={error} onCancel={()=>setArchiveConfirm(false)} onConfirm={()=>void archive()}/>
       {preview && <AttachmentPreview url={preview} close={() => setPreview('')} />}
     </main>
   );

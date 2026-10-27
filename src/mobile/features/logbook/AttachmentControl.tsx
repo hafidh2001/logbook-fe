@@ -130,21 +130,16 @@ export function AttachmentControl({ label, disabled, error, onFiles }: {
       }}
     >
       <Upload size={24} aria-hidden="true" />
-      <p id={`${id}-hint`}>Seret file ke sini, atau pilih file / kamera. Fokus di sini lalu Ctrl+V untuk menempel file.</p>
+      <p id={`${id}-hint`}>Seret file ke sini, atau pilih file. Fokus di sini lalu Ctrl+V untuk menempel file.</p>
       <div className="mweb-row">
         <label className="mweb-btn">
           Pilih file
           <input ref={picker} type="file" accept={ACCEPT_FILES} multiple disabled={disabled}
             onChange={e => { onFiles(Array.from(e.target.files ?? [])); e.target.value = ''; }} />
         </label>
-        <label className="mweb-btn">
-          Kamera
-          <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" disabled={disabled}
-            onChange={e => { onFiles(Array.from(e.target.files ?? [])); e.target.value = ''; }} />
-        </label>
       </div>
       <p id={`${id}-error`} className="mweb-error" role="alert" aria-live="polite">{error}</p>
-      <small id={`${id}-policy`}>Opsional · JPG, PNG, WebP, PDF, Word, Excel, PowerPoint. Maks. per file: 25 MB (anjuran). Batas aktual ditetapkan server. Kamera mengikuti dukungan browser. Crop/rotasi hanya diterapkan setelah konfirmasi; tanpa edit, byte asli dipertahankan.</small>
+      <small id={`${id}-policy`}>Opsional · JPG, PNG, WebP, PDF, Word, Excel, PowerPoint. Maks. per file: 25 MB (anjuran). Batas aktual ditetapkan server. Crop/rotasi hanya diterapkan setelah konfirmasi; tanpa edit, byte asli dipertahankan.</small>
     </div>
   );
 }

@@ -20,9 +20,24 @@ export function dateInput(value: unknown): string {
 }
 export function localNow(d = new Date()) { const pad = (v:number) => String(v).padStart(2,'0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
 export function payloadDate(value: string, original?: string) {
-  if (original && dateInput(original) === value) return original;
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(value) || !Number.isFinite(new Date(value).getTime())) throw new Error('Tanggal tidak valid.');
+  if (original && dateInput(original) === value) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(original)) return original;
+    if (/[T ]\d{2}:\d{2}.*(?:Z|[+-]\d{2}(?::?\d{2})?)$/i.test(original)) {
+      // Update accepts an unzoned wall time and stores it in Asia/Jakarta.
+      // Preserve an unchanged zoned instant in that zone, not the device zone.
+      const parts = new Intl.DateTimeFormat('en-GB', { timeZone:'Asia/Jakarta', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23' }).formatToParts(new Date(original));
+      const part = (type: Intl.DateTimeFormatPartTypes) => parts.find(p=>p.type===type)!.value;
+      return `${part('year')}-${part('month')}-${part('day')} ${part('hour')}:${part('minute')}:${part('second')}`;
+    }
+  }
   return `${value.replace('T',' ')}${value.length===16?':00':''}`;
+}
+function editGender(value: unknown): string {
+  const normalized=String(value??'').trim().toLowerCase();
+  if(['m','male','male (m)'].includes(normalized)) return 'Male (M)';
+  if(['f','female','p','female (f)'].includes(normalized)) return 'Female (F)';
+  return '';
 }
 export function valuesFromRecord(record: Row, action?: DynamicLogbookAction): DynamicLogbookFormValues {
   const emr = arr(record.t_logbook_emr)[0] ?? {};
@@ -31,7 +46,7 @@ export function valuesFromRecord(record: Row, action?: DynamicLogbookAction): Dy
     mainUserIds:getDynamicRoleMaps(action).flatMap(role=>role.users.map(user=>user.id)),
     jejaringUserIds:getEligibleStaffJejaringConfig(action,recordStaseId)?.users.map(user=>user.id),
   } : {});
-  return {date: new Date(dateInput(record.date)),title:record.title??'',notes:record.notes??'',location:record.location??'',is_presentation:enabled(record.is_presentation),categoryId:Number(record.id_category??record.m_action_category?.id)||undefined,hospitalId:Number(record.id_hospital??record.m_hospital?.id)||undefined,anotherRoleId:Number(record.id_another_role??record.m_another_role?.id)||undefined,staseId:Number(record.id_stase??record.m_stase?.id)||undefined,is_retake:enabled(record.is_retake),exam_result:record.exam_result??'',participantId:getInitialExamParticipant(record).id,roleUsers:relations.roleUsers,staffJejaringUserId:relations.staffJejaringUserId,emr:Object.fromEntries(Object.entries(emr).map(([k,v])=>[k,v==null?'':String(v)])),asm:Object.fromEntries(arr(record.t_logbook_asm).map(s=>[s.id_asm_param,s.score]))};
+  return {date: new Date(dateInput(record.date)),title:record.title??'',notes:record.notes??'',location:record.location??'',is_presentation:enabled(record.is_presentation),categoryId:Number(record.id_category??record.m_action_category?.id)||undefined,hospitalId:Number(record.id_hospital??record.m_hospital?.id)||undefined,anotherRoleId:Number(record.id_another_role??record.m_another_role?.id)||undefined,staseId:Number(record.id_stase??record.m_stase?.id)||undefined,is_retake:enabled(record.is_retake),exam_result:record.exam_result??'',participantId:getInitialExamParticipant(record).id,roleUsers:relations.roleUsers,staffJejaringUserId:relations.staffJejaringUserId,emr:{...Object.fromEntries(Object.entries(emr).map(([k,v])=>[k,v==null?'':String(v)])),gender:editGender(emr.gender)},asm:Object.fromEntries(arr(record.t_logbook_asm).map(s=>[s.id_asm_param,s.score]))};
 }
 function invalidEmrMonth(action: DynamicLogbookAction, values: DynamicLogbookFormValues, role: UserRole) {
   if (!fieldsFor(action,role).some(f=>f.key==='emr') || /morbiditas/i.test(`${action.identifier} ${action.name}`)) return false;
