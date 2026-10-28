@@ -198,6 +198,7 @@ export default function RekapLogbookPage() {
         { header: "Peran", accessorKey: "peran" },
         { header: "Category", accessorKey: "category" },
         { header: "Title", accessorKey: "title" },
+        { header: "Catatan", accessorKey: "notes" },
         { header: "Patient", accessorKey: "patient" },
         { header: "Diagnosis", accessorKey: "diagnosis" },
         { header: "Treatment", accessorKey: "treatment" },
