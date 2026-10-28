@@ -684,9 +684,7 @@ export default function TodoSection({
                   <span>
                     Semester: <strong>{todoTriage(t).semester}</strong>
                   </span>
-                  <span>
-                    Verifier: <strong>{todoTriage(t).verifiers}</strong>
-                  </span>
+
                 </div>
               )}
             </div>

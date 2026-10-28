@@ -2,14 +2,17 @@ import { Fragment } from 'react';
 import { AttachmentCard, activeAttachments, attachmentSlots } from './AttachmentFields';
 import { attachmentGroup, isImage } from './attachments';
 import { buildDetailFields, detailActionKey, examPresentation } from './detailFields';
-import { buildScoreItems } from './detailScores';
+import { buildScoreItems, buildExploreAverageScoreItems, shouldShowScoreAssessment } from './detailScores';
 import { type DynamicLogbookAction, type UserRole } from './dynamicLogbookForm';
 import type { Row } from './model';
-export function DetailContent({action,record,role,onPreview,currentUserId}:{action:DynamicLogbookAction;record:Row;role:UserRole;fromExplore?:boolean;currentUserId?:number;onPreview:(url:string)=>void}) {
+export function DetailContent({action,record,role,onPreview,currentUserId,fromExplore=false}:{action:DynamicLogbookAction;record:Row;role:UserRole;fromExplore?:boolean;currentUserId?:number;onPreview:(url:string)=>void}) {
   const fields=buildDetailFields(action,record,role),slots=attachmentSlots(action,activeAttachments(record));
   const consumed=new Set<typeof slots[number]>();
-  // Staff sees only their own saved assessment, including read-only Explore.
-  const scores=buildScoreItems({...record,m_action:action},role,currentUserId);
+  // Explore shows cross-assessor averages; personal verification stays actor-only.
+  const savedRecord={...record,m_action:action};
+  const scores=fromExplore && role==='staff' && shouldShowScoreAssessment(savedRecord)
+    ? buildExploreAverageScoreItems(savedRecord)
+    : buildScoreItems(savedRecord,role,currentUserId);
   function attachments(key:string) {
     const matches=slots.filter(s=>key==='attachment'||attachmentGroup(s.label)===(key==='attachmentBefore'?'attachment-before':'attachment-after'));
     matches.forEach(s=>consumed.add(s));if(detailActionKey(action)==='morbiditas'&&!matches.some(s=>s.files.length))return <div className="mweb-detail-field mweb-detail-wide" data-detail-key={key}><small>Lampiran (Opsional)</small><p>-</p></div>;return matches.filter(s=>s.files.length).map(slot=><section key={slot.label} className="mweb-detail-attachment mweb-detail-wide" data-detail-key={key}><h3>{detailActionKey(action)==='morbiditas'?'Lampiran (Opsional)':slot.label}{slot.files.filter(isImage).length>0&&<small> · {slot.files.filter(isImage).length} gambar</small>}</h3>{slot.files.map((file,i)=><AttachmentCard key={file.occurrenceKey??`${file.id}:${i}`} file={file} onPreview={onPreview}/>)}</section>);
