@@ -7,11 +7,12 @@ import { InfiniteScrollFooter } from '../../InfiniteScrollFooter';
 import type { Actor, Row } from './contracts';
 import { exploreActions, exploreHref, exploreUserId } from './contracts';
 import { exploreBirthDate } from './extrasPresentation';
-import { exploreFiltersPayload, parseExploreDirectory } from './readContracts';
+import { exploreBadgeColor, exploreFiltersPayload, parseExploreDirectory } from './readContracts';
 import { mobileRequest } from '../../api';
 import { auditScreenVisit } from '../../useNavigationAudit';
 import { ExtrasFilter, ExtrasFilterSelect } from './ExtrasFilter';
 import { Frame, Info, State, requestData, requestRows, useResource } from './shared';
+import './exploreColors.css';
 
 export function Explore({user}: {user:Actor}) {
   const location=useLocation(),navigate=useNavigate(),{userId}=useParams();
@@ -50,7 +51,7 @@ export function Explore({user}: {user:Actor}) {
     return <ExploreDetail key={userId} user={user} selected={selected} back={()=>{const c=location.state?.mobileReturn;if(canPopReturn(c,user,location.pathname,Number(window.history.state?.idx)))navigate(-1);else navigate('/mobile/explore',{replace:true});}}/>;
   }
   const rows:Row[]=list.data?.data || [];
-  return <Frame title="Explore PPDS" subtitle="Temukan peserta berdasarkan semester" actions={<><button onClick={()=>setFilter(!filter)} aria-expanded={filter}>Filter</button><button onClick={()=>{void list.refresh();void masters.refresh();}} disabled={list.loading}>Refresh</button></>}>
+  return <div className="mweb-explore-colors"><Frame title="Explore PPDS" subtitle="Temukan peserta berdasarkan semester" actions={<><button onClick={()=>setFilter(!filter)} aria-expanded={filter}>Filter</button><button onClick={()=>{void list.refresh();void masters.refresh();}} disabled={list.loading}>Refresh</button></>}>
     <div className="mweb-extras-hero"><span className="mweb-extras-eyebrow">Explore Directory</span><h2>Temukan peserta berdasarkan semester</h2><p>Telusuri data PPDS aktif dan buka detail progres mereka dari setiap tahap semester.</p><div className="mweb-extras-stats"><span><strong>{masters.data?.semesterTotal ?? '—'}</strong> Semester</span><span><strong>{directory?.total ?? '—'}</strong> Peserta</span></div></div>
     {filter && <State loading={filterOptions.loading} error={filterOptions.error} retry={()=>void filterOptions.refresh()}/>}
     {filter && <ExtrasFilter actions={<><button onClick={()=>{setFilters(draft);setPage(1);setExpanded({});}}>Terapkan filter</button><button onClick={()=>{const empty={ppds_ids:[],id_semester:'',id_stage:'',id_stase:''};setDraft(empty);setFilters(empty);setPage(1);setExpanded({});}}>Reset filter</button></>}>
@@ -60,10 +61,10 @@ export function Explore({user}: {user:Actor}) {
     <State loading={list.loading || masters.loading} error={list.error || masters.error} empty={!rows.length} retry={()=>{void list.refresh();void masters.refresh();}}/>
     {!list.loading && <div className="mweb-extras-grid">{directory?.sections.map(({semester,rows:members,total})=>{
       const participants=members.slice(0,page*12);
-      return <details className="mweb-extras-card" key={semester.id} open={expanded[String(semester.id)] ?? participants.length>0} onToggle={e=>{const open=e.currentTarget.open;setExpanded(old=>old[String(semester.id)]===open ? old : {...old,[String(semester.id)]:open});}}><summary><strong>{semester.name}</strong><span className="mweb-extras-pill">{total ?? '—'} peserta</span></summary><div className="mweb-extras-list">{participants.map((row,index)=><button className="mweb-extras-row" key={exploreUserId(row) ?? index} disabled={!exploreUserId(row)} onClick={()=>select(row)}><span className="mweb-extras-avatar">{String(row.name || row.display_name || row.m_user?.display_name || '?').slice(0,1)}</span><span><strong>{row.name || row.display_name || row.m_user?.display_name || '—'}</strong><small>{row.nim || row.code || row.m_user?.code || '—'}</small></span><span className="mweb-extras-pill">{row.stase_name || row.m_stase?.name || 'Belum ada stase'}</span><span aria-hidden="true">›</span></button>)}</div></details>;
+      return <details className="mweb-extras-card" key={semester.id} open={expanded[String(semester.id)] ?? participants.length>0} onToggle={e=>{const open=e.currentTarget.open;setExpanded(old=>old[String(semester.id)]===open ? old : {...old,[String(semester.id)]:open});}}><summary><strong>{semester.name}</strong><span className="mweb-extras-pill">{total ?? '—'} peserta</span></summary><div className="mweb-extras-list">{participants.map((row,index)=><button className="mweb-extras-row" key={exploreUserId(row) ?? index} disabled={!exploreUserId(row)} onClick={()=>select(row)}><span className="mweb-extras-avatar">{String(row.name || row.display_name || row.m_user?.display_name || '?').slice(0,1)}</span><span><strong>{row.name || row.display_name || row.m_user?.display_name || '—'}</strong><small>{row.nim || row.code || row.m_user?.code || '—'}</small></span><span className="mweb-extras-pill mweb-explore-stase-badge" style={{backgroundColor:exploreBadgeColor(row)}}>{row.stase_name || row.m_stase?.name || 'Belum ada stase'}</span><span aria-hidden="true">›</span></button>)}</div></details>;
     })}</div>}
     {page*12<largest && <InfiniteScrollFooter sentinelRef={infinite.sentinelRef} loading={false} onLoadMore={()=>setPage(n=>n+1)}/>}
-  </Frame>;
+  </Frame></div>;
 }
 function ExploreDetail({user,selected,back}: {user:Actor;selected:Row;back:()=>void}) {
   const id=exploreUserId(selected)!;

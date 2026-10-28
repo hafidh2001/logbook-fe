@@ -1,0 +1,10 @@
+/* Explore directory colors from Native ExploreScreen and theme/colors only. */
+.mweb-explore-colors .mweb-extras-card,
+.mweb-explore-colors .mweb-extras-card > summary,
+.mweb-explore-colors .mweb-extras-row,
+.mweb-explore-colors .mweb-extras-row:hover {background:#FFFFFF;border-color:#D7E8DE;color:#164B3C;}
+.mweb-explore-colors .mweb-extras-row strong {color:#164B3C;}
+.mweb-explore-colors .mweb-extras-row small {color:#43566F;}
+.mweb-explore-colors .mweb-extras-avatar {background:#EAF6EF;color:#164B3C;border:1px solid #D7E8DE;}
+.mweb-explore-colors summary .mweb-extras-pill {background:#EAF6EF;color:#087F5B;border:1px solid #D7E8DE;}
+.mweb-explore-colors .mweb-explore-stase-badge {color:#FFFFFF;}

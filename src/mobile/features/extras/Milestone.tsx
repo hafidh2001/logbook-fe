@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { mobileRequest, MobileApiBusinessError } from '../../api';
 import { useMobileSession } from '../../session';
 import { installDirtyNavigationGuard } from '../logbook/dirtyNavigation';
@@ -8,7 +8,7 @@ import { useListPosition } from '../../useListPosition';
 import { useInfiniteScroll } from '../../useInfiniteScroll';
 import { InfiniteScrollFooter } from '../../InfiniteScrollFooter';
 import { filterMilestones, milestonePayload, mobileRole, positiveId, undoPayload, type Actor, type Masters, type Row } from './contracts';
-import { orderSemesters } from './readContracts';
+
 import { Frame as SharedFrame, Info, State, messageOf, requestData, requestRows, useResource } from './shared';
 import { MilestoneSelect as Select } from './MilestoneSelect';
 import { ExtrasFilter, ExtrasFilterSelect } from './ExtrasFilter';
@@ -18,10 +18,70 @@ import { Plus, ChevronRight } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import './milestone.css';
 import './extrasStage.css';
+import './ppdsMilestone.css';
 import { auditScreenVisit } from '../../useNavigationAudit';
 const Frame=(props:ComponentProps<typeof SharedFrame>)=><div className="milestone-scope"><SharedFrame {...props}/></div>;
 
 export function Milestone({user}: {user:Actor}) {
+  return mobileRole(user)==='staff' ? <StaffMilestone user={user}/> : <PpdsMilestone key={actorKey(user)} user={user}/>;
+}
+
+/** Native PPDS overview: stase occurrences first, then one count per action. */
+export function ppdsMilestoneSections(semesters:Row[],takenMilestones:Row[]) {
+  const order=(semester:Row)=>Number(String(semester.name).match(/\d+/)?.[0] ?? semester.id);
+  return [...semesters].sort((a,b)=>order(b)-order(a)).map(semester=>{
+    const taken=takenMilestones.map((m):Row=>({...m,logs:(m.t_logbook || []).filter((log:Row)=>String(log.m_semester?.id ?? '')===String(semester.id))})).filter(m=>m.logs.length);
+    const stase=(m:Row)=>m.identifier==='stase' || String(m.name).toLowerCase()==='stase';
+    return {id:semester.id,entries:[
+      ...taken.filter(stase).flatMap(m=>m.logs.map((log:Row)=>({label:log.m_stase?.name || m.name,color:log.m_stase?.m_stage?.label_color?.trim() || '#FF3737'}))),
+      ...taken.filter(m=>!stase(m)).map(m=>({label:m.name,color:semester.m_stage?.label_color?.trim() || '#F2F2F2',count:m.logs.length})),
+    ] as {label:string;color:string;count?:number}[]};
+  });
+}
+
+function PpdsMilestone({user}: {user:Actor}) {
+  const [data,setData]=useState<{semesters:Row[];taken:Row[];pending:Row[]}>({semesters:[],taken:[],pending:[]});
+  const [expanded,setExpanded]=useState<Record<string,boolean>>({});
+  const [pendingOpen,setPendingOpen]=useState(false);
+  const [loading,setLoading]=useState(true),[refreshing,setRefreshing]=useState(false);
+  const generation=useRef(0);
+  const load=async(isRefresh=false)=>{
+    const request=++generation.current;
+    setRefreshing(isRefresh);setLoading(!isRefresh);
+    const results=await Promise.allSettled([
+      requestRows('getMasterSemester',{id_client:user.id_client}),
+      requestRows('getMilestoneTaken',{id_client:user.id_client,user_id:user.id}),
+      requestRows('getMilestoneNotTaken',{id_client:user.id_client,user_id:user.id}),
+    ]);
+    if(request!==generation.current)return;
+    const [sem,taken,pending]=results;
+    if(sem.status==='fulfilled'){
+      setExpanded(current=>Object.fromEntries(sem.value.map(s=>[s.id,current[String(s.id)] ?? (!isRefresh && taken.status==='fulfilled' && taken.value.some(m=>(m.t_logbook || []).some((log:Row)=>String(log.m_semester?.id ?? '')===String(s.id))))])));
+    }
+    setData(current=>({semesters:sem.status==='fulfilled'?sem.value:current.semesters,taken:taken.status==='fulfilled'?taken.value:current.taken,pending:pending.status==='fulfilled'?pending.value:current.pending}));
+    setLoading(false);setRefreshing(false);
+  };
+  useEffect(()=>{
+    auditScreenVisit('milestone/overview');
+    void load();
+    return()=>{generation.current++;};
+  },[user.id,user.id_client]);
+  const sections=ppdsMilestoneSections(data.semesters,data.taken);
+  return <Frame title="Milestone" subtitle="Semester dan progres akademik Anda" actions={<button onClick={()=>void load(true)} disabled={loading || refreshing}>{refreshing?'Memuat ulang…':'Refresh'}</button>}>
+    {loading ? <div className="ppds-milestone-loading" role="status"><span className="ppds-milestone-spinner" aria-hidden="true"/><strong>Memuat milestone</strong><p>Menyiapkan semester dan progres Anda.</p></div> : <>
+      {refreshing && <p role="status">Memuat ulang milestone…</p>}
+      <div className="mweb-extras-grid ppds-milestone-grid">{sections.map(section=>{
+        const semester=data.semesters.find(s=>s.id===section.id)!;
+        return <details key={semester.id} className="mweb-extras-card" open={expanded[String(semester.id)] ?? false}>
+          <summary onClick={e=>{e.preventDefault();setExpanded(current=>({...current,[String(semester.id)]:!current[String(semester.id)]}));}}><span className="mweb-milestone-semester"><span className="mweb-milestone-stage-accent" aria-hidden="true" style={{backgroundColor:semester.m_stage?.label_color?.trim() || '#F2F2F2'}}/><span><strong>{semester.name}</strong>{semester.m_stage?.name && <small className="mweb-milestone-stage-name">{semester.m_stage.name}</small>}</span></span></summary>
+          {section.entries.length ? section.entries.map((entry,index)=><div key={index} className="mweb-extras-row ppds-milestone-entry"><span className="mweb-milestone-stage-dot" aria-hidden="true" style={{backgroundColor:entry.color}}/><span>{entry.label}</span>{entry.count!==undefined && <span className="mweb-extras-pill">{entry.count}</span>}</div>) : <div className="ppds-milestone-empty"><strong>Belum ada milestone</strong><p>Belum ada milestone pada semester ini.</p></div>}
+        </details>;
+      })}<details className="mweb-extras-card" open={pendingOpen}><summary onClick={e=>{e.preventDefault();setPendingOpen(current=>!current);}}><strong>Belum diambil</strong><span className="mweb-extras-pill">{data.pending.length} milestone</span></summary>{data.pending.length ? data.pending.map((row,index)=><div key={`${row.id}-${index}`} className="mweb-extras-row ppds-milestone-entry"><span>{row.name}</span></div>) : <div className="ppds-milestone-empty"><strong>Semua sudah diambil</strong><p>Tidak ada milestone yang belum diambil saat ini.</p></div>}</details></div>
+    </>}
+  </Frame>;
+}
+
+function StaffMilestone({user}: {user:Actor}) {
   const staff=mobileRole(user)==='staff';
   const location=useLocation(),navigate=useNavigate();
   const [search]=useSearchParams();
@@ -29,23 +89,20 @@ export function Milestone({user}: {user:Actor}) {
   const editor=staff && (search.get('edit')==='1' || !!recordId);
   const memoryKey=actorKey(user)+':milestone';
   const memory=readListMemory<{ppds:string[];stase:string;query:string;repeat:string;page:number;start:string;end:string;filter:boolean;expanded:Record<string,boolean>}>('milestone',memoryKey)?.value;
-  const [expanded,setExpanded]=useState<Record<string,boolean>>(memory?.expanded ?? {});
+  const [expanded]=useState<Record<string,boolean>>(memory?.expanded ?? {});
   const [filter,setFilter]=useState(memory?.filter ?? false);
   useEffect(()=>{if(!editor && !recordId)auditScreenVisit(staff && filter?'milestone/filter':'milestone/overview');},[staff,filter,editor,recordId,user.id,user.id_client]);
   const [ppds,setPpds]=useState<string[]>(memory?.ppds ?? []),[stase,setStase]=useState(memory?.stase ?? ''),[query,setQuery]=useState(memory?.query ?? ''),[repeat,setRepeat]=useState(memory?.repeat ?? ''),[page,setPage]=useState(memory?.page ?? 1),[start,setStart]=useState(memory?.start ?? ''),[end,setEnd]=useState(memory?.end ?? '');
   const [draft,setDraft]=useState({ppds,stase,query,repeat,start,end});
   const identity=`${user.id}:${user.id_client}:${staff}`;
   const staffResource=useResource(()=>staff ? requestRows('getMilestoneStaff',{id_client:user.id_client}) : Promise.resolve([] as Row[]),identity);
-  const semesterResource=useResource(()=>!staff ? requestRows('getMasterSemester',{id_client:user.id_client}) : Promise.resolve([] as Row[]),identity);
-  const takenResource=useResource(()=>!staff ? requestRows('getMilestoneTaken',{id_client:user.id_client,user_id:user.id}) : Promise.resolve([] as Row[]),identity);
-  const notTakenResource=useResource(()=>!staff ? requestRows('getMilestoneNotTaken',{id_client:user.id_client,user_id:user.id}) : Promise.resolve([] as Row[]),identity);
-  const resource={data:{staff:staffResource.data || [],semesters:semesterResource.data || [],taken:takenResource.data || [],notTaken:notTakenResource.data || []},loading:staff ? staffResource.loading : semesterResource.loading || takenResource.loading || notTakenResource.loading,error:staff ? staffResource.error : semesterResource.error || takenResource.error || notTakenResource.error,refresh:async()=>{await Promise.all([staffResource.refresh(),semesterResource.refresh(),takenResource.refresh(),notTakenResource.refresh()]);}};
+  const resource={data:{staff:staffResource.data || []},loading:staffResource.loading,error:staffResource.error,refresh:staffResource.refresh};
   const filterMasters=useResource(async()=>{
     if(!staff || !filter)return {ppds:[] as Row[],stases:[] as Row[],ppdsSearch:[] as Row[]};
     const [ppds,stases]=await Promise.all([requestRows('getMasterPpds',{id_client:user.id_client}),requestRows('getMasterStase',{id_client:user.id_client})]);
     return {...milestoneFilterOptions(ppds,stases),ppdsSearch:ppds};
   },`${identity}:${filter}`);
-  const baseSelected=recordId ? (resource.data?.staff.find(row=>String(row.id)===recordId) ?? resource.data?.taken.flatMap(action=>(action.t_logbook || []).map((log:Row)=>({...log,m_action:action}))).find((row:Row)=>String(row.id)===recordId)) : null;
+  const baseSelected=recordId ? resource.data.staff.find(row=>String(row.id)===recordId) : null;
   const selectedResource=useResource(async()=>{
     if(!recordId)return null;
     const id=positiveId(recordId);
@@ -63,7 +120,7 @@ export function Milestone({user}: {user:Actor}) {
   const rows=filterMilestones(all,{ppds_ids:ppds,id_stase:stase,start,end,query,repeat});
   const infinite=useInfiniteScroll({restored:!!memory,enabled:staff && !filter && !recordId && !editor && !resource.loading && !resource.error && page*12<rows.length,loading:false,scopeKey:JSON.stringify([identity,ppds,stase,query,repeat,start,end]),progressKey:page,onLoadMore:()=>setPage(n=>n+1)});
   if(recordId && !selected)return <Frame title={editor?'Edit Stase':'Detail Milestone'} actions={<button onClick={back}>‹ Kembali</button>}><State loading={selectedResource.loading} error={selectedResource.error} retry={()=>void selectedResource.refresh()}/></Frame>;
-  if (editor) return <MilestoneEditor key={`${actorKey(user)}:${recordId ?? 'new'}`} user={user} initial={selected} back={back} saved={async()=>{const current=()=>{const actor=useMobileSession.getState().user;return actor?.id===user.id && actor.id_client===user.id_client && window.location.pathname+window.location.search===location.pathname+location.search;};if(!current())return;await resource.refresh();if(current())back();}}/>;
+  if (editor) return <MilestoneEditor key={`${actorKey(user)}:${recordId ?? 'new'}`} user={user} initial={selected} back={back} saved={async(destination)=>{const current=()=>{const actor=useMobileSession.getState().user;return actor?.id===user.id && actor.id_client===user.id_client && window.location.pathname+window.location.search===location.pathname+location.search;};if(!current())return;if(destination==='list'){navigate('/mobile/milestone',{replace:true});void resource.refresh();return;}await resource.refresh();if(current())back();}}/>;
   if (selected) return <MilestoneDetail user={user} initial={selected} back={back} edit={row=>open(row,true)}/>;
   const ppdsRows=filterMasters.data?.ppds || [];
   const staseRows=filterMasters.data?.stases || [];
@@ -79,10 +136,7 @@ export function Milestone({user}: {user:Actor}) {
         <span className="milestone-date-rail"><strong>{clock.day}</strong><span>{clock.month}</span><small>{clock.year}</small></span>
         <span className="milestone-card-body"><span className="milestone-card-title"><span><h2>{item.stase}</h2><span className="milestone-card-user">{item.ppds}</span>{item.repeatStage && <span className="milestone-repeat">↻ Mengulang Stase</span>}</span><ChevronRight size={18} aria-hidden="true"/></span><span className="milestone-card-meta"><span>Pukul {clock.time}</span><span>Status · {item.statusLabel}</span></span></span>
       </button>;
-    })}</div>{page*12<rows.length && <InfiniteScrollFooter sentinelRef={infinite.sentinelRef} loading={false} onLoadMore={()=>setPage(n=>n+1)}/>}<button className="milestone-add" aria-label="+ Tambah Stase" title="Tambah Stase" onClick={()=>open(null,true)}><Plus size={26} aria-hidden="true"/></button></> : <div className="mweb-extras-grid">{orderSemesters(resource.data?.semesters || []).map(semester=>{
-      const taken=resource.data!.taken.map((action): Row=>({...action,logs:(action.t_logbook || []).filter((log:Row)=>Number(log.m_semester?.id)===Number(semester.id))})).filter(action=>action.logs.length);
-      return <details key={semester.id} className="mweb-extras-card" open={expanded[String(semester.id)] ?? taken.length>0} onToggle={e=>{const open=e.currentTarget.open;setExpanded(old=>old[String(semester.id)]===open ? old : {...old,[String(semester.id)]:open});}}><summary><span className="mweb-milestone-semester"><span className="mweb-milestone-stage-accent" aria-hidden="true" style={{backgroundColor:semester.m_stage?.label_color?.trim() || '#F2F2F2'}}/><span><strong>{semester.name}</strong>{semester.m_stage?.name && <small className="mweb-milestone-stage-name">{semester.m_stage.name}</small>}</span></span><span className="mweb-extras-pill">{takenResource.data ? taken.reduce((n,a)=>n+a.logs.length,0) : '—'} aktivitas</span></summary>{taken.map(action=><div key={action.id} className="mweb-extras-milestone-group"><h3>{action.name}</h3>{action.identifier==='stase' || String(action.name).toLowerCase()==='stase' ? action.logs.map((log:Row)=><button key={log.id} className="mweb-extras-row" onClick={()=>open({...log,m_action:action})}><span className="mweb-milestone-stage-dot" aria-hidden="true" style={{backgroundColor:log.m_stase?.m_stage?.label_color?.trim() || '#FF3737'}}/><span>{log.m_stase?.name || 'Stase'}</span>{log.is_retake && <span className="mweb-extras-pill">Mengulang</span>}<span>›</span></button>) : <Link className="mweb-extras-row" onClick={()=>{remember();captureReturn(user,location);}} state={{mobileReturn:captureReturn(user,location)}} to={`/mobile/logbooks/${action.id}`}><span>{action.logs.length} Logbook</span><span>›</span></Link>}</div>)}</details>;
-    })}<details className="mweb-extras-card" open={expanded.notTaken ?? false} onToggle={e=>{const open=e.currentTarget.open;setExpanded(old=>old.notTaken===open ? old : {...old,notTaken:open});}}><summary><strong>Belum diambil</strong><span className="mweb-extras-pill">{notTakenResource.data?.length ?? '—'} milestone</span></summary>{resource.data?.notTaken.map(row=><p key={row.id}>{row.name}</p>)}{notTakenResource.data?.length===0 && <p>Semua sudah diambil.</p>}</details></div>}
+    })}</div>{page*12<rows.length && <InfiniteScrollFooter sentinelRef={infinite.sentinelRef} loading={false} onLoadMore={()=>setPage(n=>n+1)}/>}<button className="milestone-add" aria-label="+ Tambah Stase" title="Tambah Stase" onClick={()=>open(null,true)}><Plus size={26} aria-hidden="true"/></button></> : null}
   </Frame>;
 }
 function MilestoneDetail({user,initial,back,edit}: {user:Actor;initial:Row;back:()=>void;edit:(row:Row)=>void}) {
@@ -96,10 +150,10 @@ function MilestoneDetail({user,initial,back,edit}: {user:Actor;initial:Row;back:
     ['PPDS',row.m_user?.display_name || initial.m_user?.display_name || user.display_name],['Stase',row.m_stase?.name],['Semester',row.m_semester?.name],['Tanggal',row.date?`${milestoneClock(row.date).day} ${milestoneClock(row.date).month} ${milestoneClock(row.date).year} · ${milestoneClock(row.date).time}`:null],['Dibuat',row.created_date?`${milestoneClock(row.created_date).day} ${milestoneClock(row.created_date).month} ${milestoneClock(row.created_date).year} · ${milestoneClock(row.created_date).time}`:null],['Mengulang Stase',row.is_retake ? 'Yes':'No'],['Catatan',row.notes],['Status',row.verified_status || row.exam_result],
   ]}/></article></Frame>;
 }
-function MilestoneEditor({user,initial,back,saved}: {user:Actor;initial:Row|null;back:()=>void;saved:()=>Promise<void>}) {
+function MilestoneEditor({user,initial,back,saved}: {user:Actor;initial:Row|null;back:()=>void;saved:(destination?:'list')=>Promise<void>}) {
   const [form,setForm]=useState<Row>(()=>milestoneInitial(initial));
   const [confirmation,setConfirmation]=useState<'archive'|'undo'|null>(null);
-  const [error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[previewReload,setPreviewReload]=useState(0);
+  const [error,setError]=useState(''),[errorTitle,setErrorTitle]=useState('Gagal menyimpan'),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[previewReload,setPreviewReload]=useState(0);
   const lock=useRef(false),dirty=useRef(false);
   useEffect(()=>installDirtyNavigationGuard(dirty),[]);
   // Keep the acknowledged (or uncertain) write separate from editable form state.
@@ -128,7 +182,7 @@ function MilestoneEditor({user,initial,back,saved}: {user:Actor;initial:Row|null
   const options=milestoneMasterOptions(masters || {ppds:[],stases:[],semesters:[]});
   const targetLabel=options.ppds.find(row=>row.id===Number(form.id_user))?.label || initial?.m_user?.display_name || 'PPDS';
   const update=(key:string,value:unknown)=>{if(lock.current || pendingSave.current || pendingLifecycle.current)return;setError('');setForm(current=>({...current,[key]:value}));};
-  const run=async(operation:()=>Promise<void>)=>{if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{await operation();}catch(e){if(pendingSave.current || pendingLifecycle.current)dirty.current=true;setError(messageOf(e));}finally{lock.current=false;setBusy(false);}};
+  const run=async(operation:()=>Promise<void>,failureTitle='Gagal menyimpan')=>{if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{await operation();}catch(e){if(pendingSave.current || pendingLifecycle.current)dirty.current=true;setErrorTitle(failureTitle);setError(messageOf(e));}finally{lock.current=false;setBusy(false);}};
   const submit=()=>void run(async()=>{
     assertIdentity();
     if(pendingLifecycle.current)throw new Error('Verifikasi hasil perubahan terlebih dahulu.');
@@ -183,7 +237,7 @@ function MilestoneEditor({user,initial,back,saved}: {user:Actor;initial:Row|null
     await mobileRequest('archiveMilestone',{id:positiveId(initial.id),created_by:user.id,id_client:user.id_client});
     pendingLifecycle.current.acknowledged=true;
     await verifyLifecycle();
-  });};
+  },'Gagal menghapus');};
   let canUndo=false;
   try { if(!preview.loading && !preview.error && preview.data) {undoPayload(user,Number(form.id_user),preview.data);canUndo=!initial || Number(initial.id)===Number(preview.data.archive_logbook_id);} } catch { /* No immutable server link: never infer sessions or make legacy repairs. */ }
   const undo=()=>void run(async()=>{
@@ -196,9 +250,14 @@ function MilestoneEditor({user,initial,back,saved}: {user:Actor;initial:Row|null
     pendingLifecycle.current={kind:'undo',id:Number(info.archive_logbook_id),id_user:Number(form.id_user),restore:Number(info.restore_session_id),acknowledged:false};
     const result=await mobileRequest('undoMilestoneMorbiditasSemester',payload);
     if(Number(result.data?.archived_logbook_id)!==Number(info.archive_logbook_id))throw new Error('Server belum mengonfirmasi arsip milestone transisi. Jangan ulangi Undo otomatis; Refresh daftar.');
+    assertIdentity();
     pendingLifecycle.current.acknowledged=true;
-    await verifyLifecycle();
-  });
+    // Native returns to the list on an acknowledged Undo. Refresh there rather
+    // than turning a subsequent status-read failure into a failed Undo.
+    dirty.current=false;
+    await saved('list');
+    pendingLifecycle.current=null;
+  },'Undo gagal');
   const leave=()=>{if((pendingSave.current || pendingLifecycle.current || dirty.current) && !window.confirm(pendingSave.current ? 'Status simpan belum direkonsiliasi. Periksa daftar dan jangan buat ulang sebelum memastikan hasil simpan. Kembali ke daftar?' : 'Perubahan belum disimpan. Keluar dari form?'))return;dirty.current=false;back();};
   const selectStage=(value:string|string[])=>{
     if(lock.current || pendingSave.current || pendingLifecycle.current)return;
@@ -210,9 +269,9 @@ function MilestoneEditor({user,initial,back,saved}: {user:Actor;initial:Row|null
   };
   return <Frame title={initial?'Edit Stase':'Tambah Stase'} actions={<button onClick={leave} disabled={busy}>‹ Kembali</button>}>
     <State loading={resource.loading} error={resource.error} retry={()=>void resource.refresh()}/>
-    {error && <p className="mweb-extras-notice" role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
+    {notice && <p role="status">{notice}</p>}
     {pendingSave.current && <p className="mweb-extras-notice" role="status">{pendingSave.current.id ? 'Simpan sudah diterima. Verifikasi ulang hanya memuat hasil, tidak mengirim simpan lagi.' : 'Status simpan belum pasti. Pengiriman ulang diblokir; kembali dan periksa daftar sebelum membuat perubahan baru.'}</p>}
-    {pendingLifecycle.current && <div className="mweb-extras-notice" role="status"><p>Perubahan sudah dikirim. Form dikunci; verifikasi hanya memuat hasil, tidak mengirim perubahan lagi.</p><button disabled={busy} onClick={()=>void run(verifyLifecycle)}>Verifikasi hasil perubahan</button></div>}
+
     <div className="milestone-editor-layout">
       <aside className="milestone-undo" aria-label="Status Undo semester">
         <h2>{form.id_user?`Undo Ganti Semester — ${targetLabel}`:'Undo Ganti Semester (Morbiditas)'}</h2>
@@ -222,7 +281,7 @@ function MilestoneEditor({user,initial,back,saved}: {user:Actor;initial:Row|null
             <p>Undo ke: {preview.data.restore_semester_name || '-'}{preview.data.restore_stase_name ? ` / ${preview.data.restore_stase_name}`:''} · Poin tersimpan {preview.data.restore_points ?? 0}</p>
             <p>Milestone transisi #{preview.data.archive_logbook_id} akan diarsipkan. Kartu sebelumnya tetap utuh.</p>
           </> : <p role="status">{preview.data?.reason || (initial && preview.data?.can_undo && Number(initial.id)!==Number(preview.data.archive_logbook_id) ? 'Kartu ini bukan transisi aktif yang dikonfirmasi server. Buka milestone transisi terbaru untuk Undo.' : preview.data?.can_undo ? 'Status Undo belum lengkap. Refresh status; jangan menebak riwayat sesi.' : 'Status Undo belum tersedia.')}</p>}
-          <div className="mweb-extras-actions"><button disabled={busy || !!pendingSave.current || !!pendingLifecycle.current || preview.loading} onClick={()=>setPreviewReload(value=>value+1)}>Refresh status</button>{canUndo && <button disabled={busy || !!pendingSave.current || !!pendingLifecycle.current} className="mweb-extras-danger" onClick={()=>setConfirmation('undo')}>Undo semester, stase &amp; poin</button>}</div>
+          <div className="mweb-extras-actions"><button disabled={busy || !!pendingSave.current || preview.loading} onClick={()=>{if(pendingLifecycle.current)void run(verifyLifecycle,pendingLifecycle.current.kind==='undo'?'Undo gagal':'Gagal menghapus');else setPreviewReload(value=>value+1);}}>Refresh status</button>{canUndo && <button disabled={busy || !!pendingSave.current || !!pendingLifecycle.current} className="mweb-extras-danger" onClick={()=>setConfirmation('undo')}>Undo semester, stase &amp; poin</button>}</div>
         </>}
       </aside>
       <form id="milestone-form" className="mweb-extras-card milestone-editor" onChangeCapture={()=>{dirty.current=true;}} onSubmit={e=>{e.preventDefault();submit();}}>
@@ -241,6 +300,7 @@ function MilestoneEditor({user,initial,back,saved}: {user:Actor;initial:Row|null
         <div className="milestone-form-actions"><button className="mweb-extras-primary" disabled={busy || !masters || !!pendingLifecycle.current || !!pendingSave.current && !pendingSave.current.id} type="submit">{busy?'Menyimpan…':pendingSave.current?.id?'Verifikasi hasil simpan':'Simpan'}</button><button type="button" disabled={busy || !!pendingSave.current || !!pendingLifecycle.current} onClick={()=>{if(initial)leave();else {setForm(milestoneInitial(null));dirty.current=false;}}}>{initial?'Batal':'Reset'}</button>{initial && <button className="mweb-extras-danger" type="button" disabled={busy || !!pendingSave.current || !!pendingLifecycle.current} onClick={()=>setConfirmation('archive')}>Hapus milestone</button>}</div>
       </form>
     </div>
+    <Dialog.Root open={!!error} onOpenChange={open=>{if(!open)setError('');}}><Dialog.Portal><Dialog.Overlay className="milestone-dialog-overlay"/><Dialog.Content role="alertdialog" className="milestone-dialog"><Dialog.Title>{errorTitle}</Dialog.Title><Dialog.Description>{error}</Dialog.Description><div><Dialog.Close asChild><button type="button">OK</button></Dialog.Close></div></Dialog.Content></Dialog.Portal></Dialog.Root>
     <Dialog.Root open={!!confirmation} onOpenChange={open=>{if(!open)setConfirmation(null);}}><Dialog.Portal><Dialog.Overlay className="milestone-dialog-overlay"/><Dialog.Content className="milestone-dialog"><Dialog.Title>{confirmation==='archive'?'Hapus milestone?':`Undo perubahan ${targetLabel}?`}</Dialog.Title><Dialog.Description>{confirmation==='archive'?'Milestone Stase akan diarsipkan dan tidak lagi tampil di daftar.':`Kembalikan ke ${preview.data?.restore_semester_name || 'semester sebelumnya'} / ${preview.data?.restore_stase_name || 'stase sebelumnya'} dengan poin aktif ${preview.data?.restore_points ?? 0}. Milestone transisi #${preview.data?.archive_logbook_id} akan diarsipkan, bukan diubah menjadi kartu lama. Kartu sebelumnya dan aktivitas lain tetap tersimpan.`}</Dialog.Description><div><Dialog.Close asChild><button type="button">Batal</button></Dialog.Close><button type="button" className="milestone-confirm-danger" onClick={()=>{const intent=confirmation;setConfirmation(null);if(intent==='archive')archive();else if(canUndo)undo();}}>{confirmation==='archive'?'Hapus':'Undo'}</button></div></Dialog.Content></Dialog.Portal></Dialog.Root>
   </Frame>;
 }

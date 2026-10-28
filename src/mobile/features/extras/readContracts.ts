@@ -5,6 +5,10 @@ export function orderSemesters(rows: Row[]): Row[] {
   const order = (row: Row) => Number(String(row.name || '').match(/\d+/)?.[0] ?? row.id);
   return [...rows].sort((a,b) => order(b)-order(a));
 }
+// Keep the directory badge policy aligned with Native mapExplorePpdsItemToDetail.
+export function exploreBadgeColor(row: Row): string {
+  return row.m_semester?.stage_color?.trim() || row.m_stase?.m_stage?.label_color?.trim() || row.label_color?.toString().trim() || '#087F5B';
+}
 function count(value: unknown): number | null {
   return (typeof value === 'number' || typeof value === 'string' && /^\d+$/.test(value)) && Number.isSafeInteger(Number(value)) && Number(value)>=0 ? Number(value) : null;
 }

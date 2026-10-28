@@ -1,6 +1,7 @@
 import { enabled, getDynamicAsmParams, getDynamicScoreOptions, type DynamicLogbookAction, type UserRole } from './dynamicLogbookForm';
 import { shouldShowScoreAssessment } from './detailScores';
-import { arr, verificationFor, type Row } from './model';
+import { verificationFor, type Row } from './model';
+import { ownAssessmentRows } from './assessmentOwnership';
 
 // Saved-record assessment is deliberately separate from Create's visibility.
 // Saved action/relation flags win over optional form-metadata enrichment.
@@ -18,8 +19,7 @@ const definitions = [
   {key:'score_affective',match:/affective|afektif|affectif|attitude/i,legacy:3,current:6},
 ] as const;
 export function savedAssessmentDraft(record:Row,action:DynamicLogbookAction,actorId:number):Record<string,string|number> {
-  if(!Number.isFinite(actorId))return {};
-  const rows=arr(record.t_logbook_asm).filter(r=>r.deleted_at==null && String(r.created_date??'')===String(actorId));
+  const rows=ownAssessmentRows(record,actorId);
   return Object.fromEntries(getDynamicAsmParams(action).map(p=>{
     const definition=definitions.find(d=>d.match.test(p.label));
     const exact=rows.find(r=>Number(r.id_asm_param)===p.id);

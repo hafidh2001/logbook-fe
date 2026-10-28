@@ -1,12 +1,12 @@
-// Pure saved-score policy ported from current READONLY Mobile Detail. No submission logic.
-import type { Row } from './model';
+// Saved-score presentation: Native assessment gates with stricter actor-only ownership.
+import { verificationFor, type Row } from './model';
 import type { UserRole } from './dynamicLogbookForm';
-import { detailValue } from './detailFields';
+import { ownAssessmentRows } from './assessmentOwnership';
 type GetLogbookItem = Row & {t_logbook_asm?:Row[]};
 type ScoreDraft = {score_psikomotor:string;score_knowledge:string;score_affective:string};
 type ScoreItem = {label:string;value:string};
 const isStaffRole=(role:UserRole)=>role==='staff';
-const getValueByPaths=(record:Row,paths:string[])=>detailValue(record,...paths);
+// Staff ownership is resolved from saved ASM authorship, never parent fields.
 const SCORE_FIELD_CONFIGS: Array<{
   key: keyof ScoreDraft;
   label: string;
@@ -117,22 +117,8 @@ export function shouldShowScoreAssessment(record: GetLogbookItem) {
 function buildScoreDraft(
   record: GetLogbookItem,
   currentUserId?: number,
-  allowUnscopedDisplay = true,
 ): ScoreDraft {
-  const activeScores = (
-    Array.isArray(record.t_logbook_asm) ? record.t_logbook_asm : []
-  ).filter(entry => entry.deleted_at == null);
-  // Display one assessor's saved set, never splice incomplete sets together.
-  // Editable hydration always requires a known verifier and never scalar fallbacks.
-  const assessorId = Number.isFinite(currentUserId)
-    ? currentUserId
-    : allowUnscopedDisplay
-    ? activeScores[0]?.created_date
-    : undefined;
-  const rawScores = activeScores.filter(entry => {
-    if (!allowUnscopedDisplay && !Number.isFinite(currentUserId)) return false;
-    return String(entry.created_date ?? '') === String(assessorId ?? '');
-  });
+  const rawScores = ownAssessmentRows(record, currentUserId);
   const scoreFromKeywords = (keywords: string[]) => {
     const matched = rawScores.find(entry => {
       const haystack = [
@@ -168,10 +154,7 @@ function buildScoreDraft(
     (result, config) => {
       const scoreValue =
         scoreFromKeywords(config.keywords) ||
-        scoreFromParamId(config.paramId) ||
-        (allowUnscopedDisplay && !Number.isFinite(currentUserId)
-          ? getValueByPaths(record, config.fallbackPaths)
-          : '');
+        scoreFromParamId(config.paramId);
 
       result[config.key] = hasMeaningfulValue(scoreValue) ? scoreValue : '';
       return result;
@@ -191,13 +174,16 @@ export function buildScoreItems(
   userRole: UserRole,
   currentUserId?: number,
 ): ScoreItem[] {
-  if (!isStaffRole(userRole) || !shouldShowScoreAssessment(record)) {
+  // Read-only results follow this actor's active verification, not the aggregate
+  // logbook status. Draft hydration stays independent so Unverifikasi keeps ASM.
+  if (!isStaffRole(userRole) || !shouldShowScoreAssessment(record) ||
+      verificationFor(record, currentUserId ?? 0).row?.status !== 'verified') {
     return [];
   }
 
   const scoreDraft = buildScoreDraft(
     record,
-    isStaffRole(userRole) ? currentUserId : undefined,
+    currentUserId,
   );
 
   return SCORE_FIELD_CONFIGS.map(config => ({
