@@ -1,4 +1,4 @@
-import { enabled, getDynamicLogbookFields, getDynamicAsmParams, getDynamicCategories, getDynamicHospitals, getDynamicAnotherRoles, getDynamicStases, getDynamicRoleMaps, getRequiredDynamicVerifierRoleIds, shouldShowDynamicScoreFields, buildDynamicCreateLogbookPayload, type DynamicLogbookFormValues, type DynamicLogbookAction, type UserRole } from './dynamicLogbookForm';
+import { enabled, getDynamicLogbookFields, getDynamicAsmParams, getDynamicCategories, getDynamicHospitals, getDynamicAnotherRoles, getDynamicStases, getDynamicRoleMaps, getRequiredDynamicVerifierRoleIds, isMorbiditasAction, shouldShowDynamicScoreFields, buildDynamicCreateLogbookPayload, type DynamicLogbookFormValues, type DynamicLogbookAction, type UserRole } from './dynamicLogbookForm';
 import { getMorbiditasStaffActionRow, getMorbiditasAllowedTransitions, getMorbiditasSequentialBlockReason, hasMorbiditasVerificationSlots, isMorbiditasRecord } from './morbiditasVerificationBatch';
 import { getJejaringSequentialBlockReason, isJejaringStatusRow } from './jejaringVerification';
 import { getInitialExamParticipant } from './ActionLogbookEditParticipant';
@@ -55,12 +55,15 @@ function invalidEmrMonth(action: DynamicLogbookAction, values: DynamicLogbookFor
 }
 export function validateValues(action: DynamicLogbookAction, values: DynamicLogbookFormValues, role: UserRole, editing = false): string[] {
   const fields = fieldsFor(action,role).map(f=>f.key); const errors:string[]=[];
-  for(const key of ['title','notes','location'] as const) if(fields.includes(key)&&!values[key]?.trim()) errors.push(`${String(action[`${key}_name`]??({title:'Judul',notes:'Catatan',location:'Lokasi'}[key]))} wajib diisi.`);
+  // Native Morbiditas Edit validates the date/transport, not blank patient or notes drafts.
+  if(editing&&isMorbiditasAction(action))return errors;
+  for(const key of ['title','notes','location'] as const) if(fields.includes(key)&&!values[key]?.trim()) errors.push(`${isMorbiditasAction(action)&&key==='notes'?'Kronologi Morbiditas':String(action[`${key}_name`]??({title:'Judul',notes:'Catatan',location:'Lokasi'}[key]))} wajib diisi.`);
   for(const [key,value,choices] of [['category',values.categoryId,getDynamicCategories(action)],['hospital',values.hospitalId,getDynamicHospitals(action)],['another_role',values.anotherRoleId,getDynamicAnotherRoles(action)],['stase',values.staseId,getDynamicStases(action)]] as const) if(fields.includes(key)&&!choices.some(c=>c.id===value)) errors.push(`Pilih ${key.replace('_',' ')} yang valid.`);
   if(fields.includes('action_roles')) for(const id of getRequiredDynamicVerifierRoleIds(action)) { const r=getDynamicRoleMaps(action).find(r=>r.idActionRole===id); const chosen=values.roleUsers?.[String(id)]; const valid=editing ? Number.isSafeInteger(chosen)&&Number(chosen)>0 : r?.users.some(u=>u.id===chosen); if(!valid)errors.push(`${r?.label??'Staff'} wajib dipilih.`); }
   if(fields.includes('exam_result')&&!['Lolos','Remidi','Tidak Lolos'].includes(values.exam_result??''))errors.push('Pilih hasil ujian.');
   if(enabled(action.is_exam)&&(!values.participantId||role!=='staff'))errors.push('Ujian hanya dapat diisi Staff untuk peserta PPDS yang dipilih.');
   if(fields.includes('emr')) { const morbid = /morbiditas/i.test(`${action.identifier} ${action.name}`); for(const key of morbid?['patient_name','age','diagnosis']:['patient_name','age','month','gender','diagnosis','treatment']) if(!String(values.emr?.[key as keyof NonNullable<typeof values.emr>]??'').trim()) errors.push(`${key.replace('_',' ')} wajib diisi.`); }
+  if(fields.includes('emr')&&isMorbiditasAction(action)&&!values.emr?.emr_number?.trim())errors.push('CM wajib diisi.');
   if(invalidEmrMonth(action,values,role)) errors.push('Usia (bulan) harus bilangan bulat antara 0 dan 11.');
   if(shouldShowDynamicScoreFields(action,role,values))for(const p of getDynamicAsmParams(action)){const raw=values.asm?.[p.id];const n=Number(raw);if(raw===undefined||raw===''||!Number.isFinite(n)||(p.minScore!==undefined&&n<p.minScore)||(p.maxScore!==undefined&&n>p.maxScore))errors.push(`Nilai ${p.label} tidak valid.`);}
   return errors;
@@ -72,7 +75,8 @@ export function formPayload(action: DynamicLogbookAction, values: DynamicLogbook
   if(!shouldShowDynamicScoreFields(action,role,values))delete payload.t_logbook_asm;
   if(enabled(action.is_exam))delete payload.t_logbook_status;
   delete payload._uploadedAttachments;
-  if(Array.isArray(payload.t_logbook_emr)) payload.t_logbook_emr=payload.t_logbook_emr.map((r:Row)=>({...r,...('emr_number'in r?{emr_number:r.emr_number||null}:{})}));
+  if(original!==undefined&&isMorbiditasAction(action)&&Array.isArray(payload.t_logbook_emr))payload.t_logbook_emr=payload.t_logbook_emr.map((r:Row)=>({...r,age:String(values.emr?.age??'').trim()||null,month:String(values.emr?.month??'').trim()||null,emr_number:values.emr?.emr_number?.trim()??'',gender:values.emr?.gender??'',treatment:values.emr?.treatment?.trim()??''}));
+  else if(Array.isArray(payload.t_logbook_emr)) payload.t_logbook_emr=payload.t_logbook_emr.map((r:Row)=>({...r,...('emr_number'in r?{emr_number:r.emr_number||null}:{})}));
   return payload;
 }
 export function verificationFor(record:Row, actorId:number) {
