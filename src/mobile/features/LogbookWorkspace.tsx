@@ -158,7 +158,14 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
         throw new Error('Identitas aktivitas atau sesi tidak valid.');
       const requestedPage=requested>0 ? Math.floor(requested) : 1;
       const requestFilters={...filters};
-      if(summary && search.get('categoryView')==='1') {delete requestFilters.id_category;delete requestFilters.is_presentation;}
+      if(summary && search.get('categoryView')==='1') {
+        delete requestFilters.id_category;delete requestFilters.is_presentation;
+        // Persist user-selected filters separately from drilldown constraints so
+        // refresh/deep links keep the same count scope as the category root.
+        const scope = new URLSearchParams(search.get('groupScope') ?? '');
+        if(positiveId(scope.get('id_category')))requestFilters.id_category=Number(scope.get('id_category'));
+        if(['true','false'].includes(scope.get('is_presentation') ?? ''))requestFilters.is_presentation=scope.get('is_presentation')==='true';
+      }
       const result = resultBody(
         await mobileRequest(explore && target && !isBimbinganRead(actionMeta) ? 'getLogbookIdCustomer' : 'getLogbook', {
           id_client: user.id_client,
@@ -309,17 +316,15 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
         setTotal(first.total);
         setPage(loadedPage);
         setHasMore(first.hasMore);
-        if (first.grouped && first.aggregates !== undefined) {
-          setServerCategories(first.aggregates);
-          setGroupComplete(true);
-        } else if (first.grouped && search.get('categoryView')==='1') {
-          // No aggregate contract: count the COMPLETE matching scope, never the
-          // current category/presentation page (which would invent zero siblings).
+        if (first.grouped && search.get('categoryView')==='1') {
+          // Aggregates describe the request's filters: a false-presentation
+          // page legitimately reports zero presentations. Read the root's user-
+          // filtered scope instead; without aggregates, consume ALL its pages.
           const summary=await requestList(meta,1,token,true);
           if(!summary)return;
           let summaryRows=summary.data, summaryPage=summary.page, more=summary.hasMore;
           const ids=new Set(summaryRows.map(r=>String(r.id)));
-          while(more) {
+          while(summary.aggregates === undefined && more) {
             const next=await requestList(meta,summaryPage+1,token,true);
             if(!next)return;
             const unseen=next.data.filter(r=>!ids.has(String(r.id)));
@@ -327,6 +332,9 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
             unseen.forEach(r=>ids.add(String(r.id)));summaryRows=[...summaryRows,...unseen];summaryPage=next.page;more=next.hasMore;
           }
           setServerCategories(summary.aggregates ?? summarizeCategories(getDynamicCategories(meta),summaryRows));
+          setGroupComplete(true);
+        } else if (first.grouped && first.aggregates !== undefined) {
+          setServerCategories(first.aggregates);
           setGroupComplete(true);
         } else if (first.grouped) {
           let all = first.data;
@@ -630,6 +638,9 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
   const filterFields=action ? filterWireFields(action,role) : [];
   const categories = action ? getDynamicCategories(action) : [];
   const groupedCategories = serverCategories ?? summarizeCategories(categories,rows);
+  const selectedCategory = groupedCategories.find(c=>c.id===group);
+  const presentationCount = selectedCategory?.presentation ?? 0;
+  const captionTotal = grouped && group!==undefined && !presentation && groupComplete ? selectedCategory?.count : total;
   const visible =
     grouped && group !== undefined
       ? rows.filter(
@@ -645,7 +656,15 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
       next.delete('categoryView');
       next.delete('id_category');
       next.delete('is_presentation');
+      const scope = new URLSearchParams(search.get('groupScope') ?? '');
+      for(const key of ['id_category','is_presentation'])if(scope.has(key))next.set(key,scope.get(key)!);
+      next.delete('groupScope');
     } else {
+      if(search.get('categoryView')!=='1') {
+        const scope=new URLSearchParams();
+        for(const key of ['id_category','is_presentation'])if(search.has(key))scope.set(key,search.get(key)!);
+        if(scope.size)next.set('groupScope',scope.toString());
+      }
       next.set('categoryView', '1');
       next.set('id_category', String(id));
       next.set('is_presentation', String(present));
@@ -883,7 +902,7 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
               )}
               <div className="mweb-list-caption">
                 <span>
-                  {total !== undefined ? `${total} kegiatan` : `${rows.length} kegiatan dimuat`}
+                  {captionTotal !== undefined ? `${captionTotal} kegiatan` : `${rows.length} kegiatan dimuat`}
                 </span>
                 <button className="mweb-link" onClick={load} disabled={loading || busy}>
                   ↻ Segarkan
@@ -930,18 +949,14 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
                         {groupedCategories.find((c) => c.id === group)?.label}
                         {presentation ? ' / Presentation' : ''}
                       </h2>
-                      {!presentation && (
+                      {!presentation && groupComplete && presentationCount > 0 && (
                         <button
                           className="mweb-card mweb-category"
                           onClick={() => openGroup(group, true)}
                         >
                           <strong>Presentation</strong>
                           <span>
-                            {serverCategories?.find((c) => c.id === group)?.presentation ??
-                              rows.filter(
-                                (r) =>
-                                  Number(r.id_category ?? r.m_action_category?.id) === group && enabled(r.is_presentation),
-                              ).length}{' '}
+                            {presentationCount}{' '}
                             kegiatan →
                           </span>
                         </button>
@@ -955,7 +970,7 @@ export default function LogbookWorkspace(props: LogbookWorkspaceProps) {
                         onOpen={() => void openListRecord(r)} />
                     ))}
                   </div>
-                  {!visible.length && !error && (
+                  {!visible.length && !error && !(grouped && group !== undefined && !presentation && presentationCount > 0) && (
                     <div className="mweb-empty">
                       <h2>Belum ada kegiatan</h2>
                       <p>
