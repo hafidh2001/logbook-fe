@@ -139,7 +139,7 @@ export function AttachmentControl({ label, disabled, error, onFiles }: {
         </label>
       </div>
       <p id={`${id}-error`} className="mweb-error" role="alert" aria-live="polite">{error}</p>
-      <small id={`${id}-policy`}>Opsional · JPG, PNG, WebP, PDF, Word, Excel, PowerPoint. Maks. per file: 25 MB (anjuran).</small>
+      <small id={`${id}-policy`}>Opsional · JPG, PNG, WebP, PDF, Word, PowerPoint. Maks. per file: 25 MB (anjuran).</small>
     </div>
   );
 }
