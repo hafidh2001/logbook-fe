@@ -1,4 +1,5 @@
 import type { Row } from './model';
+import { resolvePpdsStaffIdentity } from './ppdsStaffIdentity';
 import { isBimbinganOperasiAction } from './bimbinganOperasiGrouping';
 
 export function isPpdsBimbinganCard(action:Row,item:Row,role:string):boolean {
@@ -57,7 +58,7 @@ export function buildListPresentation(action:Row,item:Row,role:string,groupedEnt
     subheadline:groupedEntry&&fourRows?'':exam?'':meaningful(text(item.title,''))&&date!=='-'?date:'Waktu input logbook',
     status:exam?listExamStatus(item.exam_result):listStatus(item),
     primaryLabel:ppds?'Staff':'PPDS',
-    primary:isStaffBimbinganCard(action,item,role)?text(item.m_user?.display_name):exam?(ppds?text(item.created_by_name):text(item.m_user?.display_name)):(ppds?text(staffName,text(item.m_user?.display_name)):text(item.m_user?.display_name,staffName)),
+    primary:isStaffBimbinganCard(action,item,role)?text(item.m_user?.display_name):exam?(ppds?text(item.created_by_name):text(item.m_user?.display_name)):(ppds?resolvePpdsStaffIdentity(item,action):text(item.m_user?.display_name,staffName)),
     secondaryLabel:fourRows?'Lokasi':exam||dateFallback?'Tanggal':'Lokasi',secondary:fourRows?location:exam||dateFallback?date:location,
     secondaryIcon:!fourRows&&(exam||dateFallback)?'calendar':'location'};
 }
